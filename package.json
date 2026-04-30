@@ -9,9 +9,8 @@
     "deploy": "npm run build && wrangler pages deploy dist"
   },
   "dependencies": {
-    "astro": "^4.16.0",
-    "@astrojs/cloudflare": "^4.0.0",
-    "surrealdb": "^1.1.0"
+    "@astrojs/cloudflare": "10.4.2",
+    "astro": "^4.16.0"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
