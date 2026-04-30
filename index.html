@@ -105,6 +105,29 @@
     }
     .trust-badge { background: var(--surface); padding: 6px 14px; border-radius: 8px; }
 
+    /* HOW IT WORKS */
+    .how-it-works { padding: clamp(50px,7vw,90px) clamp(20px,5vw,60px); background: var(--paper); }
+    .steps-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 32px; max-width: 900px; margin: 48px auto 0;
+    }
+    .step { text-align: center; }
+    .step-num {
+      width: 52px; height: 52px; border-radius: 50%;
+      background: var(--accent); color: #fff;
+      font: 700 1.4rem/1 system-ui, sans-serif;
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 16px;
+    }
+    .step h3 { font-size: 1rem; letter-spacing: -0.02em; margin-bottom: 8px; }
+    .step p { font-family: system-ui, sans-serif; font-size: 0.875rem; color: var(--muted); line-height: 1.5; }
+
+    /* ROI STAT */
+    .roi-stat { padding: clamp(40px,6vw,70px) clamp(20px,5vw,60px); background: var(--accent); color: #fff; text-align: center; }
+    .roi-stat p { font-family: system-ui, sans-serif; font-size: clamp(16px,2.5vw,22px); color: rgba(255,255,255,0.9); max-width: 680px; margin: 0 auto; line-height: 1.5; }
+    .roi-stat strong { font-size: 1.15em; }
+    .roi-stat .sub { font-size: 0.82em; opacity: 0.75; display: block; margin-top: 8px; }
+
     /* FEATURES */
     .features { padding: clamp(60px,8vw,100px) clamp(20px,5vw,60px); }
     .section-label {
@@ -247,6 +270,7 @@
 <nav>
   <div class="logo">styr<span>.</span>ing</div>
   <ul class="nav-links">
+    <li><a href="#slik-fungerer-det">Slik fungerer det</a></li>
     <li><a href="#funksjoner">Funksjoner</a></li>
     <li><a href="#priser">Priser</a></li>
     <li><a href="#kontakt">Kontakt</a></li>
@@ -271,6 +295,36 @@
   <span class="trust-badge">✓ Sikker nettsky — ingen installasjon</span>
   <span class="trust-badge">✓ Umiddelbar oppstart</span>
   <span class="trust-badge">✓ Tilpasset norsk lovgivning</span>
+</div>
+
+<!-- HOW IT WORKS -->
+<section class="how-it-works" id="slik-fungerer-det">
+  <div class="section-label">Slik fungerer det</div>
+  <h2 class="section-title">Fra forespørsel til aktivt styreverktøy på 48 timer</h2>
+  <div class="steps-grid">
+    <div class="step">
+      <div class="step-num">1</div>
+      <h3>Send forespørsel</h3>
+      <p>Fyll ut skjemaet eller send en e-post. Vi tar kontakt innen 1–2 arbeidsdager.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <h3>Aktivering</h3>
+      <p>Vi setter opp ditt styre i Styr.ing og inviterer styremedlemmene dine.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <h3>Bruk — gratis i pilotperioden</h3>
+      <p>Full tilgang til alle funksjoner. Ingen kostnad før 1. juli 2026.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ROI STAT -->
+<div class="roi-stat">
+  <p><strong>Styr.ing sparer styret ca. 69 960 kr per styre over 3 år.</strong><br/>
+  75 % reduksjon i tidsbruk på styreadministrasjon. Kun 2 490 kr/mnd.</p>
+  <span class="sub">Basert på reelle tidsbesparelser hos pilotkunder</span>
 </div>
 
 <!-- FEATURES -->
