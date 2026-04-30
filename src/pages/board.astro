@@ -1,0 +1,74 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { demoBoards, demoMembers, demoMeetings } from '../lib/db.ts';
+---
+<Layout title="Styreportal" activeNav="board">
+  <div class="container">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
+      <div>
+        <h1 style="font-size: 2rem; color: #065f46;">Styreportal</h1>
+        <p style="color: #666; margin-top: 0.25rem;">Oversikt over alle styrer, møter og medlemmer</p>
+      </div>
+      <a href="mailto:sales@styr.ing" class="btn-primary">+ Nytt styre</a>
+    </div>
+
+    <!-- Boards -->
+    <div style="margin-bottom: 2.5rem;">
+      <h2 style="font-size: 1.2rem; color: #333; margin-bottom: 1rem; text-transform: uppercase; letter-spacing: 1px; font-size: 0.8rem;">Aktive styrer</h2>
+      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1rem;">
+        {demoBoards.map(board => (
+          <div style="background: white; border-radius: 12px; padding: 1.25rem; box-shadow: 0 1px 4px rgba(0,0,0,0.08); border-left: 4px solid #065f46;">
+            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.75rem;">
+              <h3 style="font-size: 1.1rem; color: #1a1a1a;">{board.name}</h3>
+              <span class="badge badge-green">{board.status === 'active' ? 'Aktiv' : board.status}</span>
+            </div>
+            <p style="color: #555; font-size: 0.85rem; margin-bottom: 1rem;">{board.description}</p>
+            <div style="display: flex; gap: 1.5rem; font-size: 0.8rem; color: #666;">
+              <span>👥 {board.memberCount} medlemmer</span>
+              <span>📅 {board.nextMeeting}</span>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+      <!-- Members -->
+      <div>
+        <h2 style="font-size: 1.1rem; color: #333; margin-bottom: 1rem;">Styremedlemmer</h2>
+        <div style="background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.08);">
+          {demoMembers.map((m, i) => (
+            <div style={`padding: 0.875rem 1rem; display: flex; justify-content: space-between; align-items: center; ${i < demoMembers.length - 1 ? 'border-bottom: 1px solid #f0f0f0;' : ''}`}>
+              <div>
+                <div style="font-weight: 600; font-size: 0.9rem;">{m.name}</div>
+                <div style="color: #666; font-size: 0.8rem;">{m.role}</div>
+              </div>
+              <span class="badge badge-blue">{m.email.split('@')[0]}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <!-- Meetings -->
+      <div>
+        <h2 style="font-size: 1.1rem; color: #333; margin-bottom: 1rem;">Møter</h2>
+        <div style="background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.08);">
+          {demoMeetings.map((mtg, i) => (
+            <div style={`padding: 0.875rem 1rem; display: flex; justify-content: space-between; align-items: center; ${i < demoMeetings.length - 1 ? 'border-bottom: 1px solid #f0f0f0;' : ''}`}>
+              <div>
+                <div style="font-weight: 600; font-size: 0.9rem;">{mtg.title}</div>
+                <div style="color: #666; font-size: 0.8rem;">📅 {mtg.date} · {mtg.documents} dokumenter</div>
+              </div>
+              <span class={`badge ${mtg.status === 'upcoming' ? 'badge-green' : 'badge-blue'}`}>
+                {mtg.status === 'upcoming' ? 'Kommende' : 'Gjennomført'}
+              </span>
+            </div>
+          ))}
+        </div>
+        <div style="margin-top: 1rem; text-align: center;">
+          <a href="mailto:sales@styr.ing" style="color: #065f46; font-size: 0.85rem; text-decoration: underline;">Be om tilgang til alle møter →</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</Layout>

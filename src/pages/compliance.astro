@@ -1,0 +1,83 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { complianceEvents } from '../lib/db.ts';
+
+const statusLabel: Record<string, { text: string; cls: string }> = {
+  done: { text: 'Utført', cls: 'badge-green' },
+  in_progress: { text: 'Pågår', cls: 'badge-yellow' },
+  pending: { text: 'Ikke startet', cls: 'badge-red' },
+};
+
+const typeLabel: Record<string, string> = {
+  annual: 'Årsrapport',
+  privacy: 'Personvern',
+  compliance: 'Internkontroll',
+  esg: 'ESG/CSRD',
+  financial: 'Regnskap',
+};
+---
+<Layout title="Compliance-kalender" activeNav="compliance">
+  <div class="container">
+    <div style="margin-bottom: 2rem;">
+      <h1 style="font-size: 2rem; color: #065f46;">Compliance-kalender</h1>
+      <p style="color: #666; margin-top: 0.25rem;">Følg med på norske regulatoriske frister og pålegg</p>
+    </div>
+
+    <!-- Stats -->
+    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 2.5rem;">
+      {[
+        { label: 'Totalt', value: complianceEvents.length, color: '#333' },
+        { label: 'Utført', value: complianceEvents.filter(e => e.status === 'done').length, color: '#065f46' },
+        { label: 'Pågår', value: complianceEvents.filter(e => e.status === 'in_progress').length, color: '#92400e' },
+        { label: 'Ikke startet', value: complianceEvents.filter(e => e.status === 'pending').length, color: '#991b1b' },
+      ].map(s => (
+        <div style="background: white; border-radius: 12px; padding: 1.25rem; text-align: center; box-shadow: 0 1px 4px rgba(0,0,0,0.08);">
+          <div style={`font-size: 2rem; font-weight: 800; color: ${s.color};`}>{s.value}</div>
+          <div style="color: #888; font-size: 0.8rem; margin-top: 0.25rem;">{s.label}</div>
+        </div>
+      ))}
+    </div>
+
+    <!-- Events table -->
+    <div style="background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.08);">
+      <table style="width: 100%; border-collapse: collapse;">
+        <thead>
+          <tr style="background: #f8faf9;">
+            <th style="padding: 0.875rem 1rem; text-align: left; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: #888; border-bottom: 1px solid #eee;">Frist</th>
+            <th style="padding: 0.875rem 1rem; text-align: left; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: #888; border-bottom: 1px solid #eee;">Aktivitet</th>
+            <th style="padding: 0.875rem 1rem; text-align: left; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: #888; border-bottom: 1px solid #eee;">Myndighet</th>
+            <th style="padding: 0.875rem 1rem; text-align: left; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: #888; border-bottom: 1px solid #eee;">Type</th>
+            <th style="padding: 0.875rem 1rem; text-align: left; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: #888; border-bottom: 1px solid #eee;">Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {complianceEvents.map((event, i) => {
+            const s = statusLabel[event.status] || { text: event.status, cls: 'badge-blue' };
+            const overdue = event.status === 'pending' && new Date(event.deadline) < new Date();
+            return (
+              <tr style={i < complianceEvents.length - 1 ? 'border-bottom: 1px solid #f5f5f5;' : ''}>
+                <td style={`padding: 1rem; font-size: 0.9rem; font-weight: 600; color: ${overdue ? '#991b1b' : '#333'};`}>
+                  {event.deadline}{overdue ? ' ⚠️' : ''}
+                </td>
+                <td style="padding: 1rem; font-size: 0.9rem; color: #1a1a1a;">{event.title}</td>
+                <td style="padding: 1rem; font-size: 0.85rem; color: #555;">{event.authority}</td>
+                <td style="padding: 1rem;">
+                  <span style="background: #f0fdf4; color: #065f46; padding: 0.15rem 0.6rem; border-radius: 999px; font-size: 0.75rem; font-weight: 600;">
+                    {typeLabel[event.type] || event.type}
+                  </span>
+                </td>
+                <td style="padding: 1rem;"><span class={`badge ${s.cls}`}>{s.text}</span></td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+
+    <div style="margin-top: 2rem; padding: 1.5rem; background: #fffbeb; border-radius: 12px; border: 1px solid #fde68a;">
+      <p style="font-size: 0.9rem; color: #92400e;">
+        <strong>Merk:</strong> Dette er en demo. Kontakt <a href="mailto:sales@styr.ing" style="color: #065f46;">sales@styr.ing</a> for tilpasset compliance-oppfølging for ditt selskap.
+      </p>
+    </div>
+  </div>
+</Layout>
