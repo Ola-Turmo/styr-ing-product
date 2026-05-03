@@ -147,10 +147,19 @@ import Layout from '../layouts/Layout.astro';
     e.preventDefault(); const f = new FormData(e.target as HTMLFormElement);
     const btn = (e.target as HTMLFormElement).querySelector('button')!;
     btn.textContent = 'Sender...'; btn.disabled = true;
+    const data: Record<string,string> = {};
+    f.forEach((v,k) => { data[k] = v as string; });
+    data['_subject'] = 'Ny henvendelse fra styr.ing: ' + (data.name || '');
+    data['company'] = 'styr.ing';
+    data['source'] = 'website-contact-form';
     try {
-      await fetch('/api/demo-request', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(Object.fromEntries(f)) });
-      (e.target as HTMLFormElement).style.display = 'none';
-      document.getElementById('form-success')!.style.display = 'block';
-    } catch { btn.textContent = 'Send forespørsel →'; btn.disabled = false; }
+      await fetch('https://paperclip.vps.apimcp.site/api/routine-triggers/public/2234f081f6d21d0e81a16870/fire', {
+        method: 'POST',
+        headers: { 'Content-Type':'application/json', 'Authorization':'Bearer 4877e10d95973a3e74ab98e77c2c842d4cfa2d8d8faa739f' },
+        body: JSON.stringify(data)
+      });
+    } catch {} // proceed even if webhook fails
+    (e.target as HTMLFormElement).style.display = 'none';
+    document.getElementById('form-success')!.style.display = 'block';
   });
 </script>
