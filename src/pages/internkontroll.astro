@@ -1,72 +1,87 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import { controlItems } from '../lib/db.ts';
+import { demoControls } from '../lib/db';
 
-const statusColor: Record<string, { bg: string; text: string; label: string }> = {
-  green: { bg: '#d1fae5', text: '#065f46', label: 'OK' },
-  yellow: { bg: '#fef3c7', text: '#92400e', label: 'Gå gjennom' },
-  red: { bg: '#fee2e2', text: '#991b1b', label: 'Handling nødvendig' },
-};
+const controls = demoControls;
+const approved = controls.filter(c => c.status === 'approved').length;
+const pending = controls.filter(c => c.status === 'pending').length;
 ---
 <Layout title="Internkontroll" activeNav="internkontroll">
-  <div class="container">
-    <div style="margin-bottom: 2rem;">
-      <h1 style="font-size: 2rem; color: #065f46;">Internkontroll</h1>
-      <p style="color: #666; margin-top: 0.25rem;">Oversikt over kontroller, risiko og oppfølging iht. internkontrollforskriften</p>
+  <div class="container" style="max-width: 960px; margin: 2rem auto; padding: 0 20px;">
+    <h1 style="font-size: 2rem; margin-bottom: 0.5rem;">Internkontroll</h1>
+    <p style="font-family: system-ui, sans-serif; color: var(--muted); margin: 0 0 2rem 0;">
+      COSO-basert internkontroll for norske virksomheter. Dokumenter kontroller, avvik og risikovurderinger.
+    </p>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 2rem;">
+      <div class="stat-card">
+        <div class="stat-num">{controls.length}</div>
+        <div class="stat-label">Kontrollpunkter</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num" style="color: var(--accent);">{approved}</div>
+        <div class="stat-label">Godkjent</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num" style="color: #8a7500;">{pending}</div>
+        <div class="stat-label">Til vurdering</div>
+      </div>
     </div>
 
-    <!-- Status summary -->
-    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 2.5rem;">
-      {[
-        { label: 'Kontroller i orden', value: controlItems.filter(c => c.status === 'green').length, bg: '#d1fae5', color: '#065f46' },
-        { label: 'Må gjennomgås', value: controlItems.filter(c => c.status === 'yellow').length, bg: '#fef3c7', color: '#92400e' },
-        { label: 'Krever handling', value: controlItems.filter(c => c.status === 'red').length, bg: '#fee2e2', color: '#991b1b' },
-      ].map(s => (
-        <div style={`background: ${s.bg}; border-radius: 12px; padding: 1.5rem; text-align: center;`}>
-          <div style={`font-size: 2.5rem; font-weight: 800; color: ${s.color};`}>{s.value}</div>
-          <div style={`font-size: 0.85rem; font-weight: 600; color: ${s.color}; margin-top: 0.25rem;`}>{s.label}</div>
+    <div style="display: grid; gap: 16px;">
+      {controls.map(control => (
+        <div class="control-card">
+          <div style="display: flex; justify-content: space-between; align-items: start; gap: 16px; margin-bottom: 8px;">
+            <h3 style="font-size: 1.05rem; margin: 0;">{control.title}</h3>
+            <span class="control-badge badge-{control.status}">
+              {control.status === 'approved' ? 'Godkjent' : control.status === 'pending' ? 'Til vurdering' : 'Utkast'}
+            </span>
+          </div>
+          <p style="font-family: system-ui, sans-serif; font-size: 0.875rem; color: var(--muted); margin: 0 0 12px 0; line-height: 1.5;">
+            {control.description || ''}
+          </p>
+          <div style="display: flex; gap: 16px; font-family: system-ui, sans-serif; font-size: 0.8rem; color: var(--muted);">
+            <span>🔍 {control.frequency || 'Årlig'} gjennomgang</span>
+            <span>📋 Ansvar: {control.responsible || 'Styreleder'}</span>
+            {control.last_review && <span>📅 Sist vurdert: {control.last_review}</span>}
+          </div>
         </div>
       ))}
     </div>
 
-    <!-- Control items -->
-    <div style="display: flex; flex-direction: column; gap: 1rem;">
-      {controlItems.map(ctrl => {
-        const s = statusColor[ctrl.status] || statusColor.green;
-        return (
-          <div style="background: white; border-radius: 12px; padding: 1.25rem 1.5rem; box-shadow: 0 1px 4px rgba(0,0,0,0.08); display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap;">
-            <div style={`width: 12px; height: 12px; border-radius: 50%; background: ${s.text}; flex-shrink: 0;`}></div>
-            <div style="flex: 1; min-width: 200px;">
-              <div style="font-weight: 700; font-size: 1rem; color: #1a1a1a;">{ctrl.title}</div>
-              <div style="font-size: 0.8rem; color: #888; margin-top: 0.2rem;">Ansvarlig: <strong style="color: #555;">{ctrl.owner}</strong> · {ctrl.frequency}</div>
-            </div>
-            <div style="text-align: right; flex-shrink: 0;">
-              <div style={`display: inline-block; background: ${s.bg}; color: ${s.text}; padding: 0.25rem 0.75rem; border-radius: 999px; font-size: 0.75rem; font-weight: 700;`}>{s.label}</div>
-              <div style="font-size: 0.75rem; color: #999; margin-top: 0.25rem;">Sist: {ctrl.lastReview}</div>
-            </div>
-          </div>
-        );
-      })}
-    </div>
-
-    <!-- Framework info -->
-    <div style="margin-top: 3rem; background: white; border-radius: 12px; padding: 2rem; box-shadow: 0 1px 4px rgba(0,0,0,0.08);">
-      <h2 style="color: #065f46; margin-bottom: 1rem; font-size: 1.2rem;">Internkontrollrammeverk</h2>
-      <p style="color: #555; font-size: 0.9rem; margin-bottom: 1rem;">Styr.ing følger <strong>Internkontrollforskriften</strong> (FOR 1996-12-06 nr 1127) og støtter opp under COSO-rammeverket for internkontroll:</p>
-      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 0.75rem;">
-        {[
-          ['Kontrollmiljø', 'Organisasjonskultur og etiske verdier'],
-          ['Risikovurdering', 'Identifisering og håndtering av risiko'],
-          ['Kontrollaktiviteter', 'Policies og prosedyrer'],
-          ['Informasjon og kommunikasjon', 'Relevant og tidsriktig informasjon'],
-          ['Overvåking', 'Løpende evaluering og forbedring'],
-        ].map(([title, desc]) => (
-          <div style="background: #f8faf9; padding: 0.875rem; border-radius: 8px;">
-            <div style="font-weight: 700; color: #065f46; font-size: 0.85rem;">{title}</div>
-            <div style="color: #666; font-size: 0.8rem; margin-top: 0.2rem;">{desc}</div>
-          </div>
-        ))}
-      </div>
+    <div style="text-align: center; margin-top: 2rem; padding: 1.5rem; background: rgba(31,111,91,0.06); border-radius: 12px;">
+      <p style="font-family: system-ui, sans-serif; font-size: 0.9rem; color: var(--muted); margin: 0;">
+        Demo-data. <a href="/login" style="color: var(--accent); font-weight: 600;">Logg inn</a> for å sette opp din egen internkontroll.
+      </p>
     </div>
   </div>
 </Layout>
+
+<style>
+  .stat-card {
+    background: white;
+    border: 1px solid rgba(16,36,31,0.08);
+    border-radius: 12px;
+    padding: 16px;
+    text-align: center;
+  }
+  .stat-num { font-size: 1.75rem; font-weight: 700; color: var(--ink); }
+  .stat-label { font-family: system-ui, sans-serif; font-size: 0.8rem; color: var(--muted); margin-top: 2px; }
+  
+  .control-card {
+    background: white;
+    border: 1px solid rgba(16,36,31,0.08);
+    border-radius: 14px;
+    padding: 20px 24px;
+    transition: box-shadow 0.2s;
+  }
+  .control-card:hover { box-shadow: 0 4px 16px rgba(16,36,31,0.06); }
+  
+  .control-badge {
+    font-family: system-ui, sans-serif; font-size: 0.75rem; font-weight: 600;
+    padding: 3px 12px; border-radius: 100px; white-space: nowrap;
+  }
+  .badge-approved { background: rgba(31,111,91,0.10); color: var(--accent); }
+  .badge-pending { background: rgba(216,169,77,0.15); color: #8a7500; }
+  .badge-draft { background: rgba(150,150,150,0.12); color: var(--muted); }
+</style>

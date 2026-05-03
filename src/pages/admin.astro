@@ -1,78 +1,85 @@
 ---
-// Admin Dashboard
 import Layout from '../layouts/Layout.astro';
-import { getSession } from '../session';
+import { demoBoardsFixed, demoComplianceEvents, demoControls, demoDemoRequests } from '../lib/db';
 
-const env = (Astro.locals.runtime as any)?.env;
-const session = await getSession(Astro.request, env);
-
-if (!session || session.role !== 'admin') {
-  return Astro.redirect('/login');
-}
-
-let stats: any = { boards: 0, members: 0, meetings: 0, demoRequests: 0, pilotBoards: 0, activeBoards: 0, users: 0 };
-if (env?.DB) {
-  try {
-    const [b, m, mt, dr, pb, ab, u] = await Promise.all([
-      env.DB.prepare('SELECT COUNT(*) as c FROM boards').first(),
-      env.DB.prepare('SELECT COUNT(*) as c FROM board_members').first(),
-      env.DB.prepare('SELECT COUNT(*) as c FROM meetings').first(),
-      env.DB.prepare('SELECT COUNT(*) as c FROM demo_requests').first(),
-      env.DB.prepare("SELECT COUNT(*) as c FROM boards WHERE status = 'pilot'").first(),
-      env.DB.prepare("SELECT COUNT(*) as c FROM boards WHERE status = 'active'").first(),
-      env.DB.prepare('SELECT COUNT(*) as c FROM users').first(),
-    ]);
-    stats = { boards: b.c, members: m.c, meetings: mt.c, demoRequests: dr.c, pilotBoards: pb.c, activeBoards: ab.c, users: u.c };
-  } catch {}
-}
-
-let demoRequests: any[] = [];
-if (env?.DB) {
-  try { const r = await env.DB.prepare('SELECT * FROM demo_requests ORDER BY created_at DESC LIMIT 20').all(); demoRequests = r.results; } catch {}
-}
+const boards = demoBoardsFixed;
+const events = demoComplianceEvents;
+const controls = demoControls;
+const requests = demoDemoRequests;
 ---
 <Layout title="Admin" activeNav="">
-  <div class="container">
-    <h1 style="font-size: 2rem; color: #065f46; margin-bottom: 0.5rem;">Admin Dashboard</h1>
-    <p style="color: #666; margin-bottom: 2rem;">{session.name} · {session.role}</p>
+  <div class="container" style="max-width: 960px; margin: 2rem auto; padding: 0 20px;">
+    <h1 style="font-size: 2rem; margin-bottom: 1.5rem;">Admin Dashboard</h1>
 
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 1rem; margin-bottom: 2.5rem;">
-      {[
-        { label: 'Brukere', value: stats.users, color: '#065f46' },
-        { label: 'Styrer', value: stats.boards, color: '#1e40af' },
-        { label: 'Pilot', value: stats.pilotBoards, color: '#92400e' },
-        { label: 'Aktive', value: stats.activeBoards, color: '#065f46' },
-        { label: 'Medlemmer', value: stats.members, color: '#7c3aed' },
-        { label: 'Møter', value: stats.meetings, color: '#0d9488' },
-        { label: 'Demo-forespørsler', value: stats.demoRequests, color: '#dc2626' },
-      ].map(s => (
-        <div style="background: white; border-radius: 12px; padding: 1.25rem; text-align: center; box-shadow: 0 1px 4px rgba(0,0,0,0.08);">
-          <div style={`font-size: 2.2rem; font-weight: 800; color: ${s.color};`}>{s.value}</div>
-          <div style="color: #888; font-size: 0.8rem; margin-top: 0.25rem;">{s.label}</div>
-        </div>
-      ))}
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 2rem;">
+      <div class="stat-card">
+        <div class="stat-num">{boards.length}</div>
+        <div class="stat-label">Aktive styrer</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num">{events.length}</div>
+        <div class="stat-label">Compliance-hendelser</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num">{controls.length}</div>
+        <div class="stat-label">Kontrollpunkter</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num">{requests.length}</div>
+        <div class="stat-label">Demo-forespørsler</div>
+      </div>
     </div>
 
-    <section>
-      <h2 style="font-size: 1.2rem; color: #333; margin-bottom: 1rem;">Demo-forespørsler</h2>
-      <div style="background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.08);">
-        {demoRequests.length === 0 && <div style="padding: 2rem; text-align: center; color: #888;">Ingen demo-forespørsler ennå.</div>}
-        {demoRequests.map((dr: any, i: number) => (
-          <div style={`padding: 1rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem; ${i < demoRequests.length - 1 ? 'border-bottom: 1px solid #f0f0f0;' : ''}`}>
-            <div>
-              <div style="font-weight: 600;">{dr.name}</div>
-              <div style="color: #666; font-size: 0.8rem;">{dr.email} · {dr.company || 'Ingen bedrift'}</div>
-              {dr.message && <div style="color: #888; font-size: 0.8rem; margin-top: 0.25rem;">"{dr.message.slice(0, 150)}{dr.message.length > 150 ? '...' : ''}"</div>}
-            </div>
-            <div style="display: flex; gap: 0.5rem; align-items: center;">
-              <span class={`badge ${dr.status === 'new' ? 'badge-yellow' : dr.status === 'contacted' ? 'badge-blue' : dr.status === 'converted' ? 'badge-green' : 'badge-red'}`}>
-                {dr.status === 'new' ? 'Ny' : dr.status === 'contacted' ? 'Kontaktet' : dr.status === 'converted' ? 'Konvertert' : dr.status}
-              </span>
-              <span style="color: #aaa; font-size: 0.75rem;">{new Date(dr.created_at).toLocaleDateString('nb-NO')}</span>
-            </div>
-          </div>
-        ))}
-      </div>
+    <section style="margin-bottom: 2rem;">
+      <h2 style="font-size: 1.25rem; margin-bottom: 1rem;">Demo-forespørsler</h2>
+      {requests.length === 0 ? (
+        <p style="font-family: system-ui, sans-serif; color: var(--muted);">Ingen forespørsler.</p>
+      ) : (
+        <div style="overflow-x: auto;">
+          <table style="width: 100%; border-collapse: collapse; font-family: system-ui, sans-serif;">
+            <thead>
+              <tr style="border-bottom: 2px solid rgba(16,36,31,0.08); text-align: left;">
+                <th style="padding: 10px 14px; font-size: 0.8rem; color: var(--muted);">Navn</th>
+                <th style="padding: 10px 14px; font-size: 0.8rem; color: var(--muted);">Bedrift</th>
+                <th style="padding: 10px 14px; font-size: 0.8rem; color: var(--muted);">E-post</th>
+                <th style="padding: 10px 14px; font-size: 0.8rem; color: var(--muted);">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {requests.map(r => (
+                <tr style="border-bottom: 1px solid rgba(16,36,31,0.05);">
+                  <td style="padding: 10px 14px; font-size: 0.875rem;">{r.name}</td>
+                  <td style="padding: 10px 14px; font-size: 0.875rem;">{r.company}</td>
+                  <td style="padding: 10px 14px; font-size: 0.875rem; color: var(--muted);">{r.email}</td>
+                  <td style="padding: 10px 14px;">
+                    <span style="display: inline-block; background: {r.status === 'new' ? 'rgba(216,169,77,0.15)' : 'rgba(31,111,91,0.10)'}; color: {r.status === 'new' ? '#8a7500' : 'var(--accent)'}; font-size: 0.75rem; font-weight: 600; padding: 3px 10px; border-radius: 100px;">
+                      {r.status === 'new' ? 'Ny' : 'Kontaktet'}
+                    </span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </section>
+
+    <div style="text-align: center; padding: 1.5rem; background: rgba(31,111,91,0.06); border-radius: 12px;">
+      <p style="font-family: system-ui, sans-serif; font-size: 0.9rem; color: var(--muted); margin: 0;">
+        Demo-dashboard. <a href="/login" style="color: var(--accent); font-weight: 600;">Logg inn</a> for live admin-panel.
+      </p>
+    </div>
   </div>
 </Layout>
+
+<style>
+  .stat-card {
+    background: white;
+    border: 1px solid rgba(16,36,31,0.08);
+    border-radius: 12px;
+    padding: 16px;
+    text-align: center;
+  }
+  .stat-num { font-size: 1.75rem; font-weight: 700; color: var(--accent); }
+  .stat-label { font-family: system-ui, sans-serif; font-size: 0.8rem; color: var(--muted); margin-top: 2px; }
+</style>

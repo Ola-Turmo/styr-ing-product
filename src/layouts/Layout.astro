@@ -1,80 +1,91 @@
 ---
-// Layout with auth state
-import { getSession } from '../session';
-
 interface Props { title: string; activeNav?: string; }
-const { title, activeNav } = Astro.props;
-const env = (Astro.locals.runtime as any)?.env;
-const session = await getSession(Astro.request, env);
+const { title, activeNav = '' } = Astro.props;
 ---
-<!DOCTYPE html>
+<!doctype html>
 <html lang="no">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Styr.ing — Norsk styreportal og internkontrollplattform for norske selskaper" />
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>{title} | Styr.ing</title>
+  <meta name="description" content="Norsk styreportal og internkontroll for SMB. Fra 2 490 kr/mnd." />
+  <link rel="canonical" href={new URL(Astro.url.pathname, Astro.site).href} />
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f8faf9; color: #1a1a1a; line-height: 1.6; }
-    nav { background: #065f46; padding: 0 2rem; display: flex; align-items: center; gap: 2rem; height: 60px; position: sticky; top: 0; z-index: 100; }
-    .nav-brand { color: white; font-weight: 700; font-size: 1.25rem; text-decoration: none; letter-spacing: -0.5px; }
-    .nav-links { display: flex; gap: 1.5rem; list-style: none; }
-    .nav-links a { color: rgba(255,255,255,0.8); text-decoration: none; font-size: 0.9rem; padding: 0.25rem 0; border-bottom: 2px solid transparent; transition: all 0.2s; }
-    .nav-links a:hover, .nav-links a.active { color: white; border-bottom-color: #fbbf24; }
-    .nav-right { margin-left: auto; display: flex; gap: 0.75rem; align-items: center; }
-    .nav-user { color: rgba(255,255,255,0.7); font-size: 0.85rem; }
-    .nav-cta { background: #fbbf24; color: #065f46; padding: 0.4rem 1rem; border-radius: 6px; text-decoration: none; font-weight: 600; font-size: 0.85rem; border: none; cursor: pointer; }
-    .nav-link-white { color: rgba(255,255,255,0.8); text-decoration: none; font-size: 0.85rem; }
-    .nav-link-white:hover { color: white; }
-    .container { max-width: 1100px; margin: 0 auto; padding: 2rem; }
-    footer { background: #065f46; color: rgba(255,255,255,0.7); text-align: center; padding: 1.5rem; font-size: 0.85rem; margin-top: 4rem; }
-    footer a { color: rgba(255,255,255,0.9); }
-    .badge { display: inline-block; padding: 0.15rem 0.6rem; border-radius: 999px; font-size: 0.75rem; font-weight: 600; }
-    .badge-green { background: #d1fae5; color: #065f46; }
-    .badge-yellow { background: #fef3c7; color: #92400e; }
-    .badge-red { background: #fee2e2; color: #991b1b; }
-    .badge-blue { background: #dbeafe; color: #1e40af; }
-    .btn-primary { background: #065f46; color: white; padding: 0.6rem 1.4rem; border-radius: 8px; text-decoration: none; font-weight: 600; display: inline-block; border: none; cursor: pointer; }
-    .btn-secondary { background: white; color: #065f46; border: 2px solid #065f46; padding: 0.5rem 1.2rem; border-radius: 8px; text-decoration: none; font-weight: 600; display: inline-block; }
+    :root {
+      --ink: #10241f;
+      --muted: #5c6b65;
+      --paper: #f6f2ea;
+      --accent: #1f6f5b;
+      --gold: #d8a94d;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: Georgia, "Times New Roman", serif;
+      background: radial-gradient(circle at 18% 0%, #fff8df 0%, var(--paper) 45%, #dfe9e3 100%);
+      color: var(--ink);
+      line-height: 1.6;
+    }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { color: #0d4a3a; }
+
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 16px clamp(20px,5vw,60px);
+      background: rgba(246,242,234,0.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(16,36,31,0.08);
+    }
+    .logo { font-size: 1.25rem; font-weight: 700; letter-spacing: -0.02em; color: var(--ink); }
+    .logo span { color: var(--accent); }
+    .nav-links { display: flex; gap: 20px; list-style: none; font-family: system-ui, sans-serif; font-size: 0.85rem; align-items: center; }
+    .nav-links a { color: var(--muted); font-weight: 500; }
+    .nav-links a:hover { color: var(--accent); }
+    .nav-links a.active { color: var(--accent); font-weight: 600; }
+    .nav-cta {
+      background: var(--accent); color: #fff;
+      padding: 8px 18px; border-radius: 100px;
+      font-family: system-ui, sans-serif; font-size: 0.8rem; font-weight: 600;
+    }
+    .nav-cta:hover { background: #0d4a3a; color: #fff; }
+
+    .container { max-width: 1100px; margin: 0 auto; }
+    [id] { scroll-margin-top: 80px; }
+
+    footer {
+      background: var(--ink); color: rgba(255,255,255,0.5);
+      padding: 32px clamp(20px,5vw,60px); margin-top: 4rem;
+      font-family: system-ui, sans-serif; font-size: 0.8rem;
+    }
+    .footer-inner { max-width: 1100px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; }
+    .footer-inner a { color: rgba(255,255,255,0.5); }
+    .footer-inner a:hover { color: rgba(255,255,255,0.8); }
   </style>
 </head>
 <body>
   <nav>
-    <a href="/" class="nav-brand">Styr.ing</a>
+    <a href="/" class="logo">styr<span>.</span>ing</a>
     <ul class="nav-links">
-      <li><a href="/" class={activeNav === 'home' ? 'active' : ''}>Hjem</a></li>
-      <li><a href="/board" class={activeNav === 'board' ? 'active' : ''}>Styreportal</a></li>
+      <li><a href="/board" class={activeNav === 'boards' ? 'active' : ''}>Styreportal</a></li>
       <li><a href="/compliance" class={activeNav === 'compliance' ? 'active' : ''}>Compliance</a></li>
       <li><a href="/internkontroll" class={activeNav === 'internkontroll' ? 'active' : ''}>Internkontroll</a></li>
+      <li><a href="/login">Logg inn</a></li>
+      <li><a href="/signup" class="nav-cta" style="margin-left: 8px;">Registrer</a></li>
     </ul>
-    <div class="nav-right">
-      {session ? (
-        <>
-          <span class="nav-user">{session.name}</span>
-          {session.role === 'admin' && <a href="/admin" class="nav-link-white">Admin</a>}
-          <button onclick="logout()" class="nav-cta" style="background: transparent; color: white; border: 1px solid rgba(255,255,255,0.3); padding: 0.3rem 0.8rem;">Logg ut</button>
-        </>
-      ) : (
-        <>
-          <a href="/login" class="nav-link-white">Logg inn</a>
-          <a href="/signup" class="nav-cta">Kom i gang</a>
-        </>
-      )}
-      <a href="mailto:sales@styr.ing" class="nav-cta" style="background: transparent; color: #fbbf24; border: 1px solid #fbbf24; padding: 0.3rem 0.8rem;">Demo</a>
-    </div>
   </nav>
-  <slot />
+
+  <main>
+    <slot />
+  </main>
+
   <footer>
-    <p>© 2026 Styr.ing AS — Norsk styreportal og internkontrollplattform</p>
-    <p style="margin-top:0.5rem"><a href="mailto:ola@styr.ing">ola@styr.ing</a> · <a href="mailto:sales@styr.ing">sales@styr.ing</a> · styr.ing</p>
+    <div class="footer-inner">
+      <div>© 2026 Styr.ing AS — Norsk styreportal og internkontroll</div>
+      <div>
+        <a href="mailto:ola@styr.ing">ola@styr.ing</a>
+      </div>
+    </div>
   </footer>
 </body>
 </html>
-
-<script>
-  async function logout() {
-    await fetch('/api/auth/logout', { method: 'POST' });
-    window.location.href = '/';
-  }
-</script>

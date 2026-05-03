@@ -1,14 +1,12 @@
 import { defineConfig } from 'astro/config';
-import cloudflare from '@astrojs/cloudflare';
 
-// Switch output mode per environment:
-// - 'server' + cloudflare adapter = Cloudflare Workers SSR
-// - 'static' = Cloudflare Pages static hosting
+// Static mode — no SSR, no Workers, no D1 dependency.
+// Deploy: Cloudflare Pages (static hosting) or GitHub Pages.
+// All data uses demo fallbacks. Auth is client-side stub.
 export default defineConfig({
-  output: 'server',
-  adapter: cloudflare({
-    platformProxy: {
-      enabled: true,
-    },
-  }),
+  output: 'static',
+  site: 'https://styr.ing',
+  image: {
+    service: { entrypoint: 'astro/assets/services/noop' },
+  },
 });

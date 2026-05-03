@@ -217,3 +217,36 @@ export const controlItems = [
   { id: 'ctrl-4', title: 'Styreinstruks og vedtekter',     owner: 'Styresekretær',  frequency: 'Årlig',      status: 'green',  lastReview: '2026-01-10' },
   { id: 'ctrl-5', title: 'Databehandleravtaler',           owner: 'Juridisk',       frequency: 'Ved behov',  status: 'red',    lastReview: '2025-06-15' },
 ];
+
+// Demo-prefixed exports for static pages
+const mapStatus = (s: string) => {
+  const m: Record<string, string> = {
+    done: 'completed', in_progress: 'in_progress', pending: 'pending',
+    green: 'approved', yellow: 'pending', red: 'draft',
+    upcoming: 'upcoming', completed: 'completed',
+  };
+  return m[s] || s;
+};
+
+export const demoComplianceEvents = complianceEvents.map(e => ({ ...e, status: mapStatus(e.status) }));
+export const demoControls = controlItems.map(c => ({
+  ...c,
+  status: mapStatus(c.status),
+  description: `Kontrollpunkt: ${c.title}. Frekvens: ${c.frequency}. Ansvarlig: ${c.owner}. Sist vurdert: ${c.lastReview}.`,
+  responsible: c.owner,
+  last_review: c.lastReview,
+}));
+export const demoMeetingsFixed = demoMeetings.map(m => ({ ...m, board_id: m.boardId }));
+export const demoMembersFixed = demoMembers.map(m => ({ ...m, board_id: m.boardId }));
+export const demoBoardsFixed = demoBoards.map(b => ({
+  ...b,
+  members_count: demoMembers.filter(m => m.boardId === b.id).length,
+  last_meeting: '2026-05-15',
+  compliance_events: 5,
+  status: 'active' as const,
+}));
+
+export const demoDemoRequests = [
+  { id: 'dr-1', name: 'Kari Nordmann', company: 'Nordmann AS', email: 'kari@nordmann.no', status: 'new', date: '2026-04-20' },
+  { id: 'dr-2', name: 'Ole Hansen', company: 'Hansen Entreprenør', email: 'ole@hansen.no', status: 'contacted', date: '2026-04-15' },
+];
