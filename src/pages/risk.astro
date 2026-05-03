@@ -1,0 +1,240 @@
+---
+// RISK Home — Risk Management Operating System
+import Layout from '../layouts/Layout.astro';
+---
+<Layout title="RISK — Risikostyring" activeNav="">
+<div class="risk-home">
+  
+  <!-- Hero -->
+  <section class="hero">
+    <div class="hero-inner">
+      <span class="eyebrow">RISK av Styr.ing</span>
+      <h1>Risikostyring som lever — ikke et statisk register</h1>
+      <p>RISK er et AI-drevet risikostyringssystem for norske organisasjoner. Kontinuerlig overvåking, automatiske vurderinger og levende rapportering — bygget for ISO 31000, NIST CSF, NSM og DORA.</p>
+      <div class="hero-actions">
+        <a href="/signup" class="btn-primary">Be om demo</a>
+        <a href="#demo" class="btn-outline">Se demo →</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Stats -->
+  <div class="risk-stats">
+    <div class="risk-stat">
+      <div class="stat-value">47</div>
+      <div class="stat-label">aktive risikoer overvåket</div>
+    </div>
+    <div class="risk-stat">
+      <div class="stat-value">128</div>
+      <div class="stat-label">kontroller kartlagt</div>
+    </div>
+    <div class="risk-stat">
+      <div class="stat-value">3</div>
+      <div class="stat-label">kritiske avvik denne måneden</div>
+    </div>
+    <div class="risk-stat">
+      <div class="stat-value">94%</div>
+      <div class="stat-label">etterlevelse av kontrollmål</div>
+    </div>
+  </div>
+
+  <!-- Demo Dashboard -->
+  <section id="demo" class="section">
+    <h2>Levende risikobilde</h2>
+    <p class="section-desc">Slik ser RISK ut i daglig bruk — et dashbord som viser endringer, ikke bare statiske data.</p>
+    
+    <div class="dashboard-grid">
+      
+      <!-- Risk Register Preview -->
+      <div class="card card-span-2">
+        <div class="card-header">
+          <h3>Risikoregister</h3>
+          <span class="badge">12 risikoer</span>
+        </div>
+        <div class="risk-table">
+          <div class="rt-header">
+            <span>ID</span><span>Risiko</span><span>Nivå</span><span>Trend</span><span>Eier</span><span>Status</span>
+          </div>
+          {[
+            {id:'R-001',name:'Leverandørkonsentrasjon — single-source IT-drift',level:'Kritisk',trend:'↑',owner:'CTO',status:'under behandling'},
+            {id:'R-002',name:'Manglende etterlevelse GDPR — databehandleravtaler',level:'Høy',trend:'→',owner:'DPO',status:'åpen'},
+            {id:'R-003',name:'Cybersikkerhet — utdatert tilgangsstyring ERP',level:'Kritisk',trend:'↓',owner:'IT-sjef',status:'under behandling'},
+            {id:'R-004',name:'Likviditetsrisiko Q3 — forsinkede kundebetalinger',level:'Medium',trend:'↑',owner:'CFO',status:'overvåkes'},
+            {id:'R-005',name:'Kompetanseflukt — nøkkelpersoner i tech-avdeling',level:'Høy',trend:'→',owner:'HR-sjef',status:'åpen'},
+          ].map(r => (
+            <div class="rt-row">
+              <span class="rt-id">{r.id}</span>
+              <span class="rt-name">{r.name}</span>
+              <span class={`rt-level level-${r.level === 'Kritisk' ? 'critical' : r.level === 'Høy' ? 'high' : 'medium'}`}>{r.level}</span>
+              <span class={`rt-trend trend-${r.trend === '↑' ? 'up' : r.trend === '↓' ? 'down' : 'stable'}`}>{r.trend}</span>
+              <span class="rt-owner">{r.owner}</span>
+              <span class="rt-status">{r.status}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <!-- KRIs -->
+      <div class="card">
+        <div class="card-header"><h3>Nøkkelindikatorer (KRI)</h3></div>
+        {[
+          {name:'Åpne kritiske sårbarheter', value:'7', threshold:'< 5', status:'warning'},
+          {name:'Leverandører uten vurdering', value:'3', threshold:'0', status:'critical'},
+          {name:'Kontroller med utgått bevis', value:'2', threshold:'0', status:'warning'},
+          {name:'Hendelser siste 30 dager', value:'4', threshold:'< 10', status:'ok'},
+          {name:'Etterlevelse opplæring', value:'91%', threshold:'> 90%', status:'ok'},
+        ].map(k => (
+          <div class={`kri-row kri-${k.status}`}>
+            <div class="kri-info">
+              <strong>{k.name}</strong>
+              <span>Mål: {k.threshold}</span>
+            </div>
+            <div class="kri-value">{k.value}</div>
+          </div>
+        ))}
+      </div>
+
+      <!-- Active Incidents -->
+      <div class="card">
+        <div class="card-header">
+          <h3>Aktive hendelser</h3>
+          <span class="badge">2 aktive</span>
+        </div>
+        {[
+          {title:'Uautorisert tilgangsforsøk ERP', severity:'Høy', date:'2026-04-28', owner:'IT-sjef'},
+          {title:'Databehandleravtale utgått — leverandør X', severity:'Medium', date:'2026-04-15', owner:'DPO'},
+          {title:'Phishing-kampanje mot ledergruppen', severity:'Lav', date:'2026-04-10', owner:'IT-sjef', closed:true},
+        ].map(inc => (
+          <div class={`incident-row ${inc.closed ? 'closed' : ''}`}>
+            <span class={`inc-severity inc-${inc.severity === 'Høy' ? 'high' : inc.severity === 'Medium' ? 'medium' : 'low'}`}></span>
+            <div class="inc-info">
+              <strong>{inc.title}</strong>
+              <span>{inc.owner} · {inc.date}</span>
+            </div>
+            {inc.closed && <span class="inc-closed">Lukket</span>}
+          </div>
+        ))}
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Features grid -->
+  <section class="section bg-light">
+    <h2>Hva RISK gir deg</h2>
+    <div class="features-grid">
+      {[
+        {icon:'🔍',title:'Kontinuerlig overvåking',desc:'Bakgrunnsagenter overvåker signaler fra ticketing, hendelsessystemer, sårbarhetsscannere og egenerklæringer — og flagger endringer før de blir problemer.'},
+        {icon:'📊',title:'Levende risikoregister',desc:'Ikke et statisk regneark. Risikoer oppdateres automatisk basert på nye signaler, eierskapsendringer og kontrollfunn.'},
+        {icon:'🔗',title:'Forpliktelser → kontroller → bevis',desc:'Sporbarhet fra lovkrav til kontroll til dokumentert bevis. Klargjør for tilsyn på minutter, ikke uker.'},
+        {icon:'🤖',title:'AI-assisterte vurderinger',desc:'AI analyserer mønstre og foreslår risikovurderinger. Mennesker godkjenner — AI gjør forarbeidet.'},
+        {icon:'📋',title:'Styrerapportering',desc:'Narrative styrerapporter som forklarer hva som har endret seg, hvorfor, og hva som må gjøres. Ferdig til styremøtet.'},
+        {icon:'🛡️',title:'AI-governance',desc:'Kartlegg og vurder AI-bruksområder i organisasjonen. Klargjør for EU AI Act med innebygd inventar og risikovurdering.'},
+        {icon:'🇳🇴',title:'Norske rammeverk',desc:'ISO 31000, NIST CSF, NSM ICT-sikkerhetsprinsipper, DORA. Velg rammeverk ved oppstart — systemet mapper automatisk.'},
+        {icon:'✍️',title:'Egenerklæring og attestasjon',desc:'Eiere bekrefter kontrollstatus digitalt. Automatiske påminnelser og eskaleringsregler ved manglende svar.'},
+      ].map(f => (
+        <div class="feature-card">
+          <div class="fc-icon">{f.icon}</div>
+          <h3>{f.title}</h3>
+          <p>{f.desc}</p>
+        </div>
+      ))}
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="cta-section">
+    <h2>Klargjør for neste tilsyn — ikke neste krise</h2>
+    <p>RISK hjelper deg fra reaktiv brannslukking til proaktiv risikostyring. Bygget for norske virksomheter med krav til dokumentert internkontroll.</p>
+    <a href="/signup" class="btn-primary">Be om demo →</a>
+  </section>
+
+  <div class="demo-notice">RISK er under utvikling. Demo-data viser funksjonalitet. <a href="mailto:ola@styr.ing">Ta kontakt</a> for pilot.</div>
+</div>
+</Layout>
+
+<style>
+.risk-home { max-width: 1100px; margin: 0 auto; padding: 0 20px; }
+
+.hero { text-align: center; padding: 4rem 1rem 3rem; }
+.hero-inner { max-width: 720px; margin: 0 auto; }
+.eyebrow { display: inline-block; background: rgba(31,111,91,0.10); color: var(--accent); padding: 5px 16px; border-radius: 100px; font-family: system-ui, sans-serif; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 1rem; }
+.hero h1 { font-size: clamp(1.8rem, 4vw, 2.5rem); margin: 0 0 1rem; line-height: 1.15; }
+.hero p { font-family: system-ui, sans-serif; font-size: 1rem; color: var(--muted); line-height: 1.6; margin: 0 0 2rem; }
+.hero-actions { display: flex; gap: 12px; justify-content: center; }
+.btn-primary { background: var(--accent); color: white; padding: 12px 28px; border-radius: 100px; font-family: system-ui, sans-serif; font-size: 0.95rem; font-weight: 600; text-decoration: none; display: inline-block; }
+.btn-primary:hover { background: #0d4a3a; }
+.btn-outline { background: transparent; border: 1.5px solid rgba(16,36,31,0.2); color: var(--ink); padding: 12px 28px; border-radius: 100px; font-family: system-ui, sans-serif; font-size: 0.95rem; font-weight: 600; text-decoration: none; display: inline-block; }
+
+.risk-stats { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; margin-bottom: 3rem; }
+.risk-stat { background: linear-gradient(135deg, var(--accent), #0d4a3a); color: white; border-radius: 14px; padding: 20px; text-align: center; }
+.stat-value { font-size: 2rem; font-weight: 800; line-height: 1.1; }
+.stat-label { font-family: system-ui, sans-serif; font-size: 0.75rem; opacity: 0.85; margin-top: 4px; }
+
+.section { padding: 3rem 0; }
+.section h2 { font-size: 1.5rem; text-align: center; margin: 0 0 0.5rem; }
+.section-desc { text-align: center; color: var(--muted); font-family: system-ui, sans-serif; margin: 0 0 2rem; }
+.bg-light { background: rgba(246,242,234,0.5); margin: 0 -20px; padding: 3rem 20px; }
+
+.dashboard-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+.card-span-2 { grid-column: span 2; }
+.card { background: white; border: 1px solid rgba(16,36,31,0.08); border-radius: 14px; padding: 20px; }
+.card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+.card-header h3 { font-size: 1rem; margin: 0; }
+.badge { background: rgba(31,111,91,0.10); color: var(--accent); font-family: system-ui, sans-serif; font-size: 0.72rem; font-weight: 700; padding: 3px 10px; border-radius: 100px; }
+
+.risk-table { font-family: system-ui, sans-serif; }
+.rt-header, .rt-row { display: grid; grid-template-columns: 70px 1fr 70px 50px 80px 110px; gap: 8px; padding: 10px 0; align-items: center; font-size: 0.8rem; }
+.rt-header { font-weight: 700; color: var(--muted); text-transform: uppercase; font-size: 0.7rem; border-bottom: 2px solid rgba(16,36,31,0.08); }
+.rt-row { border-bottom: 1px solid rgba(0,0,0,0.04); }
+.rt-id { color: var(--muted); font-size: 0.75rem; }
+.rt-name { font-weight: 600; font-size: 0.82rem; }
+.level-critical { color: #c0392b; font-weight: 700; }
+.level-high { color: #e67e22; font-weight: 700; }
+.level-medium { color: #f39c12; }
+.trend-up { color: #c0392b; }
+.trend-down { color: #27ae60; }
+.trend-stable { color: #95a5a6; }
+
+.kri-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid rgba(0,0,0,0.04); }
+.kri-info { display: flex; flex-direction: column; gap: 2px; }
+.kri-info strong { font-family: system-ui, sans-serif; font-size: 0.82rem; }
+.kri-info span { font-family: system-ui, sans-serif; font-size: 0.7rem; color: var(--muted); }
+.kri-value { font-size: 1.2rem; font-weight: 700; }
+.kri-critical .kri-value { color: #c0392b; }
+.kri-warning .kri-value { color: #e67e22; }
+.kri-ok .kri-value { color: #27ae60; }
+
+.incident-row { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid rgba(0,0,0,0.04); }
+.incident-row.closed { opacity: 0.5; }
+.inc-severity { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.inc-high { background: #c0392b; }
+.inc-medium { background: #e67e22; }
+.inc-low { background: #f39c12; }
+.inc-info { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+.inc-info strong { font-family: system-ui, sans-serif; font-size: 0.82rem; }
+.inc-info span { font-family: system-ui, sans-serif; font-size: 0.72rem; color: var(--muted); }
+.inc-closed { font-family: system-ui, sans-serif; font-size: 0.7rem; color: #27ae60; font-weight: 600; }
+
+.features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; max-width: 1000px; margin: 2rem auto 0; }
+.feature-card { background: white; border: 1px solid rgba(16,36,31,0.08); border-radius: 12px; padding: 24px; }
+.fc-icon { font-size: 1.8rem; margin-bottom: 10px; }
+.feature-card h3 { font-size: 0.95rem; margin: 0 0 8px; }
+.feature-card p { font-family: system-ui, sans-serif; font-size: 0.82rem; color: var(--muted); line-height: 1.5; margin: 0; }
+
+.cta-section { text-align: center; padding: 3rem 0; max-width: 600px; margin: 0 auto; }
+.cta-section h2 { font-size: 1.5rem; }
+.cta-section p { font-family: system-ui, sans-serif; color: var(--muted); margin: 1rem 0 1.5rem; }
+
+.demo-notice { text-align: center; padding: 1.5rem; background: rgba(31,111,91,0.06); border-radius: 12px; font-family: system-ui, sans-serif; font-size: 0.85rem; color: var(--muted); margin: 2rem 0; }
+.demo-notice a { color: var(--accent); font-weight: 600; }
+
+@media (max-width: 768px) {
+  .risk-stats { grid-template-columns: repeat(2,1fr); }
+  .dashboard-grid { grid-template-columns: 1fr; }
+  .card-span-2 { grid-column: span 1; }
+  .rt-header, .rt-row { grid-template-columns: 50px 1fr 50px; }
+  .rt-header span:nth-child(4), .rt-header span:nth-child(5), .rt-header span:nth-child(6),
+  .rt-row .rt-trend, .rt-row .rt-owner, .rt-row .rt-status { display: none; }
+}
+</style>

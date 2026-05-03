@@ -1,0 +1,122 @@
+---
+// Resolutions Page — Vedtaksregister
+import Layout from '../../../layouts/Layout.astro';
+import { demoBoardsFixed } from '../../../lib/db';
+import { demoResolutions } from '../../../lib/demo-data-extended';
+
+export function getStaticPaths() {
+  return demoBoardsFixed.map(board => ({ params: { id: board.id } }));
+}
+
+const { id } = Astro.params;
+const board = demoBoardsFixed.find(b => b.id === id) || demoBoardsFixed[0];
+const resolutions = demoResolutions.filter(r => r.board_id === id);
+const sigLabels: Record<string,string> = {not_required:'Ikke nødvendig',pending:'Venter signatur',partial:'Delvis signert',complete:'Fullført'};
+const sigColors: Record<string,string> = {not_required:'#95a5a6',pending:'#e67e22',partial:'#f39c12',complete:'#27ae60'};
+---
+<Layout title={`Vedtak — ${board.name}`} activeNav="boards">
+<div class="container">
+  <a href={`/board/${id}`} class="back-link">← Tilbake til {board.name}</a>
+  
+  <div class="header">
+    <h1>Vedtaksregister</h1>
+    <span class="count">{resolutions.length} vedtak</span>
+  </div>
+
+  {resolutions.length === 0 ? (
+    <p class="empty">Ingen vedtak registrert.</p>
+  ) : (
+    <div class="res-list">
+      {resolutions.map(r => (
+        <div class="res-card">
+          <div class="res-number">{r.number}</div>
+          <div class="res-body">
+            <div class="res-header">
+              <strong>{r.title}</strong>
+              <span class={`res-status res-${r.status}`}>
+                {r.status === 'adopted' ? 'Vedtatt' : r.status === 'signed' ? 'Signert' : r.status === 'proposed' ? 'Foreslått' : r.status === 'rejected' ? 'Avvist' : r.status}
+              </span>
+            </div>
+            <p class="res-desc">{r.description}</p>
+            <div class="res-meta">
+              <span>👤 Fremmet av: {r.proposed_by}</span>
+              {r.seconded_by && <span>🤝 Støttet av: {r.seconded_by}</span>}
+              <span>📅 {r.adoption_date || 'Ikke vedtatt'}</span>
+            </div>
+            
+            {/* Voting result */}
+            {(r.votes_for + r.votes_against + r.votes_abstain) > 0 && (
+              <div class="vote-bar">
+                <span class="vote-segment vote-for" style={`flex:${r.votes_for}`} title={`For: ${r.votes_for}`}>{r.votes_for} for</span>
+                <span class="vote-segment vote-against" style={`flex:${r.votes_against}`} title={`Mot: ${r.votes_against}`}>{r.votes_against > 0 ? r.votes_against + ' mot' : ''}</span>
+                <span class="vote-segment vote-abstain" style={`flex:${r.votes_abstain}`} title={`Avholdende: ${r.votes_abstain}`}>{r.votes_abstain > 0 ? r.votes_abstain + ' avh.' : ''}</span>
+              </div>
+            )}
+
+            {/* Signatures */}
+            {r.signature_status !== 'not_required' && (
+              <div class="sig-section">
+                <div class="sig-header">
+                  <span>Signaturer</span>
+                  <span style={`color:${sigColors[r.signature_status]}`}>{sigLabels[r.signature_status]} ({r.signatures_completed}/{r.signatures_required})</span>
+                </div>
+                <div class="sig-list">
+                  {r.signatories.map(s => (
+                    <div class={`sig-item sig-${s.status}`}>
+                      <span class="sig-icon">{s.status === 'signed' ? '✓' : s.status === 'declined' ? '✗' : '○'}</span>
+                      <span class="sig-name">{s.name}</span>
+                      {s.signed_at && <span class="sig-date">{s.signed_at}</span>}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      ))}
+    </div>
+  )}
+
+  <div class="demo-notice">Demo-data. <a href="/login">Logg inn</a> for vedtaksadministrasjon med BankID-signering.</div>
+</div>
+</Layout>
+
+<style>
+.container { max-width: 800px; margin: 1.5rem auto; padding: 0 20px; }
+.back-link { font-family: system-ui, sans-serif; font-size: 0.85rem; color: var(--muted); text-decoration: none; }
+.header { display: flex; justify-content: space-between; align-items: center; margin: 1rem 0 2rem; }
+.header h1 { font-size: 1.6rem; margin: 0; }
+.count { font-family: system-ui, sans-serif; font-size: 0.85rem; color: var(--muted); }
+.res-list { display: flex; flex-direction: column; gap: 12px; }
+.res-card { display: flex; gap: 14px; padding: 20px; background: white; border: 1px solid rgba(16,36,31,0.08); border-radius: 14px; }
+.res-card:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+.res-number {
+  background: var(--ink); color: white; font-family: system-ui, sans-serif;
+  font-size: 0.75rem; font-weight: 700; padding: 4px 10px; border-radius: 8px;
+  height: fit-content; white-space: nowrap;
+}
+.res-body { flex: 1; min-width: 0; }
+.res-header { display: flex; justify-content: space-between; align-items: start; gap: 12px; margin-bottom: 6px; }
+.res-header strong { font-family: system-ui, sans-serif; font-size: 0.95rem; }
+.res-status { font-family: system-ui, sans-serif; font-size: 0.72rem; font-weight: 600; padding: 3px 10px; border-radius: 100px; white-space: nowrap; }
+.res-adopted { background: rgba(31,111,91,0.10); color: var(--accent); }
+.res-signed { background: rgba(39,174,96,0.12); color: #27ae60; }
+.res-proposed { background: rgba(243,156,18,0.10); color: #8a7500; }
+.res-desc { font-family: system-ui, sans-serif; font-size: 0.82rem; color: var(--muted); margin: 0 0 8px 0; line-height: 1.4; }
+.res-meta { display: flex; gap: 12px; flex-wrap: wrap; font-family: system-ui, sans-serif; font-size: 0.75rem; color: var(--muted); margin-bottom: 8px; }
+.vote-bar { display: flex; gap: 4px; height: 28px; border-radius: 6px; overflow: hidden; margin: 8px 0; font-family: system-ui, sans-serif; font-size: 0.7rem; font-weight: 600; }
+.vote-for { background: rgba(39,174,96,0.2); color: #27ae60; display: flex; align-items: center; justify-content: center; min-width: 40px; }
+.vote-against { background: rgba(192,57,43,0.15); color: #c0392b; display: flex; align-items: center; justify-content: center; }
+.vote-abstain { background: rgba(149,165,166,0.15); color: #7f8c8d; display: flex; align-items: center; justify-content: center; }
+.sig-section { margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(0,0,0,0.06); }
+.sig-header { display: flex; justify-content: space-between; font-family: system-ui, sans-serif; font-size: 0.78rem; font-weight: 600; margin-bottom: 6px; }
+.sig-list { display: flex; gap: 8px; flex-wrap: wrap; }
+.sig-item { display: flex; align-items: center; gap: 4px; font-family: system-ui, sans-serif; font-size: 0.75rem; padding: 3px 10px; border-radius: 100px; }
+.sig-signed { background: rgba(39,174,96,0.10); color: #27ae60; }
+.sig-pending { background: rgba(243,156,18,0.08); color: #8a7500; }
+.sig-declined { background: rgba(192,57,43,0.08); color: #c0392b; }
+.sig-date { opacity: 0.6; font-size: 0.7rem; }
+.empty { text-align: center; padding: 3rem; color: var(--muted); font-family: system-ui, sans-serif; }
+.demo-notice { text-align: center; padding: 1.5rem; margin-top: 2rem; background: rgba(31,111,91,0.06); border-radius: 12px; font-family: system-ui, sans-serif; font-size: 0.85rem; color: var(--muted); }
+.demo-notice a { color: var(--accent); font-weight: 600; }
+</style>

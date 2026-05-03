@@ -1,7 +1,8 @@
 ---
-// Board Detail Page — static mode, demo data only
+// Board Dashboard — Styreportalforside for et styre
 import Layout from '../../layouts/Layout.astro';
-import { demoBoardsFixed, demoMembersFixed, demoMeetingsFixed } from '../../lib/db';
+import { demoBoardsFixed } from '../../lib/db';
+import { demoMeetingsExtended, demoActionItems, demoResolutions, demoDocuments } from '../../lib/demo-data-extended';
 
 export function getStaticPaths() {
   return demoBoardsFixed.map(board => ({ params: { id: board.id } }));
@@ -9,136 +10,309 @@ export function getStaticPaths() {
 
 const { id } = Astro.params;
 const board = demoBoardsFixed.find(b => b.id === id) || demoBoardsFixed[0];
-const members = demoMembersFixed.filter(m => m.board_id === id) || [];
-const meetings = demoMeetingsFixed.filter(m => m.board_id === id) || [];
+const meetings = demoMeetingsExtended.filter(m => m.board_id === id);
+const actions = demoActionItems.filter(a => a.board_id === id);
+const resolutions = demoResolutions.filter(r => r.board_id === id);
+const docs = demoDocuments.filter(d => d.board_id === id);
+const upcomingMeeting = meetings.find(m => m.status === 'scheduled');
+const nextMeeting = meetings.find(m => m.status === 'scheduled' || m.status === 'draft');
+const openActions = actions.filter(a => a.status !== 'completed');
+const openCritical = openActions.filter(a => a.priority === 'critical');
+const pendingSignatures = resolutions.filter(r => r.signature_status === 'pending' || r.signature_status === 'partial');
 ---
 <Layout title={board.name} activeNav="boards">
-  <div class="container" style="max-width: 960px; margin: 2rem auto; padding: 0 20px;">
-    
-    <!-- Back link -->
-    <a href="/board" style="display: inline-flex; align-items: center; gap: 6px; color: var(--muted); font-family: system-ui, sans-serif; font-size: 0.875rem; text-decoration: none; margin-bottom: 1.5rem;">
-      ← Tilbake til styrer
-    </a>
+<div class="dashboard">
+  
+  <!-- Intent Bar — "Ask Styr.ing" -->
+  <div class="intent-bar">
+    <span class="intent-icon">✦</span>
+    <input type="text" placeholder="Skriv hva du trenger — f.eks. «Forbered styremøte», «Lag utkast til protokoll», «Hva er status på aksjonene?»" class="intent-input" />
+    <button class="intent-btn">→</button>
+  </div>
 
-    <!-- Header -->
-    <div style="margin-bottom: 2rem;">
-      <h1 style="font-size: 2rem; margin: 0 0 8px 0;">{board.name}</h1>
-      <p style="font-family: system-ui, sans-serif; color: var(--muted); margin: 0;">
-        {board.description || 'Styreportal for styremedlemmer'}
-      </p>
+  <!-- Stats row -->
+  <div class="stats-row">
+    <div class="stat">
+      <div class="stat-num">{meetings.length}</div>
+      <div class="stat-label">Møter totalt</div>
     </div>
-
-    <!-- Stats bar -->
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 2rem;">
-      <div class="stat-card">
-        <div class="stat-num">{members.length}</div>
-        <div class="stat-label">Medlemmer</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-num">{meetings.length}</div>
-        <div class="stat-label">Møter</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-num">{board.compliance_events || 0}</div>
-        <div class="stat-label">Compliance-hendelser</div>
-      </div>
+    <div class="stat">
+      <div class="stat-num">{openActions.length}</div>
+      <div class="stat-label">Åpne aksjoner</div>
+      {openCritical.length > 0 && <div class="stat-warn">{openCritical.length} kritiske</div>}
     </div>
-
-    <!-- Members section -->
-    <section style="margin-bottom: 2rem;">
-      <h2 style="font-size: 1.25rem; margin: 0 0 1rem 0; padding-bottom: 0.5rem; border-bottom: 2px solid rgba(16,36,31,0.08);">Styremedlemmer</h2>
-      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px;">
-        {members.map(member => (
-          <div class="member-card">
-            <div class="member-avatar">{member.name.charAt(0)}</div>
-            <div>
-              <strong style="display: block; font-size: 0.95rem;">{member.name}</strong>
-              <span style="font-family: system-ui, sans-serif; font-size: 0.8rem; color: var(--muted);">{member.email}</span>
-              {member.role && (
-                <span style="display: inline-block; margin-top: 4px; background: rgba(31,111,91,0.10); color: var(--accent); font-family: system-ui, sans-serif; font-size: 0.7rem; font-weight: 600; padding: 2px 10px; border-radius: 100px;">
-                  {member.role}
-                </span>
-              )}
-            </div>
-          </div>
-        ))}
-      </div>
-    </section>
-
-    <!-- Meetings section -->
-    <section style="margin-bottom: 2rem;">
-      <h2 style="font-size: 1.25rem; margin: 0 0 1rem 0; padding-bottom: 0.5rem; border-bottom: 2px solid rgba(16,36,31,0.08);">Møter</h2>
-      <div style="display: flex; flex-direction: column; gap: 12px;">
-        {meetings.map(meeting => (
-          <div class="meeting-card">
-            <div style="display: flex; justify-content: space-between; align-items: center; gap: 16px;">
-              <div>
-                <strong style="display: block; font-size: 1rem;">{meeting.title || 'Styremøte'}</strong>
-                <span style="font-family: system-ui, sans-serif; font-size: 0.85rem; color: var(--muted);">
-                  {meeting.date || ''} {meeting.time ? '· ' + meeting.time : ''}
-                </span>
-              </div>
-              <div style="display: flex; gap: 8px;">
-                <span class="meeting-badge {meeting.status === 'completed' ? 'badge-done' : 'badge-upcoming'}">
-                  {meeting.status === 'completed' ? 'Gjennomført' : 'Planlagt'}
-                </span>
-              </div>
-            </div>
-            {meeting.minutes && (
-              <div style="margin-top: 12px; padding: 16px; background: rgba(246,242,234,0.6); border-radius: 10px; font-family: system-ui, sans-serif; font-size: 0.85rem; color: var(--muted); line-height: 1.6;">
-                {meeting.minutes}
-              </div>
-            )}
-          </div>
-        ))}
-      </div>
-    </section>
-
-    <!-- Pilot CTA -->
-    <div style="text-align: center; padding: 2rem; background: rgba(31,111,91,0.06); border-radius: 16px; margin-bottom: 2rem;">
-      <p style="font-family: system-ui, sans-serif; font-size: 0.9rem; color: var(--muted); margin: 0;">
-        Dette er en demo. <a href="/login" style="color: var(--accent); font-weight: 600;">Logg inn</a> for 
-        å administrere ditt eget styre.
-      </p>
+    <div class="stat">
+      <div class="stat-num">{resolutions.length}</div>
+      <div class="stat-label">Vedtak</div>
+      {pendingSignatures.length > 0 && <div class="stat-warn">{pendingSignatures.length} mangler signatur</div>}
+    </div>
+    <div class="stat">
+      <div class="stat-num">{docs.length}</div>
+      <div class="stat-label">Dokumenter</div>
     </div>
   </div>
+
+  <div class="grid-2col">
+    
+    <!-- Neste møte -->
+    <div class="card card-highlight">
+      <div class="card-header">
+        <h2>{upcomingMeeting ? 'Neste møte' : 'Kommende møter'}</h2>
+      </div>
+      {nextMeeting ? (
+        <div class="next-meeting-preview">
+          <div class="meeting-date-badge">
+            <span class="date-day">{nextMeeting.date.split('-')[2]}</span>
+            <span class="date-month">{['jan','feb','mar','apr','mai','jun','jul','aug','sep','okt','nov','des'][parseInt(nextMeeting.date.split('-')[1])-1]}</span>
+          </div>
+          <div class="meeting-info">
+            <strong>{nextMeeting.title}</strong>
+            <span>{nextMeeting.time} — {nextMeeting.location}</span>
+            <span class="pack-status">Møtepakke: {nextMeeting.pack_status === 'ready' ? '✓ Klar' : nextMeeting.pack_status === 'assembling' ? '◷ Under arbeid' : nextMeeting.pack_status === 'distributed' ? '✓ Distribuert' : 'Ikke startet'}</span>
+          </div>
+          <a href={`/board/${id}/meeting/${nextMeeting.id}`} class="card-link">Åpne møte →</a>
+        </div>
+      ) : (
+        <p class="empty-state">Ingen kommende møter. <a href="#">Planlegg første møte</a></p>
+      )}
+    </div>
+
+    <!-- Åpne aksjoner -->
+    <div class="card">
+      <div class="card-header">
+        <h2>Åpne aksjoner</h2>
+        <span class="badge">{openActions.length}</span>
+      </div>
+      {openActions.length === 0 ? (
+        <p class="empty-state">Ingen åpne aksjoner</p>
+      ) : (
+        <div class="action-list-compact">
+          {openActions.slice(0,4).map(a => (
+            <div class="action-row">
+              <span class={`priority-dot priority-${a.priority}`}></span>
+              <div class="action-content">
+                <strong>{a.title}</strong>
+                <span>{a.assigned_to_name} · Frist: {a.due_date}</span>
+              </div>
+              <span class={`action-badge badge-${a.status}`}>{a.status === 'critical' || a.status === 'blocked' ? '⚠' : a.status === 'in_progress' ? '◷' : '○'}</span>
+            </div>
+          ))}
+        </div>
+      )}
+      <a href={`/board/${id}/actions`} class="card-link">Se alle aksjoner →</a>
+    </div>
+
+    <!-- Siste vedtak med signaturer -->
+    <div class="card">
+      <div class="card-header">
+        <h2>Vedtak som mangler signatur</h2>
+        <span class="badge">{pendingSignatures.length}</span>
+      </div>
+      {pendingSignatures.length === 0 ? (
+        <p class="empty-state">Alle vedtak er signert</p>
+      ) : (
+        <div>
+          {pendingSignatures.map(r => (
+            <div class="resolution-row">
+              <span class="res-number">{r.number}</span>
+              <div class="res-content">
+                <strong>{r.title}</strong>
+                <span>Signaturer: {r.signatures_completed}/{r.signatures_required}</span>
+                <div class="sig-bar">
+                  {r.signatories.map(s => (
+                    <span class={`sig-chip sig-${s.status}`} title={s.name}>{s.status === 'signed' ? '✓' : '○'} {s.name}</span>
+                  ))}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+
+    <!-- Siste dokumenter -->
+    <div class="card">
+      <div class="card-header">
+        <h2>Siste dokumenter</h2>
+      </div>
+      <div>
+        {docs.slice(0,4).map(d => (
+          <div class="doc-row">
+            <span class="doc-icon">{d.type === 'minutes' ? '📋' : d.type === 'financial' ? '📊' : d.type === 'report' ? '📄' : d.type === 'presentation' ? '📽️' : d.type === 'policy' ? '📜' : '📁'}</span>
+            <div class="doc-content">
+              <strong>{d.title}</strong>
+              <span>{d.category} · v{d.version} · {d.size_kb}kB · {d.page_count} sider</span>
+            </div>
+            <span class={`doc-badge badge-${d.status}`}>{d.status === 'final' ? 'Endelig' : 'Utkast'}</span>
+          </div>
+        ))}
+      </div>
+      <a href={`/board/${id}/documents`} class="card-link">Dokumentarkiv →</a>
+    </div>
+
+  </div>
+
+  <!-- Møtehistorikk -->
+  <div class="card" style="margin-top: 1.5rem;">
+    <div class="card-header">
+      <h2>Møtehistorikk</h2>
+    </div>
+    <div class="meeting-timeline">
+      {meetings.map(m => (
+        <a href={`/board/${id}/meeting/${m.id}`} class="timeline-item">
+          <div class="tl-status">
+            <span class={`tl-dot tl-${m.status}`}></span>
+          </div>
+          <div class="tl-content">
+            <strong>{m.title}</strong>
+            <span>{m.date} · {m.time} · {m.location}</span>
+            {m.status === 'completed' && <span class="tl-minutes">Protokoll: {m.minutes_status === 'approved' ? '✓ Godkjent' : 'Utkast'}</span>}
+          </div>
+          <span class="tl-arrow">→</span>
+        </a>
+      ))}
+    </div>
+  </div>
+
+  <div class="demo-notice">
+    Demo-data. <a href="/login">Logg inn</a> for å administrere ditt eget styre.
+  </div>
+
+</div>
 </Layout>
 
 <style>
-  .stat-card {
-    background: white;
-    border: 1px solid rgba(16,36,31,0.08);
-    border-radius: 12px;
-    padding: 20px;
-    text-align: center;
-  }
-  .stat-num { font-size: 2rem; font-weight: 700; color: var(--accent); }
-  .stat-label { font-family: system-ui, sans-serif; font-size: 0.8rem; color: var(--muted); margin-top: 4px; }
-  
-  .member-card {
-    display: flex; align-items: center; gap: 14px;
-    background: white;
-    border: 1px solid rgba(16,36,31,0.08);
-    border-radius: 12px;
-    padding: 16px;
-  }
-  .member-avatar {
-    width: 42px; height: 42px; border-radius: 50%;
-    background: var(--accent); color: white;
-    display: flex; align-items: center; justify-content: center;
-    font-weight: 700; font-size: 1.1rem; flex-shrink: 0;
-  }
-  
-  .meeting-card {
-    background: white;
-    border: 1px solid rgba(16,36,31,0.08);
-    border-radius: 12px;
-    padding: 20px;
-  }
-  .meeting-badge {
-    font-family: system-ui, sans-serif; font-size: 0.75rem; font-weight: 600;
-    padding: 4px 12px; border-radius: 100px;
-  }
-  .badge-done { background: rgba(31,111,91,0.10); color: var(--accent); }
-  .badge-upcoming { background: rgba(216,169,77,0.15); color: #8a7500; }
+.dashboard { max-width: 1100px; margin: 1.5rem auto; padding: 0 20px; }
+
+/* Intent bar */
+.intent-bar {
+  display: flex; align-items: center; gap: 12px;
+  background: white; border: 2px solid rgba(31,111,91,0.15);
+  border-radius: 16px; padding: 12px 20px; margin-bottom: 2rem;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+}
+.intent-icon { font-size: 1.3rem; color: var(--accent); }
+.intent-input {
+  flex: 1; border: none; outline: none;
+  font-family: system-ui, sans-serif; font-size: 0.95rem; color: var(--ink);
+}
+.intent-input::placeholder { color: #aaa; }
+.intent-btn {
+  background: var(--accent); color: white; border: none;
+  width: 36px; height: 36px; border-radius: 10px;
+  font-size: 1rem; cursor: pointer; font-weight: 700;
+}
+
+/* Stats */
+.stats-row {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 1.5rem;
+}
+.stat {
+  background: white; border: 1px solid rgba(16,36,31,0.08);
+  border-radius: 12px; padding: 16px; text-align: center; position: relative;
+}
+.stat-num { font-size: 1.8rem; font-weight: 700; color: var(--accent); }
+.stat-label { font-family: system-ui, sans-serif; font-size: 0.78rem; color: var(--muted); margin-top: 2px; }
+.stat-warn { font-family: system-ui, sans-serif; font-size: 0.7rem; color: #c0392b; margin-top: 4px; font-weight: 600; }
+
+/* Grid */
+.grid-2col { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+
+/* Cards */
+.card {
+  background: white; border: 1px solid rgba(16,36,31,0.08);
+  border-radius: 14px; padding: 20px;
+}
+.card-highlight { border-color: rgba(31,111,91,0.2); background: linear-gradient(135deg, #f0faf5, white); }
+.card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+.card-header h2 { font-size: 1.05rem; margin: 0; }
+.card-link { display: block; margin-top: 12px; font-family: system-ui, sans-serif; font-size: 0.85rem; font-weight: 600; color: var(--accent); text-decoration: none; }
+.card-link:hover { text-decoration: underline; }
+.badge { background: rgba(31,111,91,0.10); color: var(--accent); font-family: system-ui, sans-serif; font-size: 0.75rem; font-weight: 700; padding: 3px 10px; border-radius: 100px; }
+
+/* Next meeting */
+.next-meeting-preview {
+  display: flex; align-items: center; gap: 16px; padding: 12px 0;
+}
+.meeting-date-badge {
+  background: var(--accent); color: white; border-radius: 12px;
+  padding: 10px 14px; text-align: center; min-width: 56px;
+}
+.date-day { display: block; font-size: 1.4rem; font-weight: 700; line-height: 1.1; }
+.date-month { display: block; font-size: 0.7rem; text-transform: uppercase; opacity: 0.8; }
+.meeting-info { flex: 1; display: flex; flex-direction: column; gap: 3px; font-family: system-ui, sans-serif; font-size: 0.85rem; }
+.meeting-info strong { font-size: 0.95rem; color: var(--ink); }
+.meeting-info span { color: var(--muted); }
+.pack-status { font-size: 0.75rem; color: var(--accent); font-weight: 600; }
+
+/* Actions */
+.action-list-compact { display: flex; flex-direction: column; gap: 8px; }
+.action-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid rgba(0,0,0,0.04); }
+.priority-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.priority-critical { background: #c0392b; }
+.priority-high { background: #e67e22; }
+.priority-medium { background: #f39c12; }
+.priority-low { background: #95a5a6; }
+.action-content { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+.action-content strong { font-family: system-ui, sans-serif; font-size: 0.85rem; }
+.action-content span { font-family: system-ui, sans-serif; font-size: 0.75rem; color: var(--muted); }
+.action-badge { font-size: 0.9rem; }
+
+/* Resolutions */
+.resolution-row {
+  display: flex; gap: 12px; padding: 10px 0; border-bottom: 1px solid rgba(0,0,0,0.04);
+}
+.res-number { 
+  background: var(--ink); color: white; font-family: system-ui, sans-serif;
+  font-size: 0.7rem; font-weight: 700; padding: 2px 8px; border-radius: 6px; white-space: nowrap;
+  height: fit-content;
+}
+.res-content { flex: 1; display: flex; flex-direction: column; gap: 3px; }
+.res-content strong { font-family: system-ui, sans-serif; font-size: 0.85rem; }
+.res-content span { font-family: system-ui, sans-serif; font-size: 0.75rem; color: var(--muted); }
+.sig-bar { display: flex; gap: 6px; margin-top: 4px; }
+.sig-chip {
+  font-family: system-ui, sans-serif; font-size: 0.7rem; padding: 2px 8px; border-radius: 100px;
+}
+.sig-signed { background: rgba(31,111,91,0.10); color: var(--accent); }
+.sig-pending { background: rgba(200,150,30,0.10); color: #8a7500; }
+.sig-declined { background: rgba(200,50,30,0.08); color: #c0392b; }
+
+/* Documents */
+.doc-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid rgba(0,0,0,0.04); }
+.doc-icon { font-size: 1.2rem; flex-shrink: 0; }
+.doc-content { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+.doc-content strong { font-family: system-ui, sans-serif; font-size: 0.85rem; }
+.doc-content span { font-family: system-ui, sans-serif; font-size: 0.72rem; color: var(--muted); }
+.doc-badge { font-family: system-ui, sans-serif; font-size: 0.7rem; font-weight: 600; padding: 2px 8px; border-radius: 100px; }
+.badge-final { background: rgba(31,111,91,0.10); color: var(--accent); }
+.badge-draft { background: rgba(200,150,30,0.12); color: #8a7500; }
+
+/* Timeline */
+.meeting-timeline { display: flex; flex-direction: column; gap: 2px; }
+.timeline-item {
+  display: flex; align-items: center; gap: 14px; padding: 12px 0;
+  border-bottom: 1px solid rgba(0,0,0,0.04); text-decoration: none; color: inherit;
+  transition: background 0.15s;
+}
+.timeline-item:hover { background: rgba(31,111,91,0.03); border-radius: 8px; padding-left: 8px; padding-right: 8px; }
+.tl-dot { width: 12px; height: 12px; border-radius: 50%; display: block; }
+.tl-scheduled { background: #3498db; }
+.tl-in_progress { background: #f39c12; }
+.tl-completed { background: #27ae60; }
+.tl-draft { background: #95a5a6; }
+.tl-content { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+.tl-content strong { font-family: system-ui, sans-serif; font-size: 0.9rem; }
+.tl-content span { font-family: system-ui, sans-serif; font-size: 0.78rem; color: var(--muted); }
+.tl-minutes { font-size: 0.72rem; color: var(--accent); font-weight: 600; }
+.tl-arrow { color: var(--muted); font-size: 1rem; }
+
+.empty-state { font-family: system-ui, sans-serif; font-size: 0.85rem; color: var(--muted); padding: 1rem 0; }
+.demo-notice { text-align: center; padding: 1.5rem; margin-top: 2rem; background: rgba(31,111,91,0.06); border-radius: 12px; font-family: system-ui, sans-serif; font-size: 0.85rem; color: var(--muted); }
+.demo-notice a { color: var(--accent); font-weight: 600; }
+
+@media (max-width: 768px) {
+  .stats-row { grid-template-columns: repeat(2, 1fr); }
+  .grid-2col { grid-template-columns: 1fr; }
+}
 </style>

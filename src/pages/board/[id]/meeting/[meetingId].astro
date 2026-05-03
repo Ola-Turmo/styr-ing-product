@@ -1,0 +1,220 @@
+---
+// Meeting Detail Page — Styreportal møtedetaljer
+import Layout from '../../../../layouts/Layout.astro';
+import { demoBoardsFixed } from '../../../../lib/db';
+import { demoMeetingsExtended } from '../../../../lib/demo-data-extended';
+
+export function getStaticPaths() {
+  const paths: { params: { id: string; meetingId: string } }[] = [];
+  for (const m of demoMeetingsExtended) {
+    paths.push({ params: { id: m.board_id, meetingId: m.id } });
+  }
+  return paths;
+}
+
+const { id, meetingId } = Astro.params;
+const board = demoBoardsFixed.find(b => b.id === id) || demoBoardsFixed[0];
+const meeting = demoMeetingsExtended.find(m => m.id === meetingId);
+if (!meeting) return Astro.redirect('/board/' + id);
+
+const completedItems = meeting.agenda_items.filter(i => i.status === 'completed');
+const progress = meeting.agenda_items.length > 0 ? Math.round((completedItems.length / meeting.agenda_items.length) * 100) : 0;
+
+const statusLabels: Record<string, string> = {
+  draft: 'Utkast', scheduled: 'Planlagt', in_progress: 'Pågår', completed: 'Gjennomført', archived: 'Arkivert'
+};
+const statusColors: Record<string, string> = {
+  draft: '#95a5a6', scheduled: '#3498db', in_progress: '#f39c12', completed: '#27ae60', archived: '#7f8c8d'
+};
+const typeIcons: Record<string, string> = {
+  decision: '✓', discussion: '💬', information: 'ℹ', election: '🗳'
+};
+const typeLabels: Record<string, string> = {
+  decision: 'Beslutning', discussion: 'Drøftelse', information: 'Orientering', election: 'Valg'
+};
+---
+<Layout title={meeting.title} activeNav="boards">
+<div class="meeting-detail">
+  <!-- Breadcrumb -->
+  <div class="breadcrumb">
+    <a href={`/board/${id}`}>← Tilbake til {board.name}</a>
+  </div>
+
+  <!-- Meeting header -->
+  <div class="meeting-header">
+    <div>
+      <h1>{meeting.title}</h1>
+      <div class="meeting-meta">
+        <span>📅 {meeting.date}</span>
+        <span>🕐 {meeting.time}</span>
+        <span>📍 {meeting.location}</span>
+        <span class={`status-tag`} style={`background:${statusColors[meeting.status]}20;color:${statusColors[meeting.status]}`}>{statusLabels[meeting.status]}</span>
+      </div>
+    </div>
+    <div class="meeting-actions">
+      <a href="#" class="btn-outline">Rediger møte</a>
+      {meeting.status === 'scheduled' && <a href="#" class="btn-primary">Start møte →</a>}
+    </div>
+  </div>
+
+  <div class="meeting-grid">
+    
+    <!-- Agenda -->
+    <div class="meeting-main">
+      <div class="section-header">
+        <h2>Agenda</h2>
+        <span class="badge">{completedItems.length}/{meeting.agenda_items.length} punkter</span>
+      </div>
+      
+      <!-- Progress bar -->
+      <div class="progress-bar">
+        <div class="progress-fill" style={`width:${progress}%`}></div>
+      </div>
+      <span class="progress-label">{progress}% gjennomført</span>
+
+      <div class="agenda-list">
+        {meeting.agenda_items.map(item => (
+          <div class={`agenda-item agenda-${item.status}`}>
+            <div class="agenda-number">{item.number}</div>
+            <div class="agenda-content">
+              <div class="agenda-title-row">
+                <span class={`agenda-type type-${item.type}`} title={typeLabels[item.type]}>{typeIcons[item.type]}</span>
+                <strong>{item.title}</strong>
+                <span class="agenda-duration">{item.duration_min} min</span>
+              </div>
+              {item.prepared_by && <span class="agenda-prepared">Forberedt av: {item.prepared_by}</span>}
+              {item.documents && item.documents.length > 0 && (
+                <div class="agenda-docs">
+                  {item.documents.map(d => <span class="doc-link">📎 {d}</span>)}
+                </div>
+              )}
+              {item.decision && <div class="agenda-decision">✓ Beslutning: {item.decision}</div>}
+              {item.notes && <div class="agenda-notes">📝 {item.notes}</div>}
+            </div>
+            <span class={`agenda-status agenda-${item.status}`}>
+              {item.status === 'completed' ? '✓' : item.status === 'in_progress' ? '◷' : '○'}
+            </span>
+          </div>
+        ))}
+      </div>
+
+      <div class="agenda-summary">
+        Total varighet: {meeting.total_duration_min} minutter
+      </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="meeting-sidebar">
+      
+      <!-- Møtepakke -->
+      <div class="sidebar-card">
+        <h3>Møtepakke</h3>
+        <div class={`pack-indicator pack-${meeting.pack_status}`}>
+          {meeting.pack_status === 'ready' ? '✓ Klar for distribusjon' :
+           meeting.pack_status === 'assembling' ? '◷ Under arbeid' :
+           meeting.pack_status === 'distributed' ? '✓ Distribuert' : 'Ikke startet'}
+        </div>
+        <div class="pack-actions">
+          <a href="#" class="btn-outline-sm">Last ned pakke</a>
+          <a href="#" class="btn-outline-sm">Send til deltakere</a>
+        </div>
+      </div>
+
+      <!-- Deltakere -->
+      <div class="sidebar-card">
+        <h3>Deltakere ({meeting.attendees.length})</h3>
+        <div class="attendee-list">
+          {meeting.attendees.map(aid => (
+            <div class="attendee-chip">👤 {aid === 'm1' ? 'Ola Turmo (Styreleder)' : aid === 'm2' ? 'Nestleder' : aid === 'm3' ? 'CFO' : aid === 'm4' ? 'IT-ansvarlig' : aid === 'm5' ? 'Sekretær' : aid}</div>
+          ))}
+        </div>
+      </div>
+
+      <!-- Protokoll -->
+      {meeting.status === 'completed' && (
+        <div class="sidebar-card">
+          <h3>Protokoll</h3>
+          <div class="minutes-status">
+            Status: {meeting.minutes_status === 'approved' ? '✓ Godkjent' : meeting.minutes_status === 'review' ? '◷ Til gjennomsyn' : meeting.minutes_status === 'drafting' ? '✎ Under utarbeidelse' : 'Ikke startet'}
+          </div>
+          {meeting.minutes_approved_by && <div class="minutes-approved">Godkjent av: {meeting.minutes_approved_by}<br/>{meeting.minutes_approved_at}</div>}
+          <a href={`/board/${id}/meeting/${meeting.id}/minutes`} class="btn-outline-sm" style="display:block;text-align:center;margin-top:8px;">Se protokoll →</a>
+        </div>
+      )}
+
+    </div>
+  </div>
+
+  <div class="demo-notice">Demo-data. Komplett møtestøtte med AI-assistert agendabygging, protokollutkast og aksjonsoppfølging.</div>
+</div>
+</Layout>
+
+<style>
+.meeting-detail { max-width: 1100px; margin: 1.5rem auto; padding: 0 20px; }
+.breadcrumb { margin-bottom: 1.5rem; }
+.breadcrumb a { font-family: system-ui, sans-serif; font-size: 0.85rem; color: var(--muted); text-decoration: none; }
+.breadcrumb a:hover { color: var(--accent); }
+
+.meeting-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 20px; margin-bottom: 2rem; }
+.meeting-header h1 { font-size: 1.6rem; margin: 0 0 8px 0; }
+.meeting-meta { display: flex; gap: 14px; flex-wrap: wrap; align-items: center; font-family: system-ui, sans-serif; font-size: 0.85rem; color: var(--muted); }
+.status-tag { padding: 2px 10px; border-radius: 100px; font-size: 0.75rem; font-weight: 600; }
+.meeting-actions { display: flex; gap: 8px; }
+.btn-primary { background: var(--accent); color: white; padding: 8px 20px; border-radius: 100px; font-family: system-ui, sans-serif; font-size: 0.85rem; font-weight: 600; text-decoration: none; }
+.btn-primary:hover { background: #0d4a3a; }
+.btn-outline { background: transparent; border: 1.5px solid rgba(16,36,31,0.2); color: var(--ink); padding: 8px 20px; border-radius: 100px; font-family: system-ui, sans-serif; font-size: 0.85rem; font-weight: 600; text-decoration: none; }
+.btn-outline:hover { border-color: var(--accent); color: var(--accent); }
+.btn-outline-sm { display: inline-block; background: transparent; border: 1.5px solid rgba(16,36,31,0.15); color: var(--ink); padding: 6px 14px; border-radius: 8px; font-family: system-ui, sans-serif; font-size: 0.78rem; font-weight: 600; text-decoration: none; margin-top: 4px; }
+
+.meeting-grid { display: grid; grid-template-columns: 1fr 320px; gap: 24px; }
+.meeting-main { min-width: 0; }
+.section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+.section-header h2 { font-size: 1.15rem; margin: 0; }
+.badge { background: rgba(31,111,91,0.10); color: var(--accent); font-family: system-ui, sans-serif; font-size: 0.75rem; font-weight: 700; padding: 3px 10px; border-radius: 100px; }
+
+.progress-bar { height: 6px; background: #eee; border-radius: 3px; margin-bottom: 4px; }
+.progress-fill { height: 100%; background: var(--accent); border-radius: 3px; transition: width 0.3s; }
+.progress-label { font-family: system-ui, sans-serif; font-size: 0.7rem; color: var(--muted); display: block; margin-bottom: 16px; }
+
+.agenda-list { display: flex; flex-direction: column; gap: 6px; }
+.agenda-item {
+  display: flex; gap: 14px; padding: 14px; background: white;
+  border: 1px solid rgba(16,36,31,0.08); border-radius: 12px;
+}
+.agenda-item:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+.agenda-completed { opacity: 0.7; }
+.agenda-in_progress { border-color: rgba(243,156,18,0.3); background: #fffdf5; }
+.agenda-number { width: 32px; height: 32px; border-radius: 50%; background: var(--accent); color: white; font-weight: 700; font-size: 0.85rem; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.agenda-content { flex: 1; min-width: 0; }
+.agenda-title-row { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+.agenda-type { font-size: 0.85rem; }
+.agenda-title-row strong { font-family: system-ui, sans-serif; font-size: 0.9rem; flex: 1; }
+.agenda-duration { font-family: system-ui, sans-serif; font-size: 0.75rem; color: var(--muted); white-space: nowrap; }
+.agenda-prepared { font-family: system-ui, sans-serif; font-size: 0.75rem; color: var(--muted); display: block; }
+.agenda-docs { margin-top: 4px; display: flex; gap: 8px; flex-wrap: wrap; }
+.doc-link { font-family: system-ui, sans-serif; font-size: 0.75rem; color: var(--accent); }
+.agenda-decision { margin-top: 6px; padding: 8px 12px; background: rgba(31,111,91,0.06); border-radius: 8px; font-family: system-ui, sans-serif; font-size: 0.8rem; color: var(--accent); font-weight: 600; }
+.agenda-notes { margin-top: 4px; font-family: system-ui, sans-serif; font-size: 0.78rem; color: var(--muted); }
+.agenda-status { font-size: 1rem; display: flex; align-items: center; flex-shrink: 0; }
+.agenda-summary { text-align: center; margin-top: 16px; font-family: system-ui, sans-serif; font-size: 0.8rem; color: var(--muted); }
+
+/* Sidebar */
+.meeting-sidebar { display: flex; flex-direction: column; gap: 16px; }
+.sidebar-card { background: white; border: 1px solid rgba(16,36,31,0.08); border-radius: 12px; padding: 16px; }
+.sidebar-card h3 { font-size: 0.95rem; margin: 0 0 10px 0; }
+.pack-indicator { font-family: system-ui, sans-serif; font-size: 0.82rem; font-weight: 600; padding: 6px 10px; border-radius: 8px; margin-bottom: 10px; }
+.pack-ready { background: rgba(31,111,91,0.08); color: var(--accent); }
+.pack-assembling { background: rgba(243,156,18,0.08); color: #8a7500; }
+.pack-distributed { background: rgba(52,152,219,0.08); color: #2980b9; }
+.pack-actions { display: flex; flex-direction: column; gap: 6px; }
+.attendee-list { display: flex; flex-direction: column; gap: 4px; }
+.attendee-chip { font-family: system-ui, sans-serif; font-size: 0.82rem; color: var(--ink); padding: 6px 0; }
+.minutes-status { font-family: system-ui, sans-serif; font-size: 0.82rem; font-weight: 600; color: var(--accent); }
+.minutes-approved { font-family: system-ui, sans-serif; font-size: 0.75rem; color: var(--muted); margin-top: 4px; }
+
+@media (max-width: 800px) {
+  .meeting-grid { grid-template-columns: 1fr; }
+  .meeting-header { flex-direction: column; }
+}
+.demo-notice { text-align: center; padding: 1.5rem; margin-top: 2rem; background: rgba(31,111,91,0.06); border-radius: 12px; font-family: system-ui, sans-serif; font-size: 0.85rem; color: var(--muted); }
+</style>
