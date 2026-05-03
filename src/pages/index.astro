@@ -1,81 +1,156 @@
 ---
+// Landing Page — /index.astro
+// Marketing page for styr.ing — Norwegian board portal
 import Layout from '../layouts/Layout.astro';
 ---
-<Layout title="Hjem" activeNav="home">
+<Layout title="AI-styring for norske virksomheter" activeNav="home">
+  <!-- HERO -->
   <section style="background: linear-gradient(135deg, #065f46 0%, #0a7c5c 100%); color: white; padding: 5rem 2rem; text-align: center;">
-    <div style="max-width: 700px; margin: 0 auto;">
-      <span style="background: rgba(255,255,255,0.15); padding: 0.3rem 1rem; border-radius: 999px; font-size: 0.85rem; font-weight: 600;">100% norsk · GDPR-klar · Akademer-klar</span>
-      <h1 style="font-size: 3rem; font-weight: 800; margin: 1.5rem 0 1rem; line-height: 1.1;">Styreportal og internkontroll<br />for norske selskaper</h1>
-      <p style="font-size: 1.2rem; opacity: 0.9; margin-bottom: 2rem; max-width: 560px; margin-left: auto; margin-right: auto;">
-        Alt styremateriale på ett sted — med full sporbarhet, revisjonslogg og internkontrollverktøy. Bygget for Norge.
-      </p>
+    <div style="max-width: 720px; margin: 0 auto;">
+      <span style="background: rgba(255,255,255,0.15); padding: 0.3rem 1rem; border-radius: 999px; font-size: 0.85rem; font-weight: 600;">100% norsk · GDPR-klar · ISO 27001-klar</span>
+      <h1 style="font-size: clamp(2rem, 5vw, 3.2rem); font-weight: 800; margin: 1.5rem 0 1rem; line-height: 1.1;">Styreportal og internkontroll<br/>for norske selskaper</h1>
+      <p style="font-size: 1.15rem; opacity: 0.9; margin-bottom: 2rem;">Alt styremateriale på ett sted — med full sporbarhet, revisjonslogg og internkontrollverktøy. Bygget for Norge.</p>
       <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
-        <a href="mailto:sales@styr.ing" class="btn-primary" style="background: #fbbf24; color: #065f46;">Bestill gratis pilot</a>
-        <a href="/board" class="btn-secondary" style="color: white; border-color: white;">Se demo</a>
+        <a href="/signup" class="btn-primary" style="background: #fbbf24; color: #065f46; padding: 0.85rem 2rem; font-size: 1.05rem;">Start gratis pilot</a>
+        <a href="/board" class="btn-secondary" style="color: white; border-color: white; padding: 0.85rem 2rem; font-size: 1.05rem;">Se demo</a>
       </div>
     </div>
   </section>
 
-  <section class="container">
+  <!-- TRUST BAR -->
+  <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; padding: 1.5rem 2rem; background: white; border-bottom: 1px solid #eee;">
+    <span class="badge badge-green" style="font-size: 0.8rem;">✓ Norsk og EU/GDPR-kompatibel</span>
+    <span class="badge badge-green" style="font-size: 0.8rem;">✓ Sikker nettsky</span>
+    <span class="badge badge-green" style="font-size: 0.8rem;">✓ Umiddelbar oppstart</span>
+    <span class="badge badge-green" style="font-size: 0.8rem;">✓ Tilpasset norsk lovgivning</span>
+  </div>
+
+  <!-- FEATURES -->
+  <section class="container" style="padding-top: 4rem; padding-bottom: 4rem;">
     <h2 style="text-align:center; margin-bottom: 3rem; font-size: 1.8rem;">Alt styret trenger — på ett sted</h2>
     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem;">
-      <div style="background: white; border-radius: 12px; padding: 1.5rem; box-shadow: 0 1px 4px rgba(0,0,0,0.08);">
-        <div style="font-size: 2rem; margin-bottom: 0.75rem;">📋</div>
-        <h3 style="color: #065f46; margin-bottom: 0.5rem;">Digitale styrebøker</h3>
-        <p style="color: #555; font-size: 0.9rem;">Alle styredokumenter samlet med versjonskontroll. Aldri mer løse e-postvedlegg.</p>
-      </div>
-      <div style="background: white; border-radius: 12px; padding: 1.5rem; box-shadow: 0 1px 4px rgba(0,0,0,0.08);">
-        <div style="font-size: 2rem; margin-bottom: 0.75rem;">📅</div>
-        <h3 style="color: #065f46; margin-bottom: 0.5rem;">Compliance-kalender</h3>
-        <p style="color: #555; font-size: 0.9rem;">Følg med på frister fra Brønnøysund, Finanstilsynet, Datatilsynet og Aksjeloven.</p>
-      </div>
-      <div style="background: white; border-radius: 12px; padding: 1.5rem; box-shadow: 0 1px 4px rgba(0,0,0,0.08);">
-        <div style="font-size: 2rem; margin-bottom: 0.75rem;">🛡️</div>
-        <h3 style="color: #065f46; margin-bottom: 0.5rem;">Internkontrollrammeverk</h3>
-        <p style="color: #555; font-size: 0.9rem;">Dokumenter og spor kontroller iht. norsk regelverk og GDPR.</p>
-      </div>
-      <div style="background: white; border-radius: 12px; padding: 1.5rem; box-shadow: 0 1px 4px rgba(0,0,0,0.08);">
-        <div style="font-size: 2rem; margin-bottom: 0.75rem;">🔒</div>
-        <h3 style="color: #065f46; margin-bottom: 0.5rem;">Sporbarhet & revisjonslogg</h3>
-        <p style="color: #555; font-size: 0.9rem;">Hvem så hva, når. Full revisjonslogg for styredokumenter og vedtak.</p>
-      </div>
-    </div>
-  </section>
-
-  <section class="container" style="background: white; border-radius: 16px; padding: 3rem; margin-top: 2rem; box-shadow: 0 2px 8px rgba(0,0,0,0.06);">
-    <div style="display: flex; flex-wrap: wrap; gap: 3rem; align-items: center;">
-      <div style="flex: 1; min-width: 280px;">
-        <h2 style="font-size: 1.6rem; margin-bottom: 1rem;">Klar for pilot?</h2>
-        <p style="color: #555; margin-bottom: 1.5rem;">Gratis 30-dagers pilot for de tre første kundene. Vi setter opp alt — du trenger bare å bruke det.</p>
-        <ul style="list-style: none; display: flex; flex-direction: column; gap: 0.5rem; color: #333;">
-          <li>✅ Full tilgang til styreportal</li>
-          <li>✅ Onboarding-samtale inkludert</li>
-          <li>✅ Ingen forpliktelse etter pilot</li>
-          <li>✅ Norsk support</li>
-        </ul>
-        <div style="margin-top: 1.5rem;">
-          <a href="mailto:sales@styr.ing" class="btn-primary">Send e-post til sales@styr.ing</a>
+      {[
+        ['📋', 'Digitale styrebøker', 'Alle styredokumenter samlet med versjonskontroll. Aldri mer løse e-postvedlegg.'],
+        ['📅', 'Compliance-kalender', 'Følg med på frister fra Brønnøysund, Finanstilsynet, Datatilsynet og Aksjeloven.'],
+        ['🛡️', 'Internkontrollrammeverk', 'Dokumenter og spor kontroller iht. norsk regelverk og GDPR.'],
+        ['🤖', 'AI-assistert styring', 'AI hjelper med å strukturere styrepapirer, foreslå agendaer og oppsummere beslutninger.'],
+        ['📊', 'Mål- og resultatstyring', 'Sett mål for styret og organisasjonen, følg opp i pågående møter.'],
+        ['📁', 'Avviksregistrering', 'Registrer avvik fra rutiner og prosesser. Spor oppfølging og korrigerende tiltak.'],
+      ].map(([icon, title, desc]) => (
+        <div style="background: white; border-radius: 12px; padding: 1.5rem; box-shadow: 0 1px 4px rgba(0,0,0,0.08);">
+          <div style="font-size: 2rem; margin-bottom: 0.75rem;">{icon}</div>
+          <h3 style="color: #065f46; margin-bottom: 0.5rem; font-size: 1.05rem;">{title}</h3>
+          <p style="color: #555; font-size: 0.9rem; line-height: 1.5;">{desc}</p>
         </div>
-      </div>
-      <div style="flex: 0 0 auto; text-align: center; min-width: 220px;">
-        <div style="background: #f0fdf4; border: 2px solid #065f46; border-radius: 16px; padding: 2rem;">
-          <div style="font-size: 0.8rem; color: #065f46; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">Pilotperiode</div>
-          <div style="font-size: 3rem; font-weight: 800; color: #065f46; line-height: 1.1; margin: 0.5rem 0;">GRATIS</div>
-          <div style="color: #666; font-size: 0.9rem; margin-bottom: 1rem;">for første 3 pilotkunder</div>
-          <div style="font-size: 1.5rem; font-weight: 700; color: #333; margin-bottom: 0.25rem;">2 490 kr/mnd</div>
-          <div style="color: #888; font-size: 0.8rem;">ekskl. mva · per styre</div>
-          <div style="color: #888; font-size: 0.8rem; margin-top: 0.5rem;">2 måneder gratis ved årlig</div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <section class="container" style="margin-top: 3rem;">
-    <h2 style="text-align:center; margin-bottom: 2rem;">Bygget for norsk næringsliv</h2>
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; text-align: center;">
-      {['Aksjeloven', 'GDPR', 'Brønnøysundregistrene', 'Finanstilsynet', 'CSRD/ESRS', 'Internkontrollforskriften'].map(item => (
-        <div style="background: white; padding: 1rem; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); font-weight: 600; color: #065f46; font-size: 0.9rem;">{item}</div>
       ))}
     </div>
   </section>
+
+  <!-- HOW IT WORKS -->
+  <section style="background: white; padding: 4rem 2rem;">
+    <div class="container">
+      <div style="text-align: center; margin-bottom: 3rem;">
+        <div class="section-label" style="color: #065f46; font-weight: 700; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px;">Slik fungerer det</div>
+        <h2 style="font-size: 1.8rem; margin-top: 0.5rem;">Fra forespørsel til aktivt styreverktøy på 48 timer</h2>
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 2rem; max-width: 800px; margin: 0 auto;">
+        {[
+          ['1', 'Send forespørsel', 'Fyll ut skjema eller send e-post. Vi tar kontakt innen 1–2 arbeidsdager.'],
+          ['2', 'Aktivering', 'Vi setter opp ditt styre i Styr.ing og inviterer styremedlemmene dine.'],
+          ['3', 'Bruk — gratis i pilotperioden', 'Full tilgang til alle funksjoner. Ingen kostnad før 1. juli 2026.'],
+        ].map(([num, title, desc]) => (
+          <div style="text-align: center;">
+            <div style="width: 52px; height: 52px; border-radius: 50%; background: #065f46; color: white; font-weight: 700; font-size: 1.4rem; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem;">{num}</div>
+            <h3 style="font-size: 1rem; margin-bottom: 0.5rem;">{title}</h3>
+            <p style="color: #666; font-size: 0.85rem; line-height: 1.5;">{desc}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- ROI -->
+  <div style="background: #065f46; color: white; text-align: center; padding: 3rem 2rem;">
+    <p style="font-size: clamp(1rem, 2.5vw, 1.3rem); max-width: 680px; margin: 0 auto; line-height: 1.5;">
+      <strong>Styr.ing sparer styret ca. 69 960 kr per styre over 3 år.</strong><br/>
+      75 % reduksjon i tidsbruk på styreadministrasjon. Kun 2 490 kr/mnd.
+    </p>
+    <span style="font-size: 0.82em; opacity: 0.75; display: block; margin-top: 8px;">Basert på reelle tidsbesparelser hos pilotkunder</span>
+  </div>
+
+  <!-- PRICING -->
+  <section style="padding: 4rem 2rem; background: #1a1a1a; color: white; text-align: center;">
+    <div class="section-label" style="color: #fbbf24; font-weight: 700; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px;">Priser</div>
+    <h2 style="font-size: 1.8rem; margin: 0.5rem 0 2rem;">Enkel, transparent prising</h2>
+    <div style="max-width: 500px; margin: 0 auto; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); border-radius: 20px; padding: 3rem 2rem;">
+      <div style="font-size: clamp(3rem, 7vw, 4rem); font-weight: 800; line-height: 1;">2 490 kr<span style="font-size: 0.3em; opacity: 0.7;">/mnd</span></div>
+      <div style="color: rgba(255,255,255,0.5); margin: 0.5rem 0 2rem;">per styre · ekskl. mva · Faktureres månedsvis</div>
+      <ul style="list-style: none; text-align: left; max-width: 300px; margin: 0 auto 2rem;">
+        {['Ubegrensede styremedlemmer', 'Digitalt styrehefte', 'Compliance-kalender', 'Internkontroll-verktøy', 'AI-assistert møtestøtte', 'Sporbarhet og revisjonslogg'].map(f => (
+          <li style="padding: 0.5rem 0; border-bottom: 1px solid rgba(255,255,255,0.07); font-size: 0.9rem; display: flex; align-items: center; gap: 0.5rem;">✓ {f}</li>
+        ))}
+      </ul>
+      <a href="/signup" class="btn-primary" style="background: #fbbf24; color: #065f46; width: 100%; padding: 1rem; font-size: 1.05rem;">Start gratis pilot →</a>
+      <p style="color: rgba(255,255,255,0.4); font-size: 0.8rem; margin-top: 1rem;">Gratis pilot frem til 30. juni 2026</p>
+    </div>
+  </section>
+
+  <!-- PILOT CTA -->
+  <section style="padding: 4rem 2rem; text-align: center;">
+    <div style="max-width: 650px; margin: 0 auto; background: rgba(6,95,70,0.06); border: 1px solid rgba(6,95,70,0.15); border-radius: 20px; padding: 3rem 2rem;">
+      <h2 style="font-size: 1.6rem; margin-bottom: 1rem;">Gratis pilot — før du forplikter deg</h2>
+      <p style="color: #666; max-width: 500px; margin: 0 auto 2rem;">Full tilgang til alle funksjoner. Ingen kostnad, ingen binding. Vi setter opp alt — du trenger bare å bruke det.</p>
+      <div style="display: flex; gap: 1.5rem; justify-content: center; flex-wrap: wrap; margin-bottom: 2rem;">
+        <span style="font-size: 0.85rem; color: #666;">✓ Ubegrenset styremedlemmer</span>
+        <span style="font-size: 0.85rem; color: #666;">✓ Compliance-kalender</span>
+        <span style="font-size: 0.85rem; color: #666;">✓ Internkontroll-verktøy</span>
+      </div>
+      <a href="/signup" class="btn-primary" style="padding: 0.85rem 2rem; font-size: 1rem;">Søk om gratis pilot →</a>
+    </div>
+  </section>
+
+  <!-- REGULATORY BADGES -->
+  <section class="container" style="padding: 2rem;">
+    <h2 style="text-align:center; margin-bottom: 1.5rem; font-size: 1.3rem;">Bygget for norsk næringsliv</h2>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 0.75rem; text-align: center;">
+      {['Aksjeloven', 'GDPR', 'Brønnøysundregistrene', 'Finanstilsynet', 'CSRD/ESRS', 'Internkontrollforskriften'].map(item => (
+        <div style="background: white; padding: 0.75rem; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); font-weight: 600; color: #065f46; font-size: 0.85rem;">{item}</div>
+      ))}
+    </div>
+  </section>
+
+  <!-- CONTACT -->
+  <section style="padding: 3rem 2rem; background: #f8faf9;" id="contact">
+    <div style="max-width: 500px; margin: 0 auto;">
+      <h2 style="text-align: center; font-size: 1.5rem; margin-bottom: 0.5rem;">Ta kontakt</h2>
+      <p style="text-align: center; color: #666; margin-bottom: 2rem;">Skal du ha styremøte snart? Vi hjelper deg i gang.</p>
+      <form id="contact-form" style="display: flex; flex-direction: column; gap: 1rem;">
+        <input type="text" name="name" required placeholder="Ditt navn" style="padding: 0.75rem; border: 1.5px solid #ddd; border-radius: 8px; font-size: 0.95rem;" />
+        <input type="email" name="email" required placeholder="din@bedrift.no" style="padding: 0.75rem; border: 1.5px solid #ddd; border-radius: 8px; font-size: 0.95rem;" />
+        <input type="text" name="company" placeholder="Bedriftens navn" style="padding: 0.75rem; border: 1.5px solid #ddd; border-radius: 8px; font-size: 0.95rem;" />
+        <select name="employees" style="padding: 0.75rem; border: 1.5px solid #ddd; border-radius: 8px; font-size: 0.95rem; color: #666;">
+          <option value="">Antall ansatte...</option>
+          <option>1-10</option><option>11-50</option><option>51-200</option><option>201+</option>
+        </select>
+        <button type="submit" class="btn-primary" style="padding: 0.85rem; font-size: 1rem;">Send forespørsel →</button>
+      </form>
+      <div id="form-success" style="display: none; text-align: center; padding: 2rem;">
+        <h3 style="color: #065f46;">Takk for din henvendelse!</h3>
+        <p style="color: #666; margin-top: 0.5rem;">Vi tar kontakt innen 1–2 arbeidsdager.</p>
+      </div>
+    </div>
+  </section>
 </Layout>
+
+<script>
+  document.getElementById('contact-form')?.addEventListener('submit', async (e) => {
+    e.preventDefault(); const f = new FormData(e.target as HTMLFormElement);
+    const btn = (e.target as HTMLFormElement).querySelector('button')!;
+    btn.textContent = 'Sender...'; btn.disabled = true;
+    try {
+      await fetch('/api/demo-request', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(Object.fromEntries(f)) });
+      (e.target as HTMLFormElement).style.display = 'none';
+      document.getElementById('form-success')!.style.display = 'block';
+    } catch { btn.textContent = 'Send forespørsel →'; btn.disabled = false; }
+  });
+</script>
