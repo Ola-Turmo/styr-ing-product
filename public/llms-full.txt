@@ -1,0 +1,112 @@
+# Styr.ing — Full Product Documentation
+
+## Product Overview
+
+Styr.ing is a Norwegian governance SaaS platform for board management, regulatory compliance, and internal control. It serves as a central workspace where board members access board documents, track regulatory deadlines, manage internal controls, and collaborate on governance tasks.
+
+### Problem Solved
+
+Norwegian companies managing board governance through email attachments, shared drives, and manual spreadsheets face:
+- 47+ hours/year lost to administrative board tasks (estimated)
+- Missed regulatory deadlines (Brønnøysund, Finanstilsynet, Datatilsynet)
+- Incomplete internal control documentation for audits
+- Version chaos with board documents across multiple email threads
+
+### Solution Architecture
+
+Styr.ing consolidates three governance domains into one platform:
+
+1. **Board Portal** (`/board`) — Digital board books, member management, meeting scheduling, document sharing with version control and audit logs
+2. **Compliance Calendar** (`/compliance`) — Regulatory deadline tracking with automated reminders for Norwegian authorities
+3. **Internal Control Register** (`/internkontroll`) — COSO-based control framework, risk assessment, deviation tracking
+
+### Regulatory Coverage
+
+- **Aksjeloven (Companies Act)**: Board meeting requirements, documentation standards
+- **GDPR/Personvern**: Privacy compliance, data processing agreements
+- **Brønnøysundregistrene**: Annual reports, entity filings
+- **Finanstilsynet**: Financial supervision requirements
+- **CSRD/ESRS**: Sustainability reporting (EU directive)
+- **Internkontrollforskriften**: Internal control regulations for Norwegian enterprises
+
+## Technical Architecture
+
+### Frontend
+- **Framework**: Astro 4
+- **Output**: Static HTML (no SSR dependency)
+- **Styling**: CSS custom properties, system-ui + Georgia font stack
+- **Markup**: Semantic HTML5 with aria labels
+- **Forms**: Client-side JavaScript with Paperclip webhook integration
+
+### Hosting
+- **Platform**: Cloudflare Pages
+- **Custom Domain**: styr.ing
+- **SSL**: Cloudflare-managed
+- **Caching**: Edge caching with cache-control headers
+
+### Database (Planned)
+- **Type**: Cloudflare D1 (SQLite at edge)
+- **Tables**: boards, board_members, meetings, compliance_events, control_items, demo_requests, subscriptions
+- **Current State**: Demo data only (database provisioning pending)
+
+### External Services
+- **Contact Form**: Paperclip webhook endpoint
+- **Email**: Resend (planned)
+- **Payments**: Stripe (planned)
+- **Auth**: Planned (login/signup pages exist as static stubs)
+
+## Page Structure
+
+| Route | Page | Description |
+|-------|------|-------------|
+| `/` | Landing | Marketing page with hero, features, pricing, pilot CTA, contact form |
+| `/board` | Board Portal | List of demo boards with status indicators |
+| `/board/[id]` | Board Detail | Single board with members, meetings, stats |
+| `/compliance` | Compliance Calendar | Regulatory deadline table with status tracking |
+| `/internkontroll` | Internal Control | Control items list with COSO framework status |
+| `/admin` | Admin Dashboard | Demo stats, request tracker |
+| `/login` | Login | Authentication page (static stub) |
+| `/signup` | Sign Up | Registration page (static stub) |
+
+## Pricing Model
+
+- **Base price**: 2,490 NOK/month per board (excl. VAT)
+- **Billing**: Monthly invoicing
+- **Pilot program**: Free for up to 3 companies until June 30, 2026
+- **Included**: Unlimited board members, all features, email support
+- **Not included**: Custom integrations, dedicated support, white-label
+
+## Competitive Landscape
+
+Styr.ing targets the Norwegian SMB governance market, competing with:
+- Manual solutions (email + spreadsheets) — the primary competitor
+- Generic project management tools repurposed for board work
+- Enterprise governance platforms (too complex and expensive for SMB)
+
+Differentiation: Norwegian-first, built for local regulations, simple pricing, no enterprise sales cycle.
+
+## Development Status (May 2026)
+
+- **Live**: Full static website with all marketing and demo pages
+- **Deployed**: Cloudflare Pages (styr.ing)
+- **Demo data**: All pages functional with realistic Norwegian demo content
+- **Blocked**: Database provisioning (D1), Stripe integration, email pipeline, production auth
+- **Next milestone**: First paying pilot customer
+
+## API Endpoints (Planned)
+
+- `POST /api/demo-request` — Submit demo request from contact form
+- `GET /api/boards` — List user's boards (auth required)
+- `GET /api/boards/:id` — Board detail with members and meetings
+- `POST /api/boards` — Create new board
+- `POST /api/meetings` — Schedule meeting
+- `POST /api/stripe/checkout` — Create Stripe checkout session
+
+## SEO/GEO Configuration
+
+- llms.txt: https://styr.ing/llms.txt
+- llms-full.txt: https://styr.ing/llms-full.txt
+- robots.txt: https://styr.ing/robots.txt
+- Sitemap: https://styr.ing/sitemap.xml
+- JSON-LD: Organization, SoftwareApplication, WebSite, FAQPage schemas
+- AI crawler access: GPTBot, ClaudeBot, PerplexityBot, Google-Extended all allowed

@@ -1,0 +1,17 @@
+# humanstxt.org
+# Styr.ing — Norwegian Board Portal
+
+/* TEAM */
+Founder & CEO: Ola Turmo
+Contact: ola@styr.ing
+Location: Norway
+
+/* SITE */
+Built with: Astro 4, TypeScript, HTML5, CSS3
+Hosted on: Cloudflare Pages
+Last deploy: 2026-05-03
+Language: Norwegian (Bokmål)
+
+/* AI AGENTS */
+Paperclip Company: Styr.ing (e255bedc-5b33-4b6e-8307-d9263e0a7e3f)
+Agents: CEO, Product & Tech Manager, Growth & Revenue Manager, Operations Manager, Social & Media Manager, Customer Service Manager, Finance & Risk Manager, Strategic Planning Governor, People & Partners Manager

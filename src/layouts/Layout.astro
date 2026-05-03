@@ -8,8 +8,114 @@ const { title, activeNav = '' } = Astro.props;
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>{title} | Styr.ing</title>
-  <meta name="description" content="Norsk styreportal og internkontroll for SMB. Fra 2 490 kr/mnd." />
+  <meta name="description" content="Norsk styreportal og internkontroll for SMB. Digitaliser styrepapirer, compliance-kalender og internkontroll i én plattform. Fra 2 490 kr/mnd." />
+  <meta name="keywords" content="styreportal, internkontroll, compliance, styreverktøy, norsk styre, Aksjeloven, GDPR, board portal, governance, Norway" />
+  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1" />
+  <meta property="og:title" content="{title} | Styr.ing" />
+  <meta property="og:description" content="Norsk styreportal og internkontroll for SMB. Fra 2 490 kr/mnd." />
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Styr.ing" />
+  <meta property="og:locale" content="nb_NO" />
+  <meta name="twitter:card" content="summary_large_image" />
   <link rel="canonical" href={new URL(Astro.url.pathname, Astro.site).href} />
+  <link rel="llms-txt" href="/llms.txt" />
+
+  <!-- JSON-LD Structured Data -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "Styr.ing",
+    "url": "https://styr.ing",
+    "description": "Norsk styreportal og internkontroll for SMB. Digitaliser styrepapirer, compliance-kalender og internkontroll i én plattform.",
+    "foundingDate": "2026",
+    "contactPoint": {
+      "@type": "ContactPoint",
+      "contactType": "customer support",
+      "email": "ola@styr.ing"
+    },
+    "sameAs": []
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "Styr.ing",
+    "url": "https://styr.ing",
+    "description": "Norsk styreportal og internkontroll for SMB",
+    "inLanguage": "nb-NO",
+    "potentialAction": {
+      "@type": "SearchAction",
+      "target": "https://styr.ing/search?q={search_term_string}",
+      "query-input": "required name=search_term_string"
+    }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "Styr.ing",
+    "applicationCategory": "BusinessApplication",
+    "operatingSystem": "Web",
+    "description": "Norsk styreportal og internkontrollverktøy for SMB. Board portal, compliance calendar, og internal control register.",
+    "offers": {
+      "@type": "Offer",
+      "price": "2490.00",
+      "priceCurrency": "NOK",
+      "description": "Per styre per måned, ekskl. mva"
+    }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "Hva er Styr.ing?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Styr.ing er en norsk styreportal og internkontrollverktøy for SMB. Plattformen samler styredokumenter, compliance-kalender og internkontroll i én digital arbeidsflate."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Hva koster Styr.ing?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Styr.ing koster 2 490 kr per måned per styre, ekskl. mva. Det er gratis pilotperiode frem til 30. juni 2026 for opptil 3 pilotkunder."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Hvilke norske regelverk støtter Styr.ing?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Styr.ing støtter Aksjeloven, GDPR, Brønnøysundregistrene, Finanstilsynet, CSRD/ESRS og Internkontrollforskriften."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Hvordan kommer jeg i gang med Styr.ing?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Send en forespørsel via kontaktskjemaet på styr.ing, så tar vi kontakt innen 1-2 arbeidsdager og setter opp ditt styre gratis i pilotperioden."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Er Styr.ing GDPR-kompatibel?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Ja, Styr.ing er 100% norsk, GDPR-kompatibel, og driftes på sikker nettsky uten behov for lokal installasjon."
+        }
+      }
+    ]
+  }
+  </script>
   <style>
     :root {
       --ink: #10241f;
@@ -66,7 +172,7 @@ const { title, activeNav = '' } = Astro.props;
 <body>
   <nav>
     <a href="/" class="logo">styr<span>.</span>ing</a>
-    <ul class="nav-links">
+    <ul class="nav-links" aria-label="Hovedmeny">
       <li><a href="/board" class={activeNav === 'boards' ? 'active' : ''}>Styreportal</a></li>
       <li><a href="/compliance" class={activeNav === 'compliance' ? 'active' : ''}>Compliance</a></li>
       <li><a href="/internkontroll" class={activeNav === 'internkontroll' ? 'active' : ''}>Internkontroll</a></li>

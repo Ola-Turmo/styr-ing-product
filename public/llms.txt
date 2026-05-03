@@ -1,0 +1,63 @@
+# Styr.ing
+
+> Styr.ing is a Norwegian governance SaaS platform that provides digital board portals, compliance calendars, and internal control tools for Norwegian companies. It replaces scattered emails and documents with one structured workspace for board meetings, regulatory compliance, and internal controls.
+
+## About
+
+Founded in 2026, Styr.ing builds practical governance systems for Norwegian businesses that need to consolidate goals, responsibilities, deviations, routines, and improvements in one clear interface without drowning in documents.
+
+Built specifically for Norwegian regulatory frameworks: Aksjeloven (Norwegian Companies Act), GDPR compliance, Brønnøysundregistrene filings, Finanstilsynet oversight, CSRD/ESRS sustainability reporting, and Internkontrollforskriften (Internal Control Regulations).
+
+## Who It's For
+
+- Norwegian limited companies (AS) with active boards
+- SMBs needing structured board governance
+- Companies preparing for audits, board meetings, and regulatory filings
+- Organizations wanting to move board work from email attachments to a centralized platform
+
+## How It Works
+
+1. Company requests a demo or pilot via the website contact form
+2. Styr.ing sets up the board workspace and invites board members
+3. Board members access digital board books, meeting documents, compliance calendar, and internal control register
+4. Free pilot until June 30, 2026 — then 2,490 NOK/month per board
+
+## Key Features
+
+- Digital Board Books: All board documents in one place with version control, traceability, and instant sharing
+- Compliance Calendar: Norwegian regulatory deadlines from Brønnøysund, Finanstilsynet, Datatilsynet, and Aksjeloven with automated reminders
+- Internal Control Framework: Document controls, deviations, and risk assessments compliant with Internkontrollforskriften
+- AI-Assisted Governance: AI helps structure board papers, suggest agendas, and summarize decisions
+- Goal & Performance Management: Set board and organizational goals, track progress in ongoing meetings
+- Deviation Registration: Register deviations from routines and processes, track follow-up and corrective actions
+
+## Pricing
+
+- 2,490 NOK/month per board (excl. VAT)
+- Monthly invoicing
+- Free pilot for up to 3 companies until June 30, 2026
+- Unlimited board members included
+
+## Key URLs
+
+- Website: https://styr.ing
+- Board Portal: https://styr.ing/board
+- Compliance Calendar: https://styr.ing/compliance
+- Internal Control: https://styr.ing/internkontroll
+- Login: https://styr.ing/login
+- Sign Up: https://styr.ing/signup
+
+## Contact
+
+- Email: ola@styr.ing
+- Website: https://styr.ing
+- Company: Styr.ing AS (Norway)
+
+## Tech Stack
+
+- Astro 4 (static site generation)
+- Cloudflare Pages hosting
+- PostgreSQL (D1 planned)
+- TypeScript
+- HTML5 semantic markup
+- JSON-LD structured data
