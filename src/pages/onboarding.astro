@@ -1,0 +1,147 @@
+---
+// Onboarding Wizard — Guided board setup per PRD
+import Layout from '../layouts/Layout.astro';
+---
+<Layout title="Kom i gang — Styr.ing" activeNav="">
+<div class="onboarding-page">
+  <div class="progress-bar" id="progress">
+    <div class="step done" data-step="1"><span>1</span>Bedrift</div>
+    <div class="step-connector done"></div>
+    <div class="step active" data-step="2"><span>2</span>Styre</div>
+    <div class="step-connector"></div>
+    <div class="step" data-step="3"><span>3</span>Møter</div>
+    <div class="step-connector"></div>
+    <div class="step" data-step="4"><span>4</span>Bekreft</div>
+  </div>
+
+  <div id="step-company" class="onboarding-card">
+    <h2>Fortell om din bedrift</h2>
+    <p class="card-desc">Vi tilpasser styreportalen til din bedrifts størrelse, bransje og regulatoriske krav.</p>
+    <form onsubmit="event.preventDefault();switchStep(2)">
+      <div class="form-group"><label>Bedriftens navn</label><input type="text" value="Pilotselskap AS"/></div>
+      <div class="form-row"><div class="form-group"><label>Org.nummer</label><input type="text" value="123456789"/></div><div class="form-group"><label>Ansatte</label><select><option>1-10</option><option selected>11-50</option><option>51-200</option></select></div></div>
+      <div class="form-group"><label>Bransje</label><select><option>Teknologi/IT</option><option selected>Konsulent/rådgivning</option><option>Finans</option><option>Helse</option></select></div>
+      <div class="form-group"><label>Relevante krav</label>
+        <div class="check-group">
+          <label class="check-option"><input type="checkbox" checked/>Aksjeloven</label>
+          <label class="check-option"><input type="checkbox" checked/>GDPR</label>
+          <label class="check-option"><input type="checkbox" checked/>Internkontroll</label>
+        </div>
+      </div>
+      <button type="submit" class="btn-primary">Neste →</button>
+    </form>
+  </div>
+
+  <div id="step-board" class="onboarding-card" style="display:none">
+    <h2>Styresammensetning</h2>
+    <p class="card-desc">Legg til styremedlemmer og roller.</p>
+    <div class="board-comp">
+      <div class="role-row"><span>👑</span><input type="text" value="Ola Turmo"/><select><option selected>Styreleder</option></select><input type="email" value="ola@pilot.no"/></div>
+      <div class="role-row"><span>📋</span><input type="text" value="Kari Sekretær"/><select><option selected>Styresekretær</option></select><input type="email" value="kari@pilot.no"/></div>
+      <div class="role-row"><span>💼</span><input type="text" value="CFO"/><select><option selected>Styremedlem</option></select><input type="email" value="cfo@pilot.no"/></div>
+      <button class="add-btn">+ Legg til medlem</button>
+    </div>
+    <div class="step-nav"><button class="btn-outline" onclick="switchStep(1)">← Tilbake</button><button class="btn-primary" onclick="switchStep(3)">Neste →</button></div>
+  </div>
+
+  <div id="step-cadence" class="onboarding-card" style="display:none">
+    <h2>Møtekadens og signaturpolicy</h2>
+    <p class="card-desc">Kalender og signaturflyt settes opp automatisk.</p>
+    <form onsubmit="event.preventDefault();switchStep(4)">
+      <div class="form-group"><label>Møtefrekvens</label><select><option selected>Kvartalsvis</option><option>Månedlig</option></select></div>
+      <div class="form-group"><label>Møtedag</label><select><option selected>Onsdag</option><option>Tirsdag</option></select></div>
+      <div class="form-group"><label>Signaturløsning</label><select><option selected>BankID (kvalifisert)</option><option>Enkel e-signatur</option></select></div>
+      <div class="form-group"><label>Godkjenning av protokoll</label><select><option selected>Styreleder + referent</option><option>Styreleder</option></select></div>
+      <div class="step-nav"><button type="button" class="btn-outline" onclick="switchStep(2)">← Tilbake</button><button type="submit" class="btn-primary">Generer styreportal →</button></div>
+    </form>
+  </div>
+
+  <div id="step-confirm" class="onboarding-card" style="display:none">
+    <div class="success-icon">✓</div>
+    <h2>Din styreportal er klar</h2>
+    <p class="card-desc">Her er et sammendrag av oppsettet. Alt kan endres senere.</p>
+    <div class="blueprint">
+      <h3>Driftsplan</h3>
+      <div class="bp-grid">
+        <div class="bp-item"><span class="bp-l">Bedrift</span><span>Pilotselskap AS</span></div>
+        <div class="bp-item"><span class="bp-l">Rammeverk</span><span>Aksjeloven, GDPR, Internkontroll</span></div>
+        <div class="bp-item"><span class="bp-l">Styre</span><span>3 medlemmer + sekretær</span></div>
+        <div class="bp-item"><span class="bp-l">Møter</span><span>Kvartalsvis, onsdager</span></div>
+        <div class="bp-item"><span class="bp-l">Signatur</span><span>BankID · Godkjent av leder+referent</span></div>
+      </div>
+      <h3>Aktive AI-agenter</h3>
+      <div class="agent-list">
+        <div>📋 Møteagent — forbereder agenda, protokoll, aksjonsoppfølging</div>
+        <div>📅 Compliance-agent — overvåker regulatoriske frister</div>
+        <div>📊 Rapporteringsagent — produserer styrerapporter</div>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:2rem">
+      <a href="/board/board-1" class="btn-primary" style="display:inline-block;text-decoration:none;padding:14px 40px;font-size:1.1rem">Gå til styreportalen →</a>
+    </div>
+  </div>
+
+  <div class="demo-notice">Demo av onboarding-flyt. Full integrasjon med BankID, e-postutsendelse og automatisk agendagenerering ved lansering.</div>
+</div>
+
+<script>
+function switchStep(n) {
+  ['step-company','step-board','step-cadence','step-confirm'].forEach((id,i) => {
+    document.getElementById(id).style.display = (i+1 === n) ? 'block' : 'none';
+  });
+  document.querySelectorAll('.step').forEach((el,i) => {
+    el.className = 'step' + (i+1 < n ? ' done' : i+1 === n ? ' active' : '');
+  });
+  document.querySelectorAll('.step-connector').forEach((el,i) => {
+    el.className = 'step-connector' + (i+1 < n ? ' done' : '');
+  });
+}
+</script>
+</Layout>
+
+<style>
+.onboarding-page { max-width: 640px; margin: 2rem auto; padding: 0 20px; }
+.progress-bar { display: flex; align-items: center; justify-content: center; margin-bottom: 2rem; }
+.step { display: flex; flex-direction: column; align-items: center; gap: 6px; font-family: system-ui, sans-serif; font-size: 0.75rem; color: #ccc; }
+.step span { width: 30px; height: 30px; border-radius: 50%; background: #eee; color: #aaa; font-weight: 700; font-size: 0.78rem; display: flex; align-items: center; justify-content: center; }
+.step.done span { background: var(--accent); color: white; }
+.step.done { color: var(--accent); }
+.step.active span { background: var(--accent); color: white; box-shadow: 0 0 0 4px rgba(31,111,91,0.15); }
+.step.active { color: var(--accent); font-weight: 700; }
+.step-connector { width: 36px; height: 2px; background: #eee; margin: 0 6px 18px; }
+.step-connector.done { background: var(--accent); }
+
+.onboarding-card { background: white; border: 1px solid rgba(16,36,31,0.08); border-radius: 16px; padding: 32px; }
+.onboarding-card h2 { font-size: 1.3rem; margin: 0 0 4px; }
+.card-desc { font-family: system-ui, sans-serif; font-size: 0.85rem; color: var(--muted); margin: 0 0 20px; line-height: 1.4; }
+
+.form-group { margin-bottom: 14px; }
+.form-group label { display: block; font-family: system-ui, sans-serif; font-size: 0.78rem; font-weight: 600; color: var(--ink); margin-bottom: 4px; }
+.form-group input, .form-group select { width: 100%; padding: 10px 12px; border: 1.5px solid rgba(16,36,31,0.12); border-radius: 8px; font-family: system-ui, sans-serif; font-size: 0.88rem; box-sizing: border-box; }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+.check-group { display: flex; flex-wrap: wrap; gap: 10px; }
+.check-option { font-family: system-ui, sans-serif; font-size: 0.82rem; display: flex; align-items: center; gap: 6px; cursor: pointer; }
+
+.btn-primary { background: var(--accent); color: white; border: none; padding: 10px 24px; border-radius: 8px; font-family: system-ui, sans-serif; font-size: 0.88rem; font-weight: 600; cursor: pointer; }
+.btn-outline { background: transparent; border: 1.5px solid rgba(16,36,31,0.2); color: var(--ink); padding: 10px 24px; border-radius: 8px; font-family: system-ui, sans-serif; font-size: 0.88rem; cursor: pointer; }
+.step-nav { display: flex; justify-content: space-between; margin-top: 20px; }
+
+.board-comp { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; }
+.role-row { display: flex; gap: 8px; align-items: center; padding: 8px; border: 1px solid rgba(0,0,0,0.06); border-radius: 8px; }
+.role-row span { font-size: 1.2rem; }
+.role-row input, .role-row select { padding: 6px 8px; border: 1px solid rgba(0,0,0,0.1); border-radius: 6px; font-family: system-ui, sans-serif; font-size: 0.82rem; flex: 1; min-width: 0; }
+.add-btn { background: transparent; border: 2px dashed rgba(16,36,31,0.12); border-radius: 8px; padding: 10px; width: 100%; font-family: system-ui, sans-serif; font-size: 0.82rem; color: var(--muted); cursor: pointer; }
+
+.success-icon { width: 52px; height: 52px; border-radius: 50%; background: #27ae60; color: white; font-size: 1.4rem; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px; }
+
+.blueprint h3 { font-size: 0.95rem; margin: 16px 0 10px; }
+.bp-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+.bp-item { padding: 10px; background: rgba(31,111,91,0.03); border-radius: 6px; font-family: system-ui, sans-serif; font-size: 0.8rem; }
+.bp-l { display: block; font-size: 0.65rem; font-weight: 700; text-transform: uppercase; color: var(--muted); margin-bottom: 2px; }
+
+.agent-list { display: flex; flex-direction: column; gap: 6px; }
+.agent-list div { font-family: system-ui, sans-serif; font-size: 0.8rem; padding: 8px; background: rgba(31,111,91,0.04); border-radius: 6px; }
+
+.demo-notice { text-align: center; padding: 1.5rem; margin-top: 2rem; background: rgba(31,111,91,0.06); border-radius: 12px; font-family: system-ui, sans-serif; font-size: 0.85rem; color: var(--muted); }
+</style>

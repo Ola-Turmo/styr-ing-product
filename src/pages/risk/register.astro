@@ -1,0 +1,95 @@
+---
+// Risk Register Detail — Full risk profile with controls, evidence, assessments
+import Layout from '../../layouts/Layout.astro';
+---
+<Layout title="Risikoregister — RISK" activeNav="">
+<div class="container">
+  <a href="/risk" class="back-link">← Tilbake til RISK</a>
+  
+  <div class="header">
+    <h1>Risikoregister</h1>
+    <div class="header-actions">
+      <button class="btn-outline">Eksporter</button>
+      <button class="btn-primary">+ Ny risiko</button>
+    </div>
+  </div>
+
+  <div class="risk-grid">
+    {[
+      {id:'R-001',title:'Leverandørkonsentrasjon — single-source IT-drift',category:'Operasjonell risiko',level:'Kritisk',trend:'up',owner:'CTO',status:'under behandling',residual:'Høy',controls:'3',treatment:'Kontrakt med backup-leverandør under forhandling. Ny leverandør på plass innen Q3 2026.',lastReview:'2026-04-15',nextReview:'2026-07-15'},
+      {id:'R-002',title:'Manglende etterlevelse GDPR — databehandleravtaler',category:'Compliance-risiko',level:'Høy',trend:'stable',owner:'DPO',status:'åpen',residual:'Medium',controls:'5',treatment:'Gjennomgang av alle databehandleravtaler pågår. 12 av 18 avtaler oppdatert. Ferdigstilles innen 2026-05-31.',lastReview:'2026-04-01',nextReview:'2026-05-31'},
+      {id:'R-003',title:'Cybersikkerhet — utdatert tilgangsstyring ERP',category:'IT-sikkerhet',level:'Kritisk',trend:'down',owner:'IT-sjef',status:'under behandling',residual:'Medium',controls:'4',treatment:'Tiltak iverksatt: rollebasert tilgang innført, MFA aktivert. Gjenstår: sluttbrukertesting.',lastReview:'2026-04-30',nextReview:'2026-05-15'},
+      {id:'R-004',title:'Likviditetsrisiko Q3 — forsinkede kundebetalinger',category:'Finansiell risiko',level:'Medium',trend:'up',owner:'CFO',status:'overvåkes',residual:'Medium',controls:'3',treatment:'Automatiserte betalingspåminnelser implementert. Kredittgrenser for nye kunder redusert.',lastReview:'2026-04-20',nextReview:'2026-06-01'},
+      {id:'R-005',title:'Kompetanseflukt — nøkkelpersoner i tech-avdeling',category:'HR-risiko',level:'Høy',trend:'stable',owner:'HR-sjef',status:'åpen',residual:'Høy',controls:'2',treatment:'Kompetansekartlegging gjennomført. Lønnsjustering foreslått. Mentorprogram under utvikling.',lastReview:'2026-04-10',nextReview:'2026-06-10'},
+    ].map(r => (
+      <div class="risk-card">
+        <div class="risk-header">
+          <div class="risk-id-section">
+            <span class="risk-id">{r.id}</span>
+            <span class={'risk-level level-' + (r.level === 'Kritisk' ? 'critical' : r.level === 'Høy' ? 'high' : 'medium')}>{r.level}</span>
+          </div>
+          <h3>{r.title}</h3>
+        </div>
+
+        <div class="risk-meta-grid">
+          <div class="meta-item"><span class="meta-label">Kategori</span><span class="meta-value">{r.category}</span></div>
+          <div class="meta-item"><span class="meta-label">Eier</span><span class="meta-value">{r.owner}</span></div>
+          <div class="meta-item"><span class="meta-label">Status</span><span class="meta-value">{r.status}</span></div>
+          <div class="meta-item"><span class="meta-label">Restrisiko</span><span class={'meta-value level-' + (r.residual === 'Høy' ? 'high' : 'medium')}>{r.residual}</span></div>
+          <div class="meta-item"><span class="meta-label">Trend</span><span class={'meta-value trend-' + r.trend}>{r.trend === 'up' ? 'Økende' : r.trend === 'down' ? 'Synkende' : 'Stabil'}</span></div>
+          <div class="meta-item"><span class="meta-label">Sist vurdert</span><span class="meta-value">{r.lastReview}</span></div>
+        </div>
+
+        <div class="treatment-section">
+          <h4>Behandlingsplan</h4>
+          <p>{r.treatment}</p>
+        </div>
+
+        <div class="review-dates">
+          <span>Sist vurdert: {r.lastReview}</span>
+          <span>Neste vurdering: {r.nextReview}</span>
+        </div>
+      </div>
+    ))}
+  </div>
+
+  <div class="demo-notice">Demo av risikoregister. Full integrasjon med kilde-systemer (ticketing, sårbarhetsscannere) ved lansering.</div>
+</div>
+</Layout>
+
+<style>
+.container { max-width: 900px; margin: 1.5rem auto; padding: 0 20px; }
+.back-link { font-family: system-ui, sans-serif; font-size: 0.85rem; color: var(--muted); text-decoration: none; }
+.header { display: flex; justify-content: space-between; align-items: flex-start; margin: 1rem 0 2rem; }
+.header h1 { font-size: 1.6rem; margin: 0; }
+.header-actions { display: flex; gap: 8px; }
+.btn-primary { background: var(--accent); color: white; border: none; padding: 8px 18px; border-radius: 8px; font-family: system-ui, sans-serif; font-size: 0.85rem; font-weight: 600; cursor: pointer; }
+.btn-outline { background: transparent; border: 1.5px solid rgba(16,36,31,0.2); color: var(--ink); padding: 8px 18px; border-radius: 8px; font-family: system-ui, sans-serif; font-size: 0.85rem; font-weight: 600; cursor: pointer; }
+
+.risk-grid { display: flex; flex-direction: column; gap: 16px; }
+.risk-card { background: white; border: 1px solid rgba(16,36,31,0.08); border-radius: 14px; padding: 20px; }
+
+.risk-header { margin-bottom: 16px; }
+.risk-id-section { display: flex; gap: 8px; align-items: center; margin-bottom: 6px; }
+.risk-id { font-family: system-ui, sans-serif; font-size: 0.72rem; background: var(--ink); color: white; padding: 2px 10px; border-radius: 6px; font-weight: 700; }
+.risk-level { font-family: system-ui, sans-serif; font-size: 0.72rem; font-weight: 700; padding: 2px 10px; border-radius: 100px; }
+.level-critical { background: rgba(192,57,43,0.12); color: #c0392b; }
+.level-high { background: rgba(230,126,34,0.12); color: #e67e22; }
+.level-medium { background: rgba(243,156,18,0.10); color: #8a7500; }
+.risk-header h3 { font-size: 1.05rem; margin: 0; }
+
+.risk-meta-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 16px; }
+.meta-item { padding: 8px; background: rgba(0,0,0,0.015); border-radius: 8px; }
+.meta-label { display: block; font-family: system-ui, sans-serif; font-size: 0.68rem; font-weight: 700; text-transform: uppercase; color: var(--muted); margin-bottom: 2px; }
+.meta-value { font-family: system-ui, sans-serif; font-size: 0.82rem; color: var(--ink); }
+.trend-up { color: #c0392b; }
+.trend-down { color: #27ae60; }
+
+.treatment-section { margin-bottom: 16px; }
+.treatment-section h4 { font-size: 0.9rem; margin: 0 0 6px; }
+.treatment-section p { font-family: system-ui, sans-serif; font-size: 0.85rem; color: var(--muted); line-height: 1.5; margin: 0; }
+
+.review-dates { display: flex; gap: 16px; font-family: system-ui, sans-serif; font-size: 0.75rem; color: #aaa; margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(0,0,0,0.04); }
+
+.demo-notice { text-align: center; padding: 1.5rem; margin-top: 2rem; background: rgba(31,111,91,0.06); border-radius: 12px; font-family: system-ui, sans-serif; font-size: 0.85rem; color: var(--muted); }
+</style>

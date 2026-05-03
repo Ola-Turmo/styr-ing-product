@@ -1,0 +1,110 @@
+---
+// Member Management — Styremedlemsadministrasjon
+import Layout from '../../../layouts/Layout.astro';
+import { demoBoardsFixed } from '../../../lib/db';
+export function getStaticPaths() {
+  return demoBoardsFixed.map(b => ({ params: { id: b.id } }));
+}
+const { id } = Astro.params;
+const board = demoBoardsFixed.find(b => b.id === id) || demoBoardsFixed[0];
+const members = [
+  { name:'Ola Turmo', role:'Styreleder', email:'ola@pilot.no', avatar:'👑', color:'#1a1a1a' },
+  { name:'Kari Sekretær', role:'Styresekretær', email:'kari@pilot.no', avatar:'📋', color:'#065f46' },
+  { name:'CFO', role:'Styremedlem', email:'cfo@pilot.no', avatar:'💼', color:'#34495e' },
+  { name:'IT-ansvarlig', role:'Styremedlem', email:'it@pilot.no', avatar:'🖥', color:'#2c3e50' },
+  { name:'Ekstern rådgiver', role:'Observatør', email:'radgiver@ekstern.no', avatar:'👁', color:'#636e72' },
+];
+---
+<Layout title="Styremedlemmer" activeNav="boards">
+<div class="container">
+  <a href={'/board/' + id} class="back-link">← Tilbake</a>
+  
+  <div class="header">
+    <div><h1>Styremedlemmer</h1><p>{members.length} medlemmer</p></div>
+    <button class="btn-primary">+ Inviter medlem</button>
+  </div>
+
+  <div class="member-grid">
+    {members.map(m => (
+      <div class="member-card">
+        <div class="member-avatar" style={'background:' + m.color}>{m.avatar}</div>
+        <div class="member-info">
+          <strong>{m.name}</strong>
+          <span class="member-role">{m.role}</span>
+          <span class="member-email">{m.email}</span>
+          <div class="member-perms">
+            <span class="chip active">Les dokumenter</span>
+            {m.role !== 'Observatør' && <span class="chip active">Delta i møter</span>}
+            {(m.role === 'Styreleder' || m.role === 'Styresekretær') && <span class="chip active">Redigere protokoll</span>}
+            {m.role === 'Styreleder' && <span class="chip active">Godkjenne vedtak</span>}
+            {m.role === 'Styreleder' && <span class="chip active">Signere (BankID)</span>}
+            {m.role === 'Observatør' && <span class="chip inactive">Ingen stemmerett</span>}
+          </div>
+          <div class="member-activity">Deltok sist: 2026-03-15 · 3 av 3 møter · 100% oppmøte</div>
+        </div>
+        <div class="member-actions">
+          <button class="btn-sm">Rediger</button>
+          <button class="btn-sm btn-remove">Fjern</button>
+        </div>
+      </div>
+    ))}
+  </div>
+
+  <div class="perm-table">
+    <h3>Rettigheter per rolle</h3>
+    <div class="perm-grid">
+      <div class="perm-header"><span>Rolle</span><span>Les</span><span>Delta</span><span>Rediger</span><span>Godkjenne</span><span>Signere</span><span>Admin</span></div>
+      {['Styreleder','Nestleder','Styremedlem','Styresekretær','Observatør'].map(r => (
+        <div class="perm-row">
+          <span class="perm-role">{r}</span><span>✓</span><span>✓</span>
+          <span>{r === 'Styreleder' || r === 'Styresekretær' ? '✓' : '—'}</span>
+          <span>{r === 'Styreleder' ? '✓' : '—'}</span>
+          <span>{r === 'Styreleder' || r === 'Nestleder' ? '✓' : '—'}</span>
+          <span>{r === 'Styreleder' ? '✓' : '—'}</span>
+        </div>
+      ))}
+    </div>
+  </div>
+
+  <div class="demo-notice">Demo av medlemsadministrasjon. Full integrasjon med invitasjons-e-post og BankID-verifisering ved lansering.</div>
+</div>
+</Layout>
+
+<style>
+.container { max-width: 800px; margin: 1.5rem auto; padding: 0 20px; }
+.back-link { font-family: system-ui, sans-serif; font-size: 0.85rem; color: var(--muted); text-decoration: none; }
+.header { display: flex; justify-content: space-between; align-items: flex-start; margin: 1rem 0 2rem; }
+.header h1 { font-size: 1.6rem; margin: 0 0 4px; }
+.header p { font-family: system-ui, sans-serif; color: var(--muted); margin: 0; }
+.btn-primary { background: var(--accent); color: white; border: none; padding: 10px 20px; border-radius: 10px; font-family: system-ui, sans-serif; font-size: 0.85rem; font-weight: 600; cursor: pointer; }
+
+.member-grid { display: flex; flex-direction: column; gap: 12px; }
+.member-card { display: flex; gap: 14px; padding: 18px; background: white; border: 1px solid rgba(16,36,31,0.08); border-radius: 12px; align-items: flex-start; }
+.member-avatar { width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; flex-shrink: 0; }
+.member-info { flex: 1; }
+.member-info strong { display: block; font-size: 0.95rem; margin-bottom: 2px; }
+.member-role { font-family: system-ui, sans-serif; font-size: 0.8rem; color: var(--accent); font-weight: 600; display: block; }
+.member-email { font-family: system-ui, sans-serif; font-size: 0.78rem; color: var(--muted); display: block; margin-bottom: 8px; }
+.member-perms { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 6px; }
+.chip { font-family: system-ui, sans-serif; font-size: 0.66rem; padding: 2px 7px; border-radius: 100px; }
+.chip.active { background: rgba(31,111,91,0.08); color: var(--accent); }
+.chip.inactive { background: rgba(192,57,43,0.06); color: #c0392b; }
+.member-activity { font-family: system-ui, sans-serif; font-size: 0.7rem; color: #aaa; }
+.member-actions { display: flex; flex-direction: column; gap: 5px; }
+.btn-sm { padding: 5px 12px; border: 1px solid rgba(0,0,0,0.1); border-radius: 6px; background: white; font-family: system-ui, sans-serif; font-size: 0.76rem; cursor: pointer; }
+.btn-remove { color: #c0392b; border-color: rgba(192,57,43,0.2); }
+
+.perm-table { margin-top: 2.5rem; background: white; border: 1px solid rgba(16,36,31,0.08); border-radius: 12px; padding: 20px; }
+.perm-table h3 { font-size: 1rem; margin: 0 0 12px; }
+.perm-grid { font-family: system-ui, sans-serif; font-size: 0.76rem; }
+.perm-header, .perm-row { display: grid; grid-template-columns: 1.2fr 0.6fr 0.6fr 0.6fr 0.8fr 0.6fr 0.6fr; gap: 4px; padding: 7px 0; text-align: center; align-items: center; }
+.perm-header { font-weight: 700; color: var(--muted); font-size: 0.7rem; text-transform: uppercase; border-bottom: 1px solid rgba(0,0,0,0.05); }
+.perm-row { border-bottom: 1px solid rgba(0,0,0,0.03); }
+.perm-role { text-align: left; font-weight: 600; }
+
+.demo-notice { text-align: center; padding: 1.5rem; margin-top: 2rem; background: rgba(31,111,91,0.06); border-radius: 12px; font-family: system-ui, sans-serif; font-size: 0.85rem; color: var(--muted); }
+
+@media (max-width: 600px) {
+  .perm-header, .perm-row { grid-template-columns: repeat(7, 1fr); font-size: 0.68rem; }
+}
+</style>
