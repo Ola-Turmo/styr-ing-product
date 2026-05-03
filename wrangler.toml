@@ -9,7 +9,7 @@ compatibility_date = "2024-01-01"
 # Cloudflare credentials needed in GitHub Actions secrets:
 #   CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID
 #
-[[d1_databases]]
-binding = "DB"          # accessed as env.DB in SSR pages
-database_name = "styr-ing-db"
-# database_id = "REPLACE_AFTER_CREATING_DB"  # run: wrangler d1 create styr-ing-db --remote
+# [[d1_databases]]
+# binding = "DB"          # accessed as env.DB in SSR pages
+# database_name = "styr-ing-db"
+# # database_id = "REPLACE_AFTER_CREATING_DB"  # run: wrangler d1 create styr-ing-db --remote
