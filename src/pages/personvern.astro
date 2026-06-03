@@ -1,0 +1,144 @@
+---
+// /personvern — Personvernerklæring for Styr.ing
+// v2.0 content upgrade — uses Layout.astro wrapper + emerald/cream design tokens.
+import Layout from '../layouts/Layout.astro';
+---
+<Layout title="Personvern" activeNav="">
+  <article class="container legal-page" style="max-width: 860px; margin: 0 auto; padding: 2.5rem 20px 4rem;">
+    <header style="margin-bottom: 2rem;">
+      <p style="font-family: system-ui, sans-serif; color: var(--muted); font-size: 0.875rem; margin: 0 0 0.5rem;">
+        Sist oppdatert: 2026-06-02 · v2.0
+      </p>
+      <h1 style="font-size: 2.25rem; color: var(--ink); margin: 0 0 0.5rem; line-height: 1.2;">Personvernerklæring</h1>
+      <p style="font-family: system-ui, sans-serif; color: var(--muted); font-size: 1rem; margin: 0;">
+        Slik behandler Styr.ing personopplysninger i samsvar med GDPR og norsk personvernlovgivning.
+      </p>
+    </header>
+
+    <nav aria-label="Innholdsfortegnelse" style="background: rgba(31, 111, 91, 0.06); border: 1px solid rgba(31, 111, 91, 0.18); border-radius: 12px; padding: 1.25rem 1.5rem; margin-bottom: 2rem; font-family: system-ui, sans-serif; font-size: 0.9rem;">
+      <strong style="color: var(--ink); display: block; margin-bottom: 0.5rem;">Innhold</strong>
+      <ol style="margin: 0; padding-left: 1.25rem; color: var(--muted); line-height: 1.7;">
+        <li><a href="#controller">Behandlingsansvarlig</a></li>
+        <li><a href="#collect">Hvilke opplysninger vi samler inn</a></li>
+        <li><a href="#use">Hvorfor vi bruker dem</a></li>
+        <li><a href="#legal-basis">Rettslig grunnlag</a></li>
+        <li><a href="#ai">AI og automatisert behandling</a></li>
+        <li><a href="#subprocessors">Underdatabehandlere</a></li>
+        <li><a href="#transfer">Internasjonale overføringer</a></li>
+        <li><a href="#retention">Lagringstid</a></li>
+        <li><a href="#rights">Dine rettigheter</a></li>
+        <li><a href="#security">Sikkerhet</a></li>
+        <li><a href="#breach">Brudd på personopplysningssikkerheten</a></li>
+        <li><a href="#children">Barn</a></li>
+        <li><a href="#changes">Endringer</a></li>
+        <li><a href="#contact">Kontakt</a></li>
+      </ol>
+    </nav>
+
+    <section id="controller" style="margin-bottom: 2rem;">
+      <h2 style="color: var(--ink); font-size: 1.35rem; margin: 0 0 0.5rem;">1. Behandlingsansvarlig</h2>
+      <p style="font-family: system-ui, sans-serif;">Styr.ing driftes av Ola Turmo. Spørsmål om personvern kan rettes til <a href="mailto:ola@styr.ing" style="color: var(--accent);">ola@styr.ing</a>. Dersom vi er pålagt å ha en databehandleransvarlig (DPO) under GDPR art. 37, er DPOens kontaktopplysninger tilgjengelige på ovennevnte e-postadresse.</p>
+    </section>
+
+    <section id="collect" style="margin-bottom: 2rem;">
+      <h2 style="color: var(--ink); font-size: 1.35rem; margin: 0 0 0.5rem;">2. Hvilke opplysninger vi samler inn</h2>
+      <ul style="font-family: system-ui, sans-serif; padding-left: 1.25rem; line-height: 1.7;">
+        <li><strong>Kontodata:</strong> e-postadresse, visningsnavn, organisasjon, rolle og autentiseringstokener når du registrerer deg.</li>
+        <li><strong>Styredata:</strong> styredokumenter, møtereferater, saksmapper, beslutningslogger og tilhørende metadata du laster opp eller oppretter i plattformen.</li>
+        <li><strong>Bruksdata:</strong> tidsstempler, funksjonsbruk, feillogger og revisjonsspor som er nødvendige for å levere tjenesten og oppfylle internkontrollkrav.</li>
+        <li><strong>Betalingsdata:</strong> håndteres av Stripe. Vi lagrer ikke dine fulle betalingskortopplysninger.</li>
+        <li><strong>Kommunikasjon:</strong> e-poster du sender til oss, tilbakemeldinger i appen og support-henvendelser.</li>
+      </ul>
+    </section>
+
+    <section id="use" style="margin-bottom: 2rem;">
+      <h2 style="color: var(--ink); font-size: 1.35rem; margin: 0 0 0.5rem;">3. Hvorfor vi bruker dem</h2>
+      <ul style="font-family: system-ui, sans-serif; padding-left: 1.25rem; line-height: 1.7;">
+        <li>For å levere kjernefunksjonene: styreportal, compliance-kalender, internkontrollverktøy.</li>
+        <li>For å forbedre tjenesten gjennom aggregerte, anonymiserte bruksmønstre.</li>
+        <li>For å sende transaksjonelle e-poster (påminnelser, sikkerhetsvarsler, fakturaer). Markedsførings-e-post er opt-in.</li>
+        <li>For å overholde juridiske forpliktelser (Aksjeloven, GDPR, internkontrollforskriften).</li>
+        <li>For å håndtere support og fakturering.</li>
+      </ul>
+    </section>
+
+    <section id="legal-basis" style="margin-bottom: 2rem;">
+      <h2 style="color: var(--ink); font-size: 1.35rem; margin: 0 0 0.5rem;">4. Rettslig grunnlag (GDPR art. 6)</h2>
+      <p style="font-family: system-ui, sans-serif;">For brukere i EØS behandler vi dine data på grunnlag av:</p>
+      <ul style="font-family: system-ui, sans-serif; padding-left: 1.25rem; line-height: 1.7;">
+        <li><strong>Kontraktsoppfyllelse (art. 6(1)(b))</strong> for å levere tjenesten du har tegnet abonnement på.</li>
+        <li><strong>Rettslig forpliktelse (art. 6(1)(c))</strong> for å oppfylle krav i Aksjeloven, bokføringsloven og internkontrollforskriften.</li>
+        <li><strong>Berettiget interesse (art. 6(1)(f))</strong> for sikkerhet, misbruksforebygging og produktforbedring.</li>
+        <li><strong>Samtykke (art. 6(1)(a))</strong> for valgfrie funksjoner som markedsførings-e-post og utvidet AI-trening.</li>
+      </ul>
+    </section>
+
+    <section id="ai" style="margin-bottom: 2rem;">
+      <h2 style="color: var(--ink); font-size: 1.35rem; margin: 0 0 0.5rem;">5. AI og automatisert behandling</h2>
+      <p style="font-family: system-ui, sans-serif;">Styr.ing bruker KI-agenter for å hjelpe med dokumentanalyse, møtereferat, saksprioritering og risikovurdering. Tjenesten er et <strong>verktøy for menneskelig beslutningstaking</strong>, ikke en erstatning for styret eller ledelsen.</p>
+      <p style="font-family: system-ui, sans-serif;"><strong>Modellleverandører:</strong> Dine data kan bli behandlet av tredjeparts LLM-leverandører (OpenAI, Anthropic, Google) under deres egne vilkår. Styr.ing er ikke ansvarlig for modellleverandørenes behandling utover det som følger av GDPR art. 28.</p>
+      <p style="font-family: system-ui, sans-serif;"><strong>EU AI Act art. 50:</strong> AI-generert innhold i Styr.ing merkes som KI-assistert. Ved høyrisiko-beslutninger (styrevedtak, oppsigelser, regulatorisk rapportering) krever systemet menneskelig godkjenning før effekt.</p>
+      <p style="font-family: system-ui, sans-serif;"><strong>GDPR art. 22 — automatisert beslutning:</strong> Du har rett til menneskelig inngripen, til å uttrykke synspunkter, og til å bestride enhver automatisk beslutning som i vesentlig grad påvirker deg. Alle styrevedtak og compliance-beslutninger i Styr.ing krever aktiv menneskelig attestasjon.</p>
+      <p style="font-family: system-ui, sans-serif;"><strong>Opplæring:</strong> Styr.ing bruker ikke dine private data til å trene tredjeparts modeller uten samtykke. Vi kan bruke anonymiserte, aggregerte mønstre til intern produktforbedring.</p>
+    </section>
+
+    <section id="subprocessors" style="margin-bottom: 2rem;">
+      <h2 style="color: var(--ink); font-size: 1.35rem; margin: 0 0 0.5rem;">6. Underdatabehandlere</h2>
+      <p style="font-family: system-ui, sans-serif;">For å levere tjenesten bruker vi følgende underdatabehandlere (GDPR art. 28(2)):</p>
+      <ul style="font-family: system-ui, sans-serif; padding-left: 1.25rem; line-height: 1.7;">
+        <li><strong>Cloudflare</strong> (US/EU) — hosting, edge-compute, Workers, R2-lagring</li>
+        <li><strong>Stripe</strong> (US) — betalingsbehandling</li>
+        <li><strong>Resend</strong> (US) — transaksjonell e-post</li>
+        <li><strong>OpenAI / Anthropic / Google</strong> (US) — LLM-inferens for KI-funksjoner</li>
+        <li><strong>Supabase / D1</strong> — databasehosting (EU/US avhengig av tenant-region)</li>
+      </ul>
+      <p style="font-family: system-ui, sans-serif;">En oppdatert liste er tilgjengelig på forespørsel. Du varsles minst 30 dager før vi tar i bruk nye underdatabehandlere.</p>
+    </section>
+
+    <section id="transfer" style="margin-bottom: 2rem;">
+      <h2 style="color: var(--ink); font-size: 1.35rem; margin: 0 0 0.5rem;">7. Internasjonale overføringer</h2>
+      <p style="font-family: system-ui, sans-serif;">Data kan behandles i EU, Storbritannia, USA og andre jurisdiksjoner der våre underdatabehandlere opererer. For overføringer ut av EØS bruker vi EUs standard kontraktsklausuler (SCC 2021/914), samt EU-US Data Privacy Framework der det er relevant. Kontakt oss for kopi av SCC-ene.</p>
+    </section>
+
+    <section id="retention" style="margin-bottom: 2rem;">
+      <h2 style="color: var(--ink); font-size: 1.35rem; margin: 0 0 0.5rem;">8. Lagringstid</h2>
+      <ul style="font-family: system-ui, sans-serif; padding-left: 1.25rem; line-height: 1.7;">
+        <li><strong>Kontodata:</strong> til kontoen slettes, deretter slettet innen 30 dager (unntatt sikkerhetskopier).</li>
+        <li><strong>Styredata:</strong> så lenge kontoen er aktiv. Du kan slette når som helst.</li>
+        <li><strong>Regnskapsdata:</strong> 7 år i henhold til bokføringsloven.</li>
+        <li><strong>Revisjonslogg:</strong> 5 år for compliance-bevis.</li>
+        <li><strong>Sikkerhetskopier:</strong> rullende 30 dager, deretter permanent slettet.</li>
+      </ul>
+    </section>
+
+    <section id="rights" style="margin-bottom: 2rem;">
+      <h2 style="color: var(--ink); font-size: 1.35rem; margin: 0 0 0.5rem;">9. Dine rettigheter</h2>
+      <p style="font-family: system-ui, sans-serif;">Du har rett til innsyn, retting, sletting, eksport og begrensning av behandlingen av dine data, samt rett til å protestere og til å klage til Datatilsynet. Send e-post til <a href="mailto:ola@styr.ing" style="color: var(--accent);">ola@styr.ing</a> for å utøve disse rettighetene. Vi svarer innen 30 dager.</p>
+    </section>
+
+    <section id="security" style="margin-bottom: 2rem;">
+      <h2 style="color: var(--ink); font-size: 1.35rem; margin: 0 0 0.5rem;">10. Sikkerhet</h2>
+      <p style="font-family: system-ui, sans-serif;">All data er kryptert under overføring (TLS 1.3) og hvile (AES-256). Tilgang til produksjonssystemer er begrenset til autorisert personell med 2FA. Vi følger ISO 27001-prinsipper for styring av informasjonssikkerhet.</p>
+    </section>
+
+    <section id="breach" style="margin-bottom: 2rem;">
+      <h2 style="color: var(--ink); font-size: 1.35rem; margin: 0 0 0.5rem;">11. Brudd på personopplysningssikkerheten</h2>
+      <p style="font-family: system-ui, sans-serif;">Dersom vi oppdager et personopplysningsbrudd som medfører høy risiko for dine rettigheter, varsler vi deg innen 72 timer etter at vi ble kjent med bruddet, i samsvar med GDPR art. 34.</p>
+    </section>
+
+    <section id="children" style="margin-bottom: 2rem;">
+      <h2 style="color: var(--ink); font-size: 1.35rem; margin: 0 0 0.5rem;">12. Barn</h2>
+      <p style="font-family: system-ui, sans-serif;">Styr.ing er ikke rettet mot barn under 16 år. Vi innhenter ikke bevisst personopplysninger fra barn.</p>
+    </section>
+
+    <section id="changes" style="margin-bottom: 2rem;">
+      <h2 style="color: var(--ink); font-size: 1.35rem; margin: 0 0 0.5rem;">13. Endringer</h2>
+      <p style="font-family: system-ui, sans-serif;">Vi varsler deg om vesentlige endringer via e-post eller i produktet minst 30 dager før de trer i kraft.</p>
+    </section>
+
+    <section id="contact" style="margin-bottom: 2rem;">
+      <h2 style="color: var(--ink); font-size: 1.35rem; margin: 0 0 0.5rem;">14. Kontakt</h2>
+      <p style="font-family: system-ui, sans-serif;"><strong>Styr.ing</strong><br>E-post: <a href="mailto:ola@styr.ing" style="color: var(--accent);">ola@styr.ing</a><br>For EØS-brukere: klagerett hos Datatilsynet, <a href="https://www.datatilsynet.no" style="color: var(--accent);">datatilsynet.no</a>.</p>
+    </section>
+  </article>
+</Layout>
