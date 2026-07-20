@@ -4,10 +4,11 @@ import Layout from '../layouts/Layout.astro';
 ---
 <Layout title="Kom i gang — Styr.ing" activeNav="">
 <div class="onboarding-page">
+  <h1 class="page-title">Lokal onboarding-demo</h1>
   <div class="progress-bar" id="progress">
-    <div class="step done" data-step="1"><span>1</span>Bedrift</div>
-    <div class="step-connector done"></div>
-    <div class="step active" data-step="2"><span>2</span>Styre</div>
+    <div class="step active" data-step="1"><span>1</span>Bedrift</div>
+    <div class="step-connector"></div>
+    <div class="step" data-step="2"><span>2</span>Styre</div>
     <div class="step-connector"></div>
     <div class="step" data-step="3"><span>3</span>Møter</div>
     <div class="step-connector"></div>
@@ -15,12 +16,12 @@ import Layout from '../layouts/Layout.astro';
   </div>
 
   <div id="step-company" class="onboarding-card">
-    <h2>Fortell om din bedrift</h2>
-    <p class="card-desc">Vi tilpasser styreportalen til din bedrifts størrelse, bransje og regulatoriske krav.</p>
+    <h2>Utforsk en fiktiv bedrift</h2>
+    <p class="card-desc">Feltene inneholder illustrasjonsdata og behandles bare lokalt i nettleseren. Ikke legg inn virkelige virksomhets- eller personopplysninger.</p>
     <form onsubmit="event.preventDefault();switchStep(2)">
-      <div class="form-group"><label>Bedriftens navn</label><input type="text" value="Pilotselskap AS"/></div>
-      <div class="form-row"><div class="form-group"><label>Org.nummer</label><input type="text" value="123456789"/></div><div class="form-group"><label>Ansatte</label><select><option>1-10</option><option selected>11-50</option><option>51-200</option></select></div></div>
-      <div class="form-group"><label>Bransje</label><select><option>Teknologi/IT</option><option selected>Konsulent/rådgivning</option><option>Finans</option><option>Helse</option></select></div>
+      <div class="form-group"><label for="demo-company">Bedriftens navn</label><input id="demo-company" type="text" value="Pilotselskap AS" autocomplete="off"/></div>
+      <div class="form-row"><div class="form-group"><label for="demo-org-number">Org.nummer</label><input id="demo-org-number" type="text" value="123456789" inputmode="numeric" autocomplete="off"/></div><div class="form-group"><label for="demo-employees">Ansatte</label><select id="demo-employees"><option>1-10</option><option selected>11-50</option><option>51-200</option></select></div></div>
+      <div class="form-group"><label for="demo-industry">Bransje</label><select id="demo-industry"><option>Teknologi/IT</option><option selected>Konsulent/rådgivning</option><option>Finans</option><option>Helse</option></select></div>
       <div class="form-group"><label>Relevante krav</label>
         <div class="check-group">
           <label class="check-option"><input type="checkbox" checked/>Aksjeloven</label>
@@ -36,30 +37,30 @@ import Layout from '../layouts/Layout.astro';
     <h2>Styresammensetning</h2>
     <p class="card-desc">Legg til styremedlemmer og roller.</p>
     <div class="board-comp">
-      <div class="role-row"><span>👑</span><input type="text" value="Ola Turmo"/><select><option selected>Styreleder</option></select><input type="email" value="ola@pilot.no"/></div>
-      <div class="role-row"><span>📋</span><input type="text" value="Kari Sekretær"/><select><option selected>Styresekretær</option></select><input type="email" value="kari@pilot.no"/></div>
-      <div class="role-row"><span>💼</span><input type="text" value="CFO"/><select><option selected>Styremedlem</option></select><input type="email" value="cfo@pilot.no"/></div>
-      <button class="add-btn">+ Legg til medlem</button>
+      <div class="role-row"><span aria-hidden="true">👑</span><input type="text" value="Demo Leder" aria-label="Demo styreleder navn" autocomplete="off"/><select aria-label="Demo styreleder rolle"><option selected>Styreleder</option></select><input type="email" value="leder@example.invalid" aria-label="Demo styreleder e-post" autocomplete="off"/></div>
+      <div class="role-row"><span aria-hidden="true">📋</span><input type="text" value="Demo Sekretær" aria-label="Demo styresekretær navn" autocomplete="off"/><select aria-label="Demo styresekretær rolle"><option selected>Styresekretær</option></select><input type="email" value="sekretar@example.invalid" aria-label="Demo styresekretær e-post" autocomplete="off"/></div>
+      <div class="role-row"><span aria-hidden="true">💼</span><input type="text" value="Demo Økonomi" aria-label="Demo styremedlem navn" autocomplete="off"/><select aria-label="Demo styremedlem rolle"><option selected>Styremedlem</option></select><input type="email" value="okonomi@example.invalid" aria-label="Demo styremedlem e-post" autocomplete="off"/></div>
+      <span class="add-btn demo-control" aria-label="Ikke-aktiv demokontroll">Legg til medlem · demo</span>
     </div>
     <div class="step-nav"><button class="btn-outline" onclick="switchStep(1)">← Tilbake</button><button class="btn-primary" onclick="switchStep(3)">Neste →</button></div>
   </div>
 
   <div id="step-cadence" class="onboarding-card" style="display:none">
     <h2>Møtekadens og signaturpolicy</h2>
-    <p class="card-desc">Kalender og signaturflyt settes opp automatisk.</p>
+    <p class="card-desc">Kalender og signaturflyt vises som demo og må konfigureres i et avtalt oppsett.</p>
     <form onsubmit="event.preventDefault();switchStep(4)">
-      <div class="form-group"><label>Møtefrekvens</label><select><option selected>Kvartalsvis</option><option>Månedlig</option></select></div>
-      <div class="form-group"><label>Møtedag</label><select><option selected>Onsdag</option><option>Tirsdag</option></select></div>
-      <div class="form-group"><label>Signaturløsning</label><select><option selected>BankID (kvalifisert)</option><option>Enkel e-signatur</option></select></div>
-      <div class="form-group"><label>Godkjenning av protokoll</label><select><option selected>Styreleder + referent</option><option>Styreleder</option></select></div>
-      <div class="step-nav"><button type="button" class="btn-outline" onclick="switchStep(2)">← Tilbake</button><button type="submit" class="btn-primary">Generer styreportal →</button></div>
+      <div class="form-group"><label for="demo-frequency">Møtefrekvens</label><select id="demo-frequency"><option selected>Kvartalsvis</option><option>Månedlig</option></select></div>
+      <div class="form-group"><label for="demo-meeting-day">Møtedag</label><select id="demo-meeting-day"><option selected>Onsdag</option><option>Tirsdag</option></select></div>
+      <div class="form-group"><label for="demo-signature">Signaturløsning (demo)</label><select id="demo-signature"><option selected>Avklares</option><option>Enkel e-signatur</option></select></div>
+      <div class="form-group"><label for="demo-approval">Godkjenning av protokoll</label><select id="demo-approval"><option selected>Styreleder + referent</option><option>Styreleder</option></select></div>
+      <div class="step-nav"><button type="button" class="btn-outline" onclick="switchStep(2)">← Tilbake</button><button type="submit" class="btn-primary">Vis demooppsummering →</button></div>
     </form>
   </div>
 
   <div id="step-confirm" class="onboarding-card" style="display:none">
     <div class="success-icon">✓</div>
-    <h2>Din styreportal er klar</h2>
-    <p class="card-desc">Her er et sammendrag av oppsettet. Alt kan endres senere.</p>
+    <h2>Demooppsummering</h2>
+    <p class="card-desc">Dette er en lokal forhåndsvisning. Ingen konto, portal eller integrasjon er opprettet.</p>
     <div class="blueprint">
       <h3>Driftsplan</h3>
       <div class="bp-grid">
@@ -67,24 +68,24 @@ import Layout from '../layouts/Layout.astro';
         <div class="bp-item"><span class="bp-l">Rammeverk</span><span>Aksjeloven, GDPR, Internkontroll</span></div>
         <div class="bp-item"><span class="bp-l">Styre</span><span>3 medlemmer + sekretær</span></div>
         <div class="bp-item"><span class="bp-l">Møter</span><span>Kvartalsvis, onsdager</span></div>
-        <div class="bp-item"><span class="bp-l">Signatur</span><span>BankID · Godkjent av leder+referent</span></div>
+        <div class="bp-item"><span class="bp-l">Signatur</span><span>Avklares · Godkjent av leder+referent</span></div>
       </div>
-      <h3>Aktive AI-agenter</h3>
+      <h3>Mulige, ikke-aktiverte arbeidsflyter</h3>
       <div class="agent-list">
-        <div>📋 Møteagent — forbereder agenda, protokoll, aksjonsoppfølging</div>
-        <div>📅 Compliance-agent — overvåker regulatoriske frister</div>
-        <div>📊 Rapporteringsagent — produserer styrerapporter</div>
+        <div>📋 Møteutkast — kan vurderes i et avtalt oppsett</div>
+        <div>📅 Fristoppfølging — datakilder og varsling må avtales</div>
+        <div>📊 Rapporteringsutkast — krever menneskelig kontroll</div>
       </div>
     </div>
     <div style="text-align:center;margin-top:2rem">
-      <a href="/board/board-1" class="btn-primary" style="display:inline-block;text-decoration:none;padding:14px 40px;font-size:1.1rem">Gå til styreportalen →</a>
+      <a href="/board/board-1" class="btn-primary" style="display:inline-block;text-decoration:none;padding:14px 40px;font-size:1.1rem">Se illustrert styrevisning →</a>
     </div>
   </div>
 
-  <div class="demo-notice">Demo av onboarding-flyt. Full integrasjon med BankID, e-postutsendelse og automatisk agendagenerering ved lansering.</div>
+  <div class="demo-notice">Demo av onboarding-flyt. Identitetskontroll, e-post og eventuell KI-assistanse må avtales og verifiseres separat.</div>
 </div>
 
-<script>
+<script is:inline>
 function switchStep(n) {
   ['step-company','step-board','step-cadence','step-confirm'].forEach((id,i) => {
     document.getElementById(id).style.display = (i+1 === n) ? 'block' : 'none';
@@ -101,6 +102,7 @@ function switchStep(n) {
 
 <style>
 .onboarding-page { max-width: 640px; margin: 2rem auto; padding: 0 20px; }
+.page-title { font-size: clamp(1.6rem, 4vw, 2.1rem); margin: 0 0 1.25rem; text-align: center; }
 .progress-bar { display: flex; align-items: center; justify-content: center; margin-bottom: 2rem; }
 .step { display: flex; flex-direction: column; align-items: center; gap: 6px; font-family: system-ui, sans-serif; font-size: 0.75rem; color: #ccc; }
 .step span { width: 30px; height: 30px; border-radius: 50%; background: #eee; color: #aaa; font-weight: 700; font-size: 0.78rem; display: flex; align-items: center; justify-content: center; }
@@ -132,6 +134,7 @@ function switchStep(n) {
 .role-row span { font-size: 1.2rem; }
 .role-row input, .role-row select { padding: 6px 8px; border: 1px solid rgba(0,0,0,0.1); border-radius: 6px; font-family: system-ui, sans-serif; font-size: 0.82rem; flex: 1; min-width: 0; }
 .add-btn { background: transparent; border: 2px dashed rgba(16,36,31,0.12); border-radius: 8px; padding: 10px; width: 100%; font-family: system-ui, sans-serif; font-size: 0.82rem; color: var(--muted); cursor: pointer; }
+.demo-control { display: block; box-sizing: border-box; text-align: center; cursor: default; opacity: 0.72; }
 
 .success-icon { width: 52px; height: 52px; border-radius: 50%; background: #27ae60; color: white; font-size: 1.4rem; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px; }
 
@@ -144,4 +147,13 @@ function switchStep(n) {
 .agent-list div { font-family: system-ui, sans-serif; font-size: 0.8rem; padding: 8px; background: rgba(31,111,91,0.04); border-radius: 6px; }
 
 .demo-notice { text-align: center; padding: 1.5rem; margin-top: 2rem; background: rgba(31,111,91,0.06); border-radius: 12px; font-family: system-ui, sans-serif; font-size: 0.85rem; color: var(--muted); }
+
+@media (max-width: 520px) {
+  .onboarding-card { padding: 22px 16px; }
+  .form-row, .bp-grid { grid-template-columns: 1fr; }
+  .role-row { flex-wrap: wrap; }
+  .role-row span { width: 100%; }
+  .role-row input, .role-row select { flex: 1 1 100%; width: 100%; }
+  .step-nav { gap: 8px; flex-wrap: wrap; }
+}
 </style>

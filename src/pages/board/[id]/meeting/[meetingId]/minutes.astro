@@ -1,5 +1,5 @@
 ---
-// Minutes Drafting Page — AI-assisted meeting minutes
+// Minutes Drafting Page — static illustrative minutes
 import Layout from '../../../../../layouts/Layout.astro';
 import { demoMeetingsExtended } from '../../../../../lib/demo-data-extended';
 
@@ -24,7 +24,7 @@ const sections = meeting.agenda_items.map(item => {
   let evidenceHtml = '';
   let decisionHtml = '';
   let confidenceLevel = 'high';
-  let confidenceText = 'AI-konfidens: Høy — basert på vedtaksregister og møtereferat';
+  let confidenceText = 'Demogrunnlag: agenda, vedtaksregister og illustrert møtereferat';
 
   if (item.status === 'completed') {
     const preparer = item.prepared_by || 'Møteleder';
@@ -37,7 +37,7 @@ const sections = meeting.agenda_items.map(item => {
       bodyHtml = (item.prepared_by ? item.prepared_by + ' innledet til diskusjon. ' : '') +
         'Styret drøftet ' + item.title.toLowerCase() + '. Synspunkter og innspill er dokumentert i møtereferatet.';
       confidenceLevel = 'medium';
-      confidenceText = 'AI-konfidens: Medium — basert på tale-til-tekst. Gjennomgås av referent.';
+      confidenceText = 'Demogrunnlag: illustrert møtereferat. Må gjennomgås av referent.';
     } else if (item.type === 'election') {
       bodyHtml = (item.prepared_by ? item.prepared_by + ' presenterte saken. ' : '') +
         'Styret gjennomførte valg. Resultatet fremgår av vedtaksregisteret.';
@@ -63,10 +63,10 @@ const statusLabels = { draft:'Kladd', scheduled:'Planlagt', in_progress:'Pågår
 
   <div class="top-bar">
     <h1>Protokoll</h1>
-    <div class="top-actions">
-      {!isApproved && <button class="btn-primary">Send til godkjenning</button>}
-      <button class="btn-outline">Last ned PDF</button>
-      <button class="btn-outline">Eksporter Word</button>
+    <div class="top-actions" aria-label="Ikke-aktive demokontroller">
+      {!isApproved && <span class="btn-primary demo-control">Godkjenning · demo</span>}
+      <span class="btn-outline demo-control">PDF · demo</span>
+      <span class="btn-outline demo-control">Word · demo</span>
     </div>
   </div>
 
@@ -81,17 +81,17 @@ const statusLabels = { draft:'Kladd', scheduled:'Planlagt', in_progress:'Pågår
     <div class="empty-state">
       <div class="empty-icon">📝</div>
       <h2>Protokoll ikke tilgjengelig</h2>
-      <p>Protokollen genereres automatisk når møtet er fullført. AI-assistenten vil utarbeide et utkast basert på agenda, vedtak og møtereferat.</p>
+      <p>Denne demonstrasjonen viser først et protokollutkast når illustrasjonsmøtet er markert som fullført. Ingen automatisk generering skjer på siden.</p>
     </div>
   )}
 
   {completed && (
     <div class="minutes-body">
       <div class="provenance-banner">
-        <span class="prov-icon">🤖</span>
+        <span class="prov-icon">📝</span>
         <div>
-          <strong>AI-assistert protokoll</strong>
-          <p>Dette utkastet er generert fra: {meeting.agenda_items.length} agendapunkter og møtereferat. Gjennomgå og rediger før godkjenning.</p>
+          <strong>Illustrert protokollutkast</strong>
+          <p>Dette statiske eksemplet er satt sammen fra {meeting.agenda_items.length} demopunkter og illustrerte referater. Det er ikke generert fra et faktisk møte.</p>
         </div>
       </div>
 
@@ -146,7 +146,7 @@ const statusLabels = { draft:'Kladd', scheduled:'Planlagt', in_progress:'Pågår
             </div>
           ) : (
             <div class="section-empty">
-              <p>Innhold genereres når saksbehandlingen er fullført</p>
+              <p>Demoen viser innhold når det illustrerte agendapunktet er fullført</p>
             </div>
           )}
         </div>
@@ -155,17 +155,17 @@ const statusLabels = { draft:'Kladd', scheduled:'Planlagt', in_progress:'Pågår
       <hr class="section-divider"/>
 
       <div class="signature-block">
-        <h3>Signering</h3>
+        <h3>Illustrert signaturstatus</h3>
         <div class="sig-grid">
           <div class="sig-line">
             <span class="sig-label">Møteleder</span>
             <span class="sig-name">Ola Turmo</span>
-            <span class="sig-status">✍️ {isApproved ? 'Signert' : 'Venter'}</span>
+            <span class="sig-status">{isApproved ? 'Markert signert i demo' : 'Ikke signert i demo'}</span>
           </div>
           <div class="sig-line">
             <span class="sig-label">Referent</span>
             <span class="sig-name">Kari Sekretær</span>
-            <span class="sig-status">✍️ {isApproved ? 'Signert' : 'Venter'}</span>
+            <span class="sig-status">{isApproved ? 'Markert signert i demo' : 'Ikke signert i demo'}</span>
           </div>
         </div>
       </div>
@@ -183,6 +183,7 @@ const statusLabels = { draft:'Kladd', scheduled:'Planlagt', in_progress:'Pågår
 .top-actions { display: flex; gap: 8px; }
 .btn-primary { background: var(--accent); color: white; border: none; padding: 8px 18px; border-radius: 8px; font-family: system-ui, sans-serif; font-size: 0.85rem; font-weight: 600; cursor: pointer; }
 .btn-outline { background: transparent; border: 1.5px solid rgba(16,36,31,0.2); color: var(--ink); padding: 8px 18px; border-radius: 8px; font-family: system-ui, sans-serif; font-size: 0.85rem; cursor: pointer; }
+.demo-control { display: inline-block; opacity: 0.72; cursor: default; }
 
 .meta-bar { display: flex; gap: 8px; align-items: center; font-family: system-ui, sans-serif; font-size: 0.85rem; color: var(--muted); margin-bottom: 1.5rem; }
 .badge { font-size: 0.72rem; padding: 2px 10px; border-radius: 100px; font-weight: 600; }

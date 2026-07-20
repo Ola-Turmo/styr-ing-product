@@ -6,7 +6,7 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "deploy": "npm run build && wrangler pages deploy dist"
+    "deploy": "npm run build && wrangler pages deploy dist --project-name styr-ing --branch main"
   },
   "dependencies": {
     "@astrojs/cloudflare": "10.4.2",

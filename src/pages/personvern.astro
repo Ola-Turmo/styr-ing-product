@@ -7,11 +7,11 @@ import Layout from '../layouts/Layout.astro';
   <article class="container legal-page" style="max-width: 860px; margin: 0 auto; padding: 2.5rem 20px 4rem;">
     <header style="margin-bottom: 2rem;">
       <p style="font-family: system-ui, sans-serif; color: var(--muted); font-size: 0.875rem; margin: 0 0 0.5rem;">
-        Sist oppdatert: 2026-06-02 · v2.0
+        Sist oppdatert: 2026-07-19 · v2.1
       </p>
       <h1 style="font-size: 2.25rem; color: var(--ink); margin: 0 0 0.5rem; line-height: 1.2;">Personvernerklæring</h1>
       <p style="font-family: system-ui, sans-serif; color: var(--muted); font-size: 1rem; margin: 0;">
-        Slik behandler Styr.ing personopplysninger i samsvar med GDPR og norsk personvernlovgivning.
+        Slik beskriver Styr.ing behandling av personopplysninger og hvilke forhold som avklares ved kundeimplementering.
       </p>
     </header>
 
@@ -43,22 +43,16 @@ import Layout from '../layouts/Layout.astro';
     <section id="collect" style="margin-bottom: 2rem;">
       <h2 style="color: var(--ink); font-size: 1.35rem; margin: 0 0 0.5rem;">2. Hvilke opplysninger vi samler inn</h2>
       <ul style="font-family: system-ui, sans-serif; padding-left: 1.25rem; line-height: 1.7;">
-        <li><strong>Kontodata:</strong> e-postadresse, visningsnavn, organisasjon, rolle og autentiseringstokener når du registrerer deg.</li>
-        <li><strong>Styredata:</strong> styredokumenter, møtereferater, saksmapper, beslutningslogger og tilhørende metadata du laster opp eller oppretter i plattformen.</li>
-        <li><strong>Bruksdata:</strong> tidsstempler, funksjonsbruk, feillogger og revisjonsspor som er nødvendige for å levere tjenesten og oppfylle internkontrollkrav.</li>
-        <li><strong>Betalingsdata:</strong> håndteres av Stripe. Vi lagrer ikke dine fulle betalingskortopplysninger.</li>
-        <li><strong>Kommunikasjon:</strong> e-poster du sender til oss, tilbakemeldinger i appen og support-henvendelser.</li>
+        <li><strong>Offentlig nettsted:</strong> de statiske demo- og informasjonssidene har ingen kontoregistrering, innlogging eller opplasting. Vi mottar bare opplysninger du selv velger å sende på e-post.</li>
+        <li><strong>Avtalt løsning:</strong> dersom en produksjonsløsning bestilles, beskrives nødvendige konto-, styre-, bruks-, kommunikasjons- og eventuelle betalingsdata konkret i bestillingen, kundeavtalen og databehandleravtalen før behandlingen starter.</li>
       </ul>
     </section>
 
     <section id="use" style="margin-bottom: 2rem;">
       <h2 style="color: var(--ink); font-size: 1.35rem; margin: 0 0 0.5rem;">3. Hvorfor vi bruker dem</h2>
       <ul style="font-family: system-ui, sans-serif; padding-left: 1.25rem; line-height: 1.7;">
-        <li>For å levere kjernefunksjonene: styreportal, compliance-kalender, internkontrollverktøy.</li>
-        <li>For å forbedre tjenesten gjennom aggregerte, anonymiserte bruksmønstre.</li>
-        <li>For å sende transaksjonelle e-poster (påminnelser, sikkerhetsvarsler, fakturaer). Markedsførings-e-post er opt-in.</li>
-        <li>For å overholde juridiske forpliktelser (Aksjeloven, GDPR, internkontrollforskriften).</li>
-        <li>For å håndtere support og fakturering.</li>
+        <li>På det offentlige nettstedet: for å besvare e-posthenvendelser og drive de statiske informasjonssidene.</li>
+        <li>I en avtalt produksjonsløsning: bare for de dokumenterte formålene og funksjonene som følger av bestillingen, kundeavtalen og databehandleravtalen.</li>
       </ul>
     </section>
 
@@ -66,49 +60,34 @@ import Layout from '../layouts/Layout.astro';
       <h2 style="color: var(--ink); font-size: 1.35rem; margin: 0 0 0.5rem;">4. Rettslig grunnlag (GDPR art. 6)</h2>
       <p style="font-family: system-ui, sans-serif;">For brukere i EØS behandler vi dine data på grunnlag av:</p>
       <ul style="font-family: system-ui, sans-serif; padding-left: 1.25rem; line-height: 1.7;">
-        <li><strong>Kontraktsoppfyllelse (art. 6(1)(b))</strong> for å levere tjenesten du har tegnet abonnement på.</li>
-        <li><strong>Rettslig forpliktelse (art. 6(1)(c))</strong> for å oppfylle krav i Aksjeloven, bokføringsloven og internkontrollforskriften.</li>
-        <li><strong>Berettiget interesse (art. 6(1)(f))</strong> for sikkerhet, misbruksforebygging og produktforbedring.</li>
-        <li><strong>Samtykke (art. 6(1)(a))</strong> for valgfrie funksjoner som markedsførings-e-post og utvidet AI-trening.</li>
+        <li><strong>Henvendelser:</strong> behandlingsgrunnlaget avhenger av formålet med e-posten, normalt tiltak før avtale eller berettiget interesse i å besvare henvendelsen.</li>
+        <li><strong>Avtalt produksjonsløsning:</strong> behandlingsgrunnlag og rollefordeling dokumenteres for den konkrete behandlingen før oppstart. Denne demosiden fastsetter ikke behandlingsgrunnlag på kundens vegne.</li>
       </ul>
     </section>
 
     <section id="ai" style="margin-bottom: 2rem;">
       <h2 style="color: var(--ink); font-size: 1.35rem; margin: 0 0 0.5rem;">5. AI og automatisert behandling</h2>
-      <p style="font-family: system-ui, sans-serif;">Styr.ing bruker KI-agenter for å hjelpe med dokumentanalyse, møtereferat, saksprioritering og risikovurdering. Tjenesten er et <strong>verktøy for menneskelig beslutningstaking</strong>, ikke en erstatning for styret eller ledelsen.</p>
-      <p style="font-family: system-ui, sans-serif;"><strong>Modellleverandører:</strong> Dine data kan bli behandlet av tredjeparts LLM-leverandører (OpenAI, Anthropic, Google) under deres egne vilkår. Styr.ing er ikke ansvarlig for modellleverandørenes behandling utover det som følger av GDPR art. 28.</p>
-      <p style="font-family: system-ui, sans-serif;"><strong>EU AI Act art. 50:</strong> AI-generert innhold i Styr.ing merkes som KI-assistert. Ved høyrisiko-beslutninger (styrevedtak, oppsigelser, regulatorisk rapportering) krever systemet menneskelig godkjenning før effekt.</p>
-      <p style="font-family: system-ui, sans-serif;"><strong>GDPR art. 22 — automatisert beslutning:</strong> Du har rett til menneskelig inngripen, til å uttrykke synspunkter, og til å bestride enhver automatisk beslutning som i vesentlig grad påvirker deg. Alle styrevedtak og compliance-beslutninger i Styr.ing krever aktiv menneskelig attestasjon.</p>
-      <p style="font-family: system-ui, sans-serif;"><strong>Opplæring:</strong> Styr.ing bruker ikke dine private data til å trene tredjeparts modeller uten samtykke. Vi kan bruke anonymiserte, aggregerte mønstre til intern produktforbedring.</p>
+      <p style="font-family: system-ui, sans-serif;">Der KI-funksjoner er avtalt og aktivert, kan de brukes til å lage utkast og beslutningsstøtte. Tjenesten er et <strong>verktøy for menneskelig beslutningstaking</strong>, ikke en erstatning for styret eller ledelsen.</p>
+      <p style="font-family: system-ui, sans-serif;"><strong>Leverandører og dataflyt:</strong> Eventuelle KI-leverandører, formål, datakategorier og behandlingssteder skal fremgå av kundeavtalen og den gjeldende underdatabehandleroversikten før kundedata behandles.</p>
+      <p style="font-family: system-ui, sans-serif;"><strong>KI-assistert innhold:</strong> KI-funksjoner er beslutningsstøtte. Endelig vurdering, kontroll og godkjenning må gjøres av virksomheten før innhold brukes i styrevedtak, oppsigelser, regulatorisk rapportering eller andre handlinger med vesentlig effekt.</p>
+      <p style="font-family: system-ui, sans-serif;"><strong>Automatiserte beslutninger:</strong> Virksomheten er ansvarlig for å vurdere om en behandling omfattes av GDPR art. 22, og for å etablere nødvendig menneskelig kontroll og rettighetsmekanismer.</p>
+      <p style="font-family: system-ui, sans-serif;"><strong>Produktforbedring:</strong> Bruk av kundedata til andre formål enn å levere tjenesten krever et dokumentert behandlingsgrunnlag og skal beskrives i avtalen.</p>
     </section>
 
     <section id="subprocessors" style="margin-bottom: 2rem;">
       <h2 style="color: var(--ink); font-size: 1.35rem; margin: 0 0 0.5rem;">6. Underdatabehandlere</h2>
-      <p style="font-family: system-ui, sans-serif;">For å levere tjenesten bruker vi følgende underdatabehandlere (GDPR art. 28(2)):</p>
-      <ul style="font-family: system-ui, sans-serif; padding-left: 1.25rem; line-height: 1.7;">
-        <li><strong>Cloudflare</strong> (US/EU) — hosting, edge-compute, Workers, R2-lagring</li>
-        <li><strong>Stripe</strong> (US) — betalingsbehandling</li>
-        <li><strong>Resend</strong> (US) — transaksjonell e-post</li>
-        <li><strong>OpenAI / Anthropic / Google</strong> (US) — LLM-inferens for KI-funksjoner</li>
-        <li><strong>Supabase / D1</strong> — databasehosting (EU/US avhengig av tenant-region)</li>
-      </ul>
-      <p style="font-family: system-ui, sans-serif;">En oppdatert liste er tilgjengelig på forespørsel. Du varsles minst 30 dager før vi tar i bruk nye underdatabehandlere.</p>
+      <p style="font-family: system-ui, sans-serif;">Hvilke leverandører som behandler kundedata, og til hvilke formål, avhenger av den avtalte implementeringen. En datert oversikt over aktive underdatabehandlere, behandlingssted og funksjon skal gjøres tilgjengelig før produksjonsbruk og holdes oppdatert.</p>
+      <p style="font-family: system-ui, sans-serif;">Endringer håndteres i samsvar med databehandleravtalen og gjeldende personvernregler. Denne siden lover ikke en fast varslingsfrist som ikke er avtalt med kunden.</p>
     </section>
 
     <section id="transfer" style="margin-bottom: 2rem;">
       <h2 style="color: var(--ink); font-size: 1.35rem; margin: 0 0 0.5rem;">7. Internasjonale overføringer</h2>
-      <p style="font-family: system-ui, sans-serif;">Data kan behandles i EU, Storbritannia, USA og andre jurisdiksjoner der våre underdatabehandlere opererer. For overføringer ut av EØS bruker vi EUs standard kontraktsklausuler (SCC 2021/914), samt EU-US Data Privacy Framework der det er relevant. Kontakt oss for kopi av SCC-ene.</p>
+      <p style="font-family: system-ui, sans-serif;">Behandlingssted og eventuelle overføringer utenfor EØS skal dokumenteres for den avtalte leverandørkjeden. Der en overføring krever særskilt grunnlag eller tilleggstiltak, skal dette vurderes og avtales før behandlingen starter.</p>
     </section>
 
     <section id="retention" style="margin-bottom: 2rem;">
       <h2 style="color: var(--ink); font-size: 1.35rem; margin: 0 0 0.5rem;">8. Lagringstid</h2>
-      <ul style="font-family: system-ui, sans-serif; padding-left: 1.25rem; line-height: 1.7;">
-        <li><strong>Kontodata:</strong> til kontoen slettes, deretter slettet innen 30 dager (unntatt sikkerhetskopier).</li>
-        <li><strong>Styredata:</strong> så lenge kontoen er aktiv. Du kan slette når som helst.</li>
-        <li><strong>Regnskapsdata:</strong> 7 år i henhold til bokføringsloven.</li>
-        <li><strong>Revisjonslogg:</strong> 5 år for compliance-bevis.</li>
-        <li><strong>Sikkerhetskopier:</strong> rullende 30 dager, deretter permanent slettet.</li>
-      </ul>
+      <p style="font-family: system-ui, sans-serif;">Lagringstid skal følge formål, kundens instruks, avtalte slette- og returprosedyrer og eventuelle rettslige plikter. Konkrete perioder for kontodata, styredata, logger og sikkerhetskopier dokumenteres i kundeavtalen og den tekniske driftsbeskrivelsen.</p>
     </section>
 
     <section id="rights" style="margin-bottom: 2rem;">
@@ -118,12 +97,12 @@ import Layout from '../layouts/Layout.astro';
 
     <section id="security" style="margin-bottom: 2rem;">
       <h2 style="color: var(--ink); font-size: 1.35rem; margin: 0 0 0.5rem;">10. Sikkerhet</h2>
-      <p style="font-family: system-ui, sans-serif;">All data er kryptert under overføring (TLS 1.3) og hvile (AES-256). Tilgang til produksjonssystemer er begrenset til autorisert personell med 2FA. Vi følger ISO 27001-prinsipper for styring av informasjonssikkerhet.</p>
+      <p style="font-family: system-ui, sans-serif;">Vi bruker sikkerhetsmekanismer fra våre driftsleverandører for transportkryptering, tilgangskontroll og logging. Konkrete sikkerhetstiltak, lagringssteder og databehandlerforhold dokumenteres i kundeavtaler og leverandørdokumentasjon.</p>
     </section>
 
     <section id="breach" style="margin-bottom: 2rem;">
       <h2 style="color: var(--ink); font-size: 1.35rem; margin: 0 0 0.5rem;">11. Brudd på personopplysningssikkerheten</h2>
-      <p style="font-family: system-ui, sans-serif;">Dersom vi oppdager et personopplysningsbrudd som medfører høy risiko for dine rettigheter, varsler vi deg innen 72 timer etter at vi ble kjent med bruddet, i samsvar med GDPR art. 34.</p>
+      <p style="font-family: system-ui, sans-serif;">Ved et personopplysningsbrudd vurderer vi hendelsen, begrenser skade og varsler behandlingsansvarlig uten ugrunnet opphold når Styr.ing opptrer som databehandler. Den behandlingsansvarlige vurderer varsling til Datatilsynet og berørte personer etter gjeldende regler.</p>
     </section>
 
     <section id="children" style="margin-bottom: 2rem;">
@@ -133,7 +112,7 @@ import Layout from '../layouts/Layout.astro';
 
     <section id="changes" style="margin-bottom: 2rem;">
       <h2 style="color: var(--ink); font-size: 1.35rem; margin: 0 0 0.5rem;">13. Endringer</h2>
-      <p style="font-family: system-ui, sans-serif;">Vi varsler deg om vesentlige endringer via e-post eller i produktet minst 30 dager før de trer i kraft.</p>
+      <p style="font-family: system-ui, sans-serif;">Vesentlige endringer varsles på en egnet måte og i samsvar med avtalen før de trer i kraft.</p>
     </section>
 
     <section id="contact" style="margin-bottom: 2rem;">
@@ -141,4 +120,9 @@ import Layout from '../layouts/Layout.astro';
       <p style="font-family: system-ui, sans-serif;"><strong>Styr.ing</strong><br>E-post: <a href="mailto:ola@styr.ing" style="color: var(--accent);">ola@styr.ing</a><br>For EØS-brukere: klagerett hos Datatilsynet, <a href="https://www.datatilsynet.no" style="color: var(--accent);">datatilsynet.no</a>.</p>
     </section>
   </article>
+  <style>
+    .legal-page { min-width: 0; overflow-wrap: anywhere; }
+    .legal-page a { overflow-wrap: anywhere; word-break: break-word; }
+    .legal-page h1, .legal-page h2 { overflow-wrap: anywhere; word-break: break-word; hyphens: auto; }
+  </style>
 </Layout>

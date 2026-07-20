@@ -7,7 +7,7 @@ import Layout from '../layouts/Layout.astro';
   <article class="container legal-page" style="max-width: 860px; margin: 0 auto; padding: 2.5rem 20px 4rem;">
     <header style="margin-bottom: 2rem;">
       <p style="font-family: system-ui, sans-serif; color: var(--muted); font-size: 0.875rem; margin: 0 0 0.5rem;">
-        Sist oppdatert: 2026-06-02 · v2.0
+        Sist oppdatert: 2026-07-19 · v2.1
       </p>
       <h1 style="font-size: 2.25rem; color: var(--ink); margin: 0 0 0.5rem; line-height: 1.2;">Vilkår for bruk</h1>
       <p style="font-family: system-ui, sans-serif; color: var(--muted); font-size: 1rem; margin: 0;">
@@ -38,7 +38,7 @@ import Layout from '../layouts/Layout.astro';
 
     <section id="acceptance" style="margin-bottom: 2rem;">
       <h2 style="color: var(--ink); font-size: 1.35rem; margin: 0 0 0.5rem;">1. Aksept</h2>
-      <p style="font-family: system-ui, sans-serif;">Ved å ta i bruk Styr.ing godtar du disse vilkårene. Hvis du ikke godtar dem, må du ikke bruke tjenesten. Vilkårene gjelder også for organisasjonen som har tegnet abonnementet — det er organisasjonens ansvar å informere brukere om vilkårene.</p>
+      <p style="font-family: system-ui, sans-serif;">Disse vilkårene beskriver rammen for en eventuell avtalt produksjonsløsning. De offentlige sidene er en statisk konseptdemo og oppretter ikke konto eller abonnement. En konkret bestilling eller kundeavtale må være inngått før produksjonsbruk.</p>
     </section>
 
     <section id="eligibility" style="margin-bottom: 2rem;">
@@ -48,7 +48,7 @@ import Layout from '../layouts/Layout.astro';
 
     <section id="account" style="margin-bottom: 2rem;">
       <h2 style="color: var(--ink); font-size: 1.35rem; margin: 0 0 0.5rem;">3. Konto og sikkerhet</h2>
-      <p style="font-family: system-ui, sans-serif;">Du er ansvarlig for dine kontoopplysninger og all aktivitet under kontoen din. Bruk et sterkt, unikt passord og aktiver to-faktor autentisering. Hvis kontoen din er knyttet til en organisasjon, er organisasjonen ansvarlig for å fjerne tilgangen din når du slutter. Varsle oss umiddelbart på <a href="mailto:ola@styr.ing" style="color: var(--accent);">ola@styr.ing</a> ved mistanke om uautorisert tilgang.</p>
+      <p style="font-family: system-ui, sans-serif;">Du er ansvarlig for dine kontoopplysninger og all aktivitet under kontoen din. Bruk et sterkt, unikt passord og eventuelle ekstra sikkerhetsmekanismer som tilbys i den avtalte løsningen. Hvis kontoen din er knyttet til en organisasjon, er organisasjonen ansvarlig for å fjerne tilgangen din når du slutter. Varsle oss umiddelbart på <a href="mailto:ola@styr.ing" style="color: var(--accent);">ola@styr.ing</a> ved mistanke om uautorisert tilgang.</p>
     </section>
 
     <section id="use" style="margin-bottom: 2rem;">
@@ -68,15 +68,15 @@ import Layout from '../layouts/Layout.astro';
 
     <section id="ai" style="margin-bottom: 2rem;">
       <h2 style="color: var(--ink); font-size: 1.35rem; margin: 0 0 0.5rem;">5. KI-assistert beslutningsstøtte</h2>
-      <p style="font-family: system-ui, sans-serif;">Styr.ing bruker KI til å hjelpe styret og ledelsen med dokumentanalyse, møtereferat, saksprioritering og risikovurdering. <strong>KI-utdata er forslag, ikke vedtak.</strong> Du er ansvarlig for å gjennomgå og godkjenne alle KI-utdata før de brukes som grunnlag for styrevedtak, oppsigelser, regulatorisk rapportering eller andre handlinger med vesentlig effekt.</p>
-      <p style="font-family: system-ui, sans-serif;"><strong>EU AI Act art. 50:</strong> AI-genererte møtereferater, risikovurderinger og sammendrag merkes tydelig som KI-assistert i grensesnittet.</p>
-      <p style="font-family: system-ui, sans-serif;"><strong>Modellleverandører:</strong> KI-funksjonene bruker OpenAI, Anthropic og Google som underdatabehandlere. Dine data behandles under deres egne vilkår i tillegg til disse vilkårene.</p>
-      <p style="font-family: system-ui, sans-serif;"><strong>GDPR art. 22:</strong> Du har rett til menneskelig inngripen, til å uttrykke synspunkter, og til å bestride enhver automatisk beslutning. Alle vesentlige beslutninger i Styr.ing krever aktiv menneskelig attestasjon.</p>
+      <p style="font-family: system-ui, sans-serif;">Når KI-funksjoner er avtalt og aktivert, kan de hjelpe med å lage utkast og beslutningsstøtte. <strong>KI-utdata er forslag, ikke vedtak.</strong> Du er ansvarlig for å gjennomgå og godkjenne alle KI-utdata før de brukes som grunnlag for styrevedtak, oppsigelser, regulatorisk rapportering eller andre handlinger med vesentlig effekt.</p>
+      <p style="font-family: system-ui, sans-serif;"><strong>Merking og kontroll:</strong> Der KI-assistert innhold tilbys, skal kunden behandle det som et utkast og selv kontrollere, merke og godkjenne det i den sammenhengen hvor det brukes.</p>
+      <p style="font-family: system-ui, sans-serif;"><strong>Leverandører:</strong> Aktive modellleverandører, dataflyt og behandlingsvilkår fremgår av kundeavtalen og gjeldende underdatabehandleroversikt.</p>
+      <p style="font-family: system-ui, sans-serif;"><strong>Automatiserte beslutninger:</strong> Kunden må selv vurdere og oppfylle kravene til menneskelig inngripen og andre rettigheter når GDPR art. 22 eller annet regelverk gjelder.</p>
     </section>
 
     <section id="subscription" style="margin-bottom: 2rem;">
       <h2 style="color: var(--ink); font-size: 1.35rem; margin: 0 0 0.5rem;">6. Abonnement og betaling</h2>
-      <p style="font-family: system-ui, sans-serif;">Betalte abonnement faktureres forskuddsvis per kalendermåned. Du kan kansellere når som helst; kansellering trer i kraft ved slutten av inneværende fakturaperiode. Refusjon gis kun der loven krever det. Prisendringer varsles minst 30 dager i forveien. B2C-kunder har rett til å gå fra kvartals- til månedsabonnement uten ekstra kostnad etter 3 måneder.</p>
+      <p style="font-family: system-ui, sans-serif;">Pris, faktureringsperiode, oppsigelse, eventuell refusjon og tidspunkt for prisendringer følger bestillingen og kundeavtalen, med forbehold for ufravikelig lov.</p>
     </section>
 
     <section id="beta" style="margin-bottom: 2rem;">
@@ -96,7 +96,7 @@ import Layout from '../layouts/Layout.astro';
 
     <section id="third-party" style="margin-bottom: 2rem;">
       <h2 style="color: var(--ink); font-size: 1.35rem; margin: 0 0 0.5rem;">10. Tredjepartstjenester</h2>
-      <p style="font-family: system-ui, sans-serif;">Tjenesten integrerer med Cloudflare (hosting), Stripe (betaling), Resend (e-post), OpenAI/Anthropic/Google (KI) og Brønnøysundregistrene (offentlig data). Din bruk av disse er underlagt deres egne vilkår. Vi er ikke ansvarlige for tilgjengeligheten eller nøyaktigheten av disse tredjepartene.</p>
+      <p style="font-family: system-ui, sans-serif;">Den avtalte løsningen kan bruke tredjepartstjenester for blant annet drift, betaling, e-post, datakilder og KI. Aktive leverandører og relevante vilkår fremgår av bestillingen, kundeavtalen og underdatabehandleroversikten.</p>
     </section>
 
     <section id="disclaimers" style="margin-bottom: 2rem;">
@@ -111,7 +111,7 @@ import Layout from '../layouts/Layout.astro';
 
     <section id="changes" style="margin-bottom: 2rem;">
       <h2 style="color: var(--ink); font-size: 1.35rem; margin: 0 0 0.5rem;">13. Endringer</h2>
-      <p style="font-family: system-ui, sans-serif;">Vi kan oppdatere disse vilkårene. Vesentlige endringer varsles minst 30 dager i forveien via e-post og i produktet. Fortsatt bruk etter ikrafttredelsesdatoen utgjør aksept.</p>
+      <p style="font-family: system-ui, sans-serif;">Vi kan oppdatere disse vilkårene. Vesentlige endringer varsles på en egnet måte og i samsvar med kundeavtalen før de trer i kraft.</p>
     </section>
 
     <section id="law" style="margin-bottom: 2rem;">
@@ -121,7 +121,7 @@ import Layout from '../layouts/Layout.astro';
 
     <section id="contact" style="margin-bottom: 2rem;">
       <h2 style="color: var(--ink); font-size: 1.35rem; margin: 0 0 0.5rem;">15. Kontakt</h2>
-      <p style="font-family: system-ui, sans-serif;"><strong>Styr.ing</strong><br>E-post: <a href="mailto:ola@styr.ing" style="color: var(--accent);">ola@styr.ing</a><br>Se også <a href="/personvern" style="color: var(--accent);">personvernerklæringen</a> og <a href="/informasjonskapsler" style="color: var(--accent);">informasjonskapsler-policyen</a>.</p>
+      <p style="font-family: system-ui, sans-serif;"><strong>Styr.ing</strong><br>E-post: <a href="mailto:ola@styr.ing" style="color: var(--accent);">ola@styr.ing</a><br>Se også <a href="/personvern" style="color: var(--accent);">personvernerklæringen</a>.</p>
     </section>
   </article>
 </Layout>

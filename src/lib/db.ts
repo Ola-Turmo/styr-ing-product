@@ -1,6 +1,7 @@
 // ─── Cloudflare D1 Database Client ──────────────────────────────────────────
 //
-// Architecture: Cloudflare Pages (SSR) + Cloudflare D1 (SQLite)
+// Dormant reference helpers for a possible future Cloudflare D1 implementation.
+// The current public deployment is static and does not bind or call D1.
 // D1 is accessed via the `cloudflare:workers` runtime API.
 // On Cloudflare Pages SSR, bind `DB` is available on env.DB.
 //
@@ -106,7 +107,8 @@ export async function getMeeting(env: Env, meetingId: string): Promise<Meeting |
 }
 
 /**
- * Create a demo request (lead capture). Returns true on success.
+ * Dormant reference helper for a future, separately approved intake flow.
+ * It is not imported or exposed by the current static public site.
  */
 export async function createDemoRequest(
   env: Env,
@@ -167,13 +169,14 @@ export interface Meeting {
 
 // ─── Demo Data (shown when D1 binding is unavailable) ───────────────────────
 // Pages render correctly without a live D1 database — demo data fills the UI.
-// This enables the site to be deployed and demonstrated before the first pilot.
+// These fictional values are the only data used by the current public static build.
+// They are not customer, pilot, or production evidence.
 
 export const demoBoards = [
   {
     id: 'board-1',
     name: 'Styret 2026',
-    description: 'Hovedstyret for pilotkunde AS',
+    description: 'Fiktivt hovedstyre for Illustrasjon AS',
     memberCount: 5,
     nextMeeting: '2026-05-15',
     status: 'active',
@@ -189,11 +192,11 @@ export const demoBoards = [
 ];
 
 export const demoMembers = [
-  { id: 'm1', name: 'Erik Nilsen',    role: 'Styreleder',   email: 'erik@pilotselskap.no',     boardId: 'board-1' },
-  { id: 'm2', name: 'Ingrid Bakken',  role: 'Nestleder',    email: 'ingrid@pilotselskap.no',   boardId: 'board-1' },
-  { id: 'm3', name: 'Lars Holm',      role: 'Styremedlem',  email: 'lars@pilotselskap.no',     boardId: 'board-1' },
-  { id: 'm4', name: 'Sofia Andresen', role: 'Styremedlem',  email: 'sofia@pilotselskap.no',   boardId: 'board-1' },
-  { id: 'm5', name: 'Mikkel Thorsen', role: 'Observatør',  email: 'mikkel@pilotselskap.no',   boardId: 'board-1' },
+  { id: 'm1', name: 'Demo Leder',      role: 'Styreleder',   email: 'leder@example.invalid',      boardId: 'board-1' },
+  { id: 'm2', name: 'Demo Nestleder',  role: 'Nestleder',    email: 'nestleder@example.invalid',  boardId: 'board-1' },
+  { id: 'm3', name: 'Demo Medlem A',   role: 'Styremedlem',  email: 'medlem-a@example.invalid',   boardId: 'board-1' },
+  { id: 'm4', name: 'Demo Medlem B',   role: 'Styremedlem',  email: 'medlem-b@example.invalid',   boardId: 'board-1' },
+  { id: 'm5', name: 'Demo Observatør', role: 'Observatør',   email: 'observator@example.invalid', boardId: 'board-1' },
 ];
 
 export const demoMeetings = [
@@ -247,6 +250,6 @@ export const demoBoardsFixed = demoBoards.map(b => ({
 }));
 
 export const demoDemoRequests = [
-  { id: 'dr-1', name: 'Kari Nordmann', company: 'Nordmann AS', email: 'kari@nordmann.no', status: 'new', date: '2026-04-20' },
-  { id: 'dr-2', name: 'Ole Hansen', company: 'Hansen Entreprenør', email: 'ole@hansen.no', status: 'contacted', date: '2026-04-15' },
+  { id: 'dr-1', name: 'Demo Kontakt A', company: 'Illustrasjon AS', email: 'demo-a@example.invalid', status: 'new', date: '2026-04-20' },
+  { id: 'dr-2', name: 'Demo Kontakt B', company: 'Eksempel Drift AS', email: 'demo-b@example.invalid', status: 'contacted', date: '2026-04-15' },
 ];

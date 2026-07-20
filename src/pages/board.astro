@@ -4,13 +4,12 @@ import Layout from '../layouts/Layout.astro';
 import { demoBoardsFixed } from '../lib/db';
 
 const boards = demoBoardsFixed;
-const isLoggedIn = false; // auth is client-side stub
 ---
 <Layout title="Styreportal" activeNav="boards">
   <div class="container" style="max-width: 960px; margin: 2rem auto; padding: 0 20px;">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
-      <h1 style="font-size: 2rem; color: var(--ink);">Dine styrer</h1>
-      <a href="/login" class="btn-primary" style="text-decoration: none;">Logg inn for tilgang</a>
+      <h1 style="font-size: 2rem; color: var(--ink);">Illustrerte styrer</h1>
+      <span class="btn-primary demo-control">Statisk demo</span>
     </div>
 
     <div style="display: grid; gap: 16px;">
@@ -24,7 +23,7 @@ const isLoggedIn = false; // auth is client-side stub
               </p>
               <div style="margin-top: 8px;">
                 <span class="status-pill" style="background: {board.status === 'active' ? 'rgba(31,111,91,0.12)' : 'rgba(200,180,30,0.15)'}; color: {board.status === 'active' ? 'var(--accent)' : '#8a7500'}; font-family: system-ui, sans-serif; font-size: 0.75rem; font-weight: 600; padding: 4px 12px; border-radius: 100px;">
-                  {board.status === 'active' ? 'Aktiv' : 'Pilot'}
+                  {board.status === 'active' ? 'Demoaktiv' : 'Demopilot'}
                 </span>
               </div>
             </div>
@@ -38,7 +37,7 @@ const isLoggedIn = false; // auth is client-side stub
 
     <div style="margin-top: 2rem; text-align: center;">
       <p style="font-family: system-ui, sans-serif; color: var(--muted); font-size: 0.9rem;">
-        Dette er demovyer. Logg inn for å opprette dine egne.
+        Dette er statiske demovyer. Ingen konto eller egne styrer opprettes her.
       </p>
     </div>
   </div>
@@ -53,4 +52,5 @@ const isLoggedIn = false; // auth is client-side stub
     font-family: system-ui, sans-serif; font-size: 0.9rem; font-weight: 600;
     border: none; cursor: pointer;
   }
+  .demo-control { cursor: default; opacity: 0.72; }
 </style>

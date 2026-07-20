@@ -1,6 +1,57 @@
 ---
 interface Props { title: string; activeNav?: string; }
 const { title, activeNav = '' } = Astro.props;
+const organizationSchema = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  name: "Styr.ing",
+  url: "https://styr.ing",
+  description: "Offentlig konseptdemo for norsk styrearbeid og internkontroll. Styr.ing er ikke et separat aktivt tilbud.",
+  contactPoint: {
+    "@type": "ContactPoint",
+    contactType: "customer support",
+    email: "ola@styr.ing",
+  },
+  sameAs: [],
+};
+const websiteSchema = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  name: "Styr.ing",
+  url: "https://styr.ing",
+  description: "Offentlig konseptdemo for norsk styrearbeid og internkontroll",
+  inLanguage: "nb-NO",
+};
+const faqSchema = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: [
+    {
+      "@type": "Question",
+      name: "Hva er Styr.ing?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "Styr.ing er en offentlig konseptdemo med fiktive data. Ingen konto, produktaktivering eller produksjonsfunksjon tilbys på siden.",
+      },
+    },
+    {
+      "@type": "Question",
+      name: "Kan jeg kjøpe eller registrere Styr.ing?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "Nei. Styr.ing har ikke et separat aktivt tilbud, en offentlig pris eller selvbetjent registrering. Samsvarlig er frontdøren for det aktive kontrollsyklustilbudet.",
+      },
+    },
+    {
+      "@type": "Question",
+      name: "Er demoen juridisk rådgivning eller dokumentasjon på etterlevelse?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "Nei. Virksomheten må selv identifisere, kvalitetssikre og oppfylle kravene som gjelder.",
+      },
+    },
+  ],
+};
 ---
 <!doctype html>
 <html lang="no">
@@ -8,11 +59,11 @@ const { title, activeNav = '' } = Astro.props;
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>{title} | Styr.ing</title>
-  <meta name="description" content="Norsk styreportal og internkontroll for SMB. Digitaliser styrepapirer, compliance-kalender og internkontroll i én plattform. Fra 2 490 kr/mnd." />
+  <meta name="description" content="Konsept- og demoflater for norsk styrearbeid og internkontroll. Produksjonsomfang, funksjoner og pris bekreftes før aktivering." />
   <meta name="keywords" content="styreportal, internkontroll, compliance, styreverktøy, norsk styre, Aksjeloven, GDPR, board portal, governance, Norway" />
   <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1" />
-  <meta property="og:title" content="{title} | Styr.ing" />
-  <meta property="og:description" content="Norsk styreportal og internkontroll for SMB. Fra 2 490 kr/mnd." />
+  <meta property="og:title" content={`${title} | Styr.ing`} />
+  <meta property="og:description" content="Konsept- og demoflater for norsk styrearbeid og internkontroll. Omfang avtales før produksjonsbruk." />
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="Styr.ing" />
   <meta property="og:locale" content="nb_NO" />
@@ -21,101 +72,9 @@ const { title, activeNav = '' } = Astro.props;
   <link rel="llms-txt" href="/llms.txt" />
 
   <!-- JSON-LD Structured Data -->
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "Organization",
-    "name": "Styr.ing",
-    "url": "https://styr.ing",
-    "description": "Norsk styreportal og internkontroll for SMB. Digitaliser styrepapirer, compliance-kalender og internkontroll i én plattform.",
-    "foundingDate": "2026",
-    "contactPoint": {
-      "@type": "ContactPoint",
-      "contactType": "customer support",
-      "email": "ola@styr.ing"
-    },
-    "sameAs": []
-  }
-  </script>
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "WebSite",
-    "name": "Styr.ing",
-    "url": "https://styr.ing",
-    "description": "Norsk styreportal og internkontroll for SMB",
-    "inLanguage": "nb-NO",
-    "potentialAction": {
-      "@type": "SearchAction",
-      "target": "https://styr.ing/search?q={search_term_string}",
-      "query-input": "required name=search_term_string"
-    }
-  }
-  </script>
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "SoftwareApplication",
-    "name": "Styr.ing",
-    "applicationCategory": "BusinessApplication",
-    "operatingSystem": "Web",
-    "description": "Norsk styreportal og internkontrollverktøy for SMB. Board portal, compliance calendar, og internal control register.",
-    "offers": {
-      "@type": "Offer",
-      "price": "2490.00",
-      "priceCurrency": "NOK",
-      "description": "Per styre per måned, ekskl. mva"
-    }
-  }
-  </script>
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "FAQPage",
-    "mainEntity": [
-      {
-        "@type": "Question",
-        "name": "Hva er Styr.ing?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "Styr.ing er en norsk styreportal og internkontrollverktøy for SMB. Plattformen samler styredokumenter, compliance-kalender og internkontroll i én digital arbeidsflate."
-        }
-      },
-      {
-        "@type": "Question",
-        "name": "Hva koster Styr.ing?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "Styr.ing koster 2 490 kr per måned per styre, ekskl. mva. Det er gratis pilotperiode frem til 30. juni 2026 for opptil 3 pilotkunder."
-        }
-      },
-      {
-        "@type": "Question",
-        "name": "Hvilke norske regelverk støtter Styr.ing?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "Styr.ing støtter Aksjeloven, GDPR, Brønnøysundregistrene, Finanstilsynet, CSRD/ESRS og Internkontrollforskriften."
-        }
-      },
-      {
-        "@type": "Question",
-        "name": "Hvordan kommer jeg i gang med Styr.ing?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "Send en forespørsel via kontaktskjemaet på styr.ing, så tar vi kontakt innen 1-2 arbeidsdager og setter opp ditt styre gratis i pilotperioden."
-        }
-      },
-      {
-        "@type": "Question",
-        "name": "Er Styr.ing GDPR-kompatibel?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "Ja, Styr.ing er 100% norsk, GDPR-kompatibel, og driftes på sikker nettsky uten behov for lokal installasjon."
-        }
-      }
-    ]
-  }
-  </script>
+  <script type="application/ld+json" set:html={JSON.stringify(organizationSchema)}></script>
+  <script type="application/ld+json" set:html={JSON.stringify(websiteSchema)}></script>
+  <script type="application/ld+json" set:html={JSON.stringify(faqSchema)}></script>
   <style>
     :root {
       --ink: #10241f;
@@ -131,9 +90,24 @@ const { title, activeNav = '' } = Astro.props;
       background: radial-gradient(circle at 18% 0%, #fff8df 0%, var(--paper) 45%, #dfe9e3 100%);
       color: var(--ink);
       line-height: 1.6;
+      overflow-wrap: anywhere;
+    }
+    main { min-width: 0; }
+    .site-boundary {
+      padding: 9px clamp(20px,5vw,60px);
+      background: #fff4cf;
+      border-bottom: 1px solid rgba(138,117,0,0.24);
+      color: #655500;
+      font-family: system-ui, sans-serif;
+      font-size: 0.8rem;
+      text-align: center;
     }
     a { color: var(--accent); text-decoration: none; }
     a:hover { color: #0d4a3a; }
+    :focus-visible {
+      outline: 3px solid #a94800;
+      outline-offset: 3px;
+    }
 
     nav {
       position: sticky; top: 0; z-index: 100;
@@ -159,6 +133,12 @@ const { title, activeNav = '' } = Astro.props;
     .container { max-width: 1100px; margin: 0 auto; }
     [id] { scroll-margin-top: 80px; }
 
+    @media (max-width: 760px) {
+      nav { align-items: flex-start; gap: 12px; flex-wrap: wrap; }
+      .nav-links { width: 100%; gap: 10px 14px; flex-wrap: wrap; }
+      .nav-cta { margin-left: 0 !important; }
+    }
+
     footer {
       background: var(--ink); color: rgba(255,255,255,0.5);
       padding: 32px clamp(20px,5vw,60px); margin-top: 4rem;
@@ -176,10 +156,14 @@ const { title, activeNav = '' } = Astro.props;
       <li><a href="/board" class={activeNav === 'boards' ? 'active' : ''}>Styreportal</a></li>
       <li><a href="/compliance" class={activeNav === 'compliance' ? 'active' : ''}>Compliance</a></li>
       <li><a href="/internkontroll" class={activeNav === 'internkontroll' ? 'active' : ''}>Internkontroll</a></li>
-      <li><a href="/login">Logg inn</a></li>
-      <li><a href="/signup" class="nav-cta" style="margin-left: 8px;">Registrer</a></li>
+      <li><a href="/login">Tilgang</a></li>
+      <li><a href="https://samsvarlig.no/" class="nav-cta" style="margin-left: 8px;">Se Samsvarlig</a></li>
     </ul>
   </nav>
+
+  <div class="site-boundary" role="note">
+    Offentlig konseptdemo med illustrasjonsdata. Ingen konto, lagring, varsling, signering, eksport eller KI-kjøring skjer på disse sidene.
+  </div>
 
   <main>
     <slot />
@@ -187,7 +171,7 @@ const { title, activeNav = '' } = Astro.props;
 
   <footer>
     <div class="footer-inner">
-      <div>© 2026 Styr.ing AS — Norsk styreportal og internkontroll</div>
+      <div>© 2026 Styr.ing — offentlig konseptdemo</div>
       <div>
         <a href="mailto:ola@styr.ing">ola@styr.ing</a>
       </div>

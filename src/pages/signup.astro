@@ -1,43 +1,17 @@
 ---
 import Layout from '../layouts/Layout.astro';
 ---
-<Layout title="Opprett konto" activeNav="">
+<Layout title="Ingen selvbetjent registrering" activeNav="">
   <div class="container" style="max-width: 440px; margin: 4rem auto; padding: 0 20px;">
-    <h1 style="font-size: 1.8rem; margin-bottom: 0.5rem;">Opprett konto</h1>
+    <h1 style="font-size: 1.8rem; margin-bottom: 0.5rem;">Ingen selvbetjent registrering</h1>
     <p style="font-family: system-ui, sans-serif; color: var(--muted); margin: 0 0 2rem 0;">
-      Kom i gang med Styr.ing — opprett din bedriftskonto.
+      Den offentlige siden oppretter ikke kontoer og samler ikke inn registreringsdata. Styr.ing er ikke et separat aktivt tilbud.
     </p>
-
-    <form onsubmit="event.preventDefault(); alert('Registrering er under utvikling. Ta kontakt for demo-tilgang.');" style="display: flex; flex-direction: column; gap: 16px;">
-      <div>
-        <label for="name" style="display: block; font-family: system-ui, sans-serif; font-size: 0.85rem; font-weight: 600; margin-bottom: 6px;">Navn</label>
-        <input type="text" id="name" placeholder="Ditt fulle navn" style="width: 100%; padding: 12px 16px; border: 1.5px solid rgba(16,36,31,0.15); border-radius: 12px; font-family: system-ui, sans-serif; font-size: 0.95rem;" />
-      </div>
-      <div>
-        <label for="email" style="display: block; font-family: system-ui, sans-serif; font-size: 0.85rem; font-weight: 600; margin-bottom: 6px;">E-post</label>
-        <input type="email" id="email" placeholder="din@bedrift.no" style="width: 100%; padding: 12px 16px; border: 1.5px solid rgba(16,36,31,0.15); border-radius: 12px; font-family: system-ui, sans-serif; font-size: 0.95rem;" />
-      </div>
-      <div>
-        <label for="company" style="display: block; font-family: system-ui, sans-serif; font-size: 0.85rem; font-weight: 600; margin-bottom: 6px;">Bedrift</label>
-        <input type="text" id="company" placeholder="Bedriftens navn" style="width: 100%; padding: 12px 16px; border: 1.5px solid rgba(16,36,31,0.15); border-radius: 12px; font-family: system-ui, sans-serif; font-size: 0.95rem;" />
-      </div>
-      <div>
-        <label for="password" style="display: block; font-family: system-ui, sans-serif; font-size: 0.85rem; font-weight: 600; margin-bottom: 6px;">Passord</label>
-        <input type="password" id="password" placeholder="Minst 8 tegn" style="width: 100%; padding: 12px 16px; border: 1.5px solid rgba(16,36,31,0.15); border-radius: 12px; font-family: system-ui, sans-serif; font-size: 0.95rem;" />
-      </div>
-      <button type="submit" style="width: 100%; background: var(--accent); color: #fff; padding: 14px; border-radius: 100px; font-family: system-ui, sans-serif; font-size: 1rem; font-weight: 600; border: none; cursor: pointer;">
-        Opprett konto
-      </button>
-    </form>
 
     <div style="text-align: center; margin-top: 1.5rem; padding: 1rem; background: rgba(31,111,91,0.06); border-radius: 10px;">
       <p style="font-family: system-ui, sans-serif; font-size: 0.85rem; color: var(--muted); margin: 0;">
-        Registrering er under utvikling. <a href="mailto:ola@styr.ing" style="color: var(--accent); font-weight: 600;">Ta kontakt</a> for demo-tilgang.
+        <a href="https://samsvarlig.no/" style="display:inline-block; background:var(--accent); color:white; padding:12px 22px; border-radius:999px; font-weight:600;">Se aktivt kontrolltilbud</a>
       </p>
     </div>
-
-    <p style="text-align: center; margin-top: 1.5rem; font-family: system-ui, sans-serif; font-size: 0.875rem; color: var(--muted);">
-      Har du allerede konto? <a href="/login" style="color: var(--accent); font-weight: 600;">Logg inn</a>
-    </p>
   </div>
 </Layout>

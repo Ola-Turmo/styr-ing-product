@@ -8,11 +8,11 @@ export function getStaticPaths() {
 const { id } = Astro.params;
 const board = demoBoardsFixed.find(b => b.id === id) || demoBoardsFixed[0];
 const members = [
-  { name:'Ola Turmo', role:'Styreleder', email:'ola@pilot.no', avatar:'👑', color:'#1a1a1a' },
-  { name:'Kari Sekretær', role:'Styresekretær', email:'kari@pilot.no', avatar:'📋', color:'#065f46' },
-  { name:'CFO', role:'Styremedlem', email:'cfo@pilot.no', avatar:'💼', color:'#34495e' },
-  { name:'IT-ansvarlig', role:'Styremedlem', email:'it@pilot.no', avatar:'🖥', color:'#2c3e50' },
-  { name:'Ekstern rådgiver', role:'Observatør', email:'radgiver@ekstern.no', avatar:'👁', color:'#636e72' },
+  { name:'Demo Leder', role:'Styreleder', email:'leder@example.invalid', avatar:'👑', color:'#1a1a1a' },
+  { name:'Demo Sekretær', role:'Styresekretær', email:'sekretar@example.invalid', avatar:'📋', color:'#065f46' },
+  { name:'Demo Økonomi', role:'Styremedlem', email:'okonomi@example.invalid', avatar:'💼', color:'#34495e' },
+  { name:'Demo IT', role:'Styremedlem', email:'it@example.invalid', avatar:'🖥', color:'#2c3e50' },
+  { name:'Demo Observatør', role:'Observatør', email:'observator@example.invalid', avatar:'👁', color:'#636e72' },
 ];
 ---
 <Layout title="Styremedlemmer" activeNav="boards">
@@ -21,7 +21,7 @@ const members = [
   
   <div class="header">
     <div><h1>Styremedlemmer</h1><p>{members.length} medlemmer</p></div>
-    <button class="btn-primary">+ Inviter medlem</button>
+    <span class="btn-primary demo-control">Invitasjon · demo</span>
   </div>
 
   <div class="member-grid">
@@ -37,15 +37,12 @@ const members = [
             {m.role !== 'Observatør' && <span class="chip active">Delta i møter</span>}
             {(m.role === 'Styreleder' || m.role === 'Styresekretær') && <span class="chip active">Redigere protokoll</span>}
             {m.role === 'Styreleder' && <span class="chip active">Godkjenne vedtak</span>}
-            {m.role === 'Styreleder' && <span class="chip active">Signere (BankID)</span>}
+            {m.role === 'Styreleder' && <span class="chip active">Signaturrolle (demo)</span>}
             {m.role === 'Observatør' && <span class="chip inactive">Ingen stemmerett</span>}
           </div>
           <div class="member-activity">Deltok sist: 2026-03-15 · 3 av 3 møter · 100% oppmøte</div>
         </div>
-        <div class="member-actions">
-          <button class="btn-sm">Rediger</button>
-          <button class="btn-sm btn-remove">Fjern</button>
-        </div>
+        <div class="member-actions"><span class="btn-sm demo-control">Redigering · demo</span></div>
       </div>
     ))}
   </div>
@@ -66,7 +63,7 @@ const members = [
     </div>
   </div>
 
-  <div class="demo-notice">Demo av medlemsadministrasjon. Full integrasjon med invitasjons-e-post og BankID-verifisering ved lansering.</div>
+  <div class="demo-notice">Demo av medlemsadministrasjon. Invitasjon, identitetskontroll og signering må avtales og verifiseres separat.</div>
 </div>
 </Layout>
 
@@ -77,6 +74,7 @@ const members = [
 .header h1 { font-size: 1.6rem; margin: 0 0 4px; }
 .header p { font-family: system-ui, sans-serif; color: var(--muted); margin: 0; }
 .btn-primary { background: var(--accent); color: white; border: none; padding: 10px 20px; border-radius: 10px; font-family: system-ui, sans-serif; font-size: 0.85rem; font-weight: 600; cursor: pointer; }
+.demo-control { cursor: default; opacity: 0.72; }
 
 .member-grid { display: flex; flex-direction: column; gap: 12px; }
 .member-card { display: flex; gap: 14px; padding: 18px; background: white; border: 1px solid rgba(16,36,31,0.08); border-radius: 12px; align-items: flex-start; }

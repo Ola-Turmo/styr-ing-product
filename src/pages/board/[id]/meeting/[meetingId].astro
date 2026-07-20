@@ -51,9 +51,9 @@ const typeLabels: Record<string, string> = {
         <span class={`status-tag`} style={`background:${statusColors[meeting.status]}20;color:${statusColors[meeting.status]}`}>{statusLabels[meeting.status]}</span>
       </div>
     </div>
-    <div class="meeting-actions">
-      <a href="#" class="btn-outline">Rediger møte</a>
-      {meeting.status === 'scheduled' && <a href="#" class="btn-primary">Start møte →</a>}
+    <div class="meeting-actions" aria-label="Ikke-aktive demokontroller">
+      <span class="btn-outline demo-control">Redigering · demo</span>
+      {meeting.status === 'scheduled' && <span class="btn-primary demo-control">Møtestart · demo</span>}
     </div>
   </div>
 
@@ -114,10 +114,7 @@ const typeLabels: Record<string, string> = {
            meeting.pack_status === 'assembling' ? '◷ Under arbeid' :
            meeting.pack_status === 'distributed' ? '✓ Distribuert' : 'Ikke startet'}
         </div>
-        <div class="pack-actions">
-          <a href="#" class="btn-outline-sm">Last ned pakke</a>
-          <a href="#" class="btn-outline-sm">Send til deltakere</a>
-        </div>
+        <p class="demo-action-note">Nedlasting og utsending er ikke aktivert på den offentlige demosiden.</p>
       </div>
 
       <!-- Deltakere -->
@@ -145,7 +142,7 @@ const typeLabels: Record<string, string> = {
     </div>
   </div>
 
-  <div class="demo-notice">Demo-data. Komplett møtestøtte med AI-assistert agendabygging, protokollutkast og aksjonsoppfølging.</div>
+  <div class="demo-notice">Illustrasjonsdata for et mulig møteforløp. Redigering, utsending, KI-assistanse, godkjenning og aksjonsoppfølging må avtales og verifiseres før produksjonsbruk.</div>
 </div>
 </Layout>
 
@@ -165,6 +162,8 @@ const typeLabels: Record<string, string> = {
 .btn-outline { background: transparent; border: 1.5px solid rgba(16,36,31,0.2); color: var(--ink); padding: 8px 20px; border-radius: 100px; font-family: system-ui, sans-serif; font-size: 0.85rem; font-weight: 600; text-decoration: none; }
 .btn-outline:hover { border-color: var(--accent); color: var(--accent); }
 .btn-outline-sm { display: inline-block; background: transparent; border: 1.5px solid rgba(16,36,31,0.15); color: var(--ink); padding: 6px 14px; border-radius: 8px; font-family: system-ui, sans-serif; font-size: 0.78rem; font-weight: 600; text-decoration: none; margin-top: 4px; }
+.demo-control { opacity: 0.72; cursor: default; }
+.demo-action-note { font-family: system-ui, sans-serif; font-size: 0.76rem; color: var(--muted); margin: 0; }
 
 .meeting-grid { display: grid; grid-template-columns: 1fr 320px; gap: 24px; }
 .meeting-main { min-width: 0; }

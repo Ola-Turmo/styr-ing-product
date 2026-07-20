@@ -8,9 +8,9 @@ import Layout from '../../layouts/Layout.astro';
   
   <div class="header">
     <h1>Risikoregister</h1>
-    <div class="header-actions">
-      <button class="btn-outline">Eksporter</button>
-      <button class="btn-primary">+ Ny risiko</button>
+    <div class="header-actions" aria-label="Ikke-aktive demokontroller">
+      <span class="btn-outline demo-control">Eksport · demo</span>
+      <span class="btn-primary demo-control">Ny risiko · demo</span>
     </div>
   </div>
 
@@ -53,7 +53,7 @@ import Layout from '../../layouts/Layout.astro';
     ))}
   </div>
 
-  <div class="demo-notice">Demo av risikoregister. Full integrasjon med kilde-systemer (ticketing, sårbarhetsscannere) ved lansering.</div>
+  <div class="demo-notice">Demo av risikoregister. Dataene er fiktive; eventuelle integrasjoner og datakilder må avtales og verifiseres separat.</div>
 </div>
 </Layout>
 
@@ -65,6 +65,7 @@ import Layout from '../../layouts/Layout.astro';
 .header-actions { display: flex; gap: 8px; }
 .btn-primary { background: var(--accent); color: white; border: none; padding: 8px 18px; border-radius: 8px; font-family: system-ui, sans-serif; font-size: 0.85rem; font-weight: 600; cursor: pointer; }
 .btn-outline { background: transparent; border: 1.5px solid rgba(16,36,31,0.2); color: var(--ink); padding: 8px 18px; border-radius: 8px; font-family: system-ui, sans-serif; font-size: 0.85rem; font-weight: 600; cursor: pointer; }
+.demo-control { display: inline-block; cursor: default; opacity: 0.72; }
 
 .risk-grid { display: flex; flex-direction: column; gap: 16px; }
 .risk-card { background: white; border: 1px solid rgba(16,36,31,0.08); border-radius: 14px; padding: 20px; }

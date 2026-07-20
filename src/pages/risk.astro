@@ -9,11 +9,11 @@ import Layout from '../layouts/Layout.astro';
   <section class="hero">
     <div class="hero-inner">
       <span class="eyebrow">RISK av Styr.ing</span>
-      <h1>Risikostyring som lever — ikke et statisk register</h1>
-      <p>RISK er et AI-drevet risikostyringssystem for norske organisasjoner. Kontinuerlig overvåking, automatiske vurderinger og levende rapportering — bygget for ISO 31000, NIST CSF, NSM og DORA.</p>
+      <h1>Illustrert risikostyring i en statisk demo</h1>
+      <p>RISK er en konseptdemo for strukturert risikostyring i norske organisasjoner. Demoen viser hvordan risikoer, indikatorer, hendelser og kontroller kan samles i én arbeidsflate.</p>
       <div class="hero-actions">
-        <a href="/signup" class="btn-primary">Be om demo</a>
-        <a href="#demo" class="btn-outline">Se demo →</a>
+        <a href="#demo" class="btn-primary">Åpne risikodemoen</a>
+        <a href="https://samsvarlig.no/" class="btn-outline">Se aktivt kontrolltilbud →</a>
       </div>
     </div>
   </section>
@@ -22,26 +22,26 @@ import Layout from '../layouts/Layout.astro';
   <div class="risk-stats">
     <div class="risk-stat">
       <div class="stat-value">47</div>
-      <div class="stat-label">aktive risikoer overvåket</div>
+      <div class="stat-label">fiktive risikoer i eksempelet</div>
     </div>
     <div class="risk-stat">
       <div class="stat-value">128</div>
-      <div class="stat-label">kontroller kartlagt</div>
+      <div class="stat-label">fiktive kontroller i eksempelet</div>
     </div>
     <div class="risk-stat">
       <div class="stat-value">3</div>
-      <div class="stat-label">kritiske avvik denne måneden</div>
+      <div class="stat-label">fiktive kritiske avvik</div>
     </div>
     <div class="risk-stat">
       <div class="stat-value">94%</div>
-      <div class="stat-label">etterlevelse av kontrollmål</div>
+      <div class="stat-label">illustrert kontrollstatus</div>
     </div>
   </div>
 
   <!-- Demo Dashboard -->
   <section id="demo" class="section">
-    <h2>Levende risikobilde</h2>
-    <p class="section-desc">Slik ser RISK ut i daglig bruk — et dashbord som viser endringer, ikke bare statiske data.</p>
+    <h2>Statisk risikobilde</h2>
+    <p class="section-desc">En illustrert arbeidsflate med fiktive eksempeldata. Ingen overvåking eller oppdatering skjer på siden.</p>
     
     <div class="dashboard-grid">
       
@@ -97,8 +97,8 @@ import Layout from '../layouts/Layout.astro';
       <!-- Active Incidents -->
       <div class="card">
         <div class="card-header">
-          <h3>Aktive hendelser</h3>
-          <span class="badge">2 aktive</span>
+          <h3>Eksempelhendelser</h3>
+          <span class="badge">2 åpne i demoen</span>
         </div>
         {[
           {title:'Uautorisert tilgangsforsøk ERP', severity:'Høy', date:'2026-04-28', owner:'IT-sjef'},
@@ -124,14 +124,14 @@ import Layout from '../layouts/Layout.astro';
     <h2>Hva RISK gir deg</h2>
     <div class="features-grid">
       {[
-        {icon:'🔍',title:'Kontinuerlig overvåking',desc:'Bakgrunnsagenter overvåker signaler fra ticketing, hendelsessystemer, sårbarhetsscannere og egenerklæringer — og flagger endringer før de blir problemer.'},
-        {icon:'📊',title:'Levende risikoregister',desc:'Ikke et statisk regneark. Risikoer oppdateres automatisk basert på nye signaler, eierskapsendringer og kontrollfunn.'},
-        {icon:'🔗',title:'Forpliktelser → kontroller → bevis',desc:'Sporbarhet fra lovkrav til kontroll til dokumentert bevis. Klargjør for tilsyn på minutter, ikke uker.'},
-        {icon:'🤖',title:'AI-assisterte vurderinger',desc:'AI analyserer mønstre og foreslår risikovurderinger. Mennesker godkjenner — AI gjør forarbeidet.'},
-        {icon:'📋',title:'Styrerapportering',desc:'Narrative styrerapporter som forklarer hva som har endret seg, hvorfor, og hva som må gjøres. Ferdig til styremøtet.'},
-        {icon:'🛡️',title:'AI-governance',desc:'Kartlegg og vurder AI-bruksområder i organisasjonen. Klargjør for EU AI Act med innebygd inventar og risikovurdering.'},
-        {icon:'🇳🇴',title:'Norske rammeverk',desc:'ISO 31000, NIST CSF, NSM ICT-sikkerhetsprinsipper, DORA. Velg rammeverk ved oppstart — systemet mapper automatisk.'},
-        {icon:'✍️',title:'Egenerklæring og attestasjon',desc:'Eiere bekrefter kontrollstatus digitalt. Automatiske påminnelser og eskaleringsregler ved manglende svar.'},
+        {icon:'🔍',title:'Samlet risikobilde',desc:'Registrer signaler, hendelser og vurderinger på ett sted. Demoen viser manuell oppfølging; datakilder avtales separat.'},
+        {icon:'📊',title:'Risikoregister',desc:'Samle risiko, eier, vurdering, tiltak og neste oppfølging i en felles oversikt.'},
+        {icon:'🔗',title:'Kontroller og bevis',desc:'Knytt risikoer til kontroller og dokumentasjon virksomheten selv legger inn og kvalitetssikrer.'},
+        {icon:'🤖',title:'KI-assisterte utkast',desc:'Der KI er aktivert, kan den foreslå utkast. Virksomheten må kontrollere og godkjenne innholdet.'},
+        {icon:'📋',title:'Rapporteringsgrunnlag',desc:'Bygg et utkast til rapport fra registrerte risikoer, hendelser og tiltak.'},
+        {icon:'🛡️',title:'KI-bruksområder',desc:'Demoen viser hvordan KI-bruksområder kan registreres og vurderes; den utgjør ikke sertifisering eller juridisk rådgivning.'},
+        {icon:'🇳🇴',title:'Valgfrie rammeverk',desc:'Virksomheten kan strukturere egne krav og rammeverk. Ingen automatisk etterlevelse eller mapping er lovet.'},
+        {icon:'✍️',title:'Egenerklæring',desc:'Eiere kan dokumentere status og oppfølging. Påminnelser og eskalering må bekreftes i avtalt oppsett.'},
       ].map(f => (
         <div class="feature-card">
           <div class="fc-icon">{f.icon}</div>
@@ -144,12 +144,12 @@ import Layout from '../layouts/Layout.astro';
 
   <!-- CTA -->
   <section class="cta-section">
-    <h2>Klargjør for neste tilsyn — ikke neste krise</h2>
-    <p>RISK hjelper deg fra reaktiv brannslukking til proaktiv risikostyring. Bygget for norske virksomheter med krav til dokumentert internkontroll.</p>
-    <a href="/signup" class="btn-primary">Be om demo →</a>
+    <h2>Utforsk én avgrenset risikoflyt</h2>
+    <p>Demoen viser et mulig arbeidsmønster. Styr.ing er ikke et separat aktivt tilbud; funksjoner, integrasjoner, ansvar og datakilder må dokumenteres før eventuell produksjonsbruk.</p>
+    <a href="https://samsvarlig.no/" class="btn-primary">Gå til Samsvarlig →</a>
   </section>
 
-  <div class="demo-notice">RISK er under utvikling. Demo-data viser funksjonalitet. <a href="mailto:ola@styr.ing">Ta kontakt</a> for pilot.</div>
+  <div class="demo-notice">RISK er en illustrert konseptdemo med fiktive data. Ingen pilot, aktivering, overvåking eller etterlevelse loves på denne siden.</div>
 </div>
 </Layout>
 
