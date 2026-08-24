@@ -1,0 +1,21 @@
+import { authorizeBoardRead, authorizeWrite, body, id, json, requireDb, type Env } from './_lib';
+const views = new Set(['summary','contracts','mandates','equity']);
+export const onRequestGet: PagesFunction<Env> = async ({ env, request }) => {
+  const url=new URL(request.url), boardId=(url.searchParams.get('boardId')||'').trim(), view=url.searchParams.get('view')||'summary';
+  if(!boardId)return json({error:'boardId_required'},{status:400}); if(!views.has(view))return json({error:'unknown_view',allowed:[...views]},{status:400}); if(!authorizeBoardRead(request,env,boardId))return json({error:'board_access_denied'},{status:403});
+  try { const db=requireDb(env);
+    if(view==='contracts') return json({boardId,view,data:(await db.prepare(`SELECT c.id,c.title,c.counterparty,c.contract_type,c.status,c.start_date,c.end_date,c.renewal_notice_date,p.name AS owner_name,r.status AS review_status,r.findings,r.due_date FROM contracts c LEFT JOIN people p ON p.id=c.owner_id LEFT JOIN contract_reviews r ON r.contract_id=c.id AND r.board_id=c.board_id WHERE c.board_id=? ORDER BY COALESCE(r.due_date,c.renewal_notice_date)`).bind(boardId).all()).results});
+    if(view==='mandates') return json({boardId,view,data:(await db.prepare(`SELECT m.*,p.name AS holder_name FROM mandates m LEFT JOIN people p ON p.id=m.holder_id WHERE m.board_id=? ORDER BY CASE m.status WHEN 'draft' THEN 1 WHEN 'active' THEN 2 ELSE 3 END,m.valid_until`).bind(boardId).all()).results});
+    if(view==='equity') return json({boardId,view,data:(await db.prepare('SELECT * FROM equity_holders WHERE board_id=? ORDER BY ownership_percent DESC').bind(boardId).all()).results});
+    const [contracts,mandates,equity]=await Promise.all([db.prepare("SELECT COUNT(*) AS count,SUM(CASE WHEN status='review' THEN 1 ELSE 0 END) AS review_count FROM contracts WHERE board_id=?").bind(boardId).first(),db.prepare("SELECT COUNT(*) AS count,SUM(CASE WHEN status='draft' THEN 1 ELSE 0 END) AS draft_count FROM mandates WHERE board_id=?").bind(boardId).first(),db.prepare('SELECT COALESCE(SUM(shares),0) AS shares,COUNT(*) AS holders FROM equity_holders WHERE board_id=?').bind(boardId).first()]); return json({boardId,view,data:{contracts,mandates,equity}});
+  } catch(error) { return json({error:'database_unavailable',detail:error instanceof Error?error.message:'unknown'},{status:503}); }
+};
+export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
+  if(!authorizeWrite(request,env))return json({error:'write_not_authorized'},{status:401});
+  try { const value=await body(request), boardId=String(value?.boardId||''), action=String(value?.action||''), db=requireDb(env); if(!boardId||!action)return json({error:'boardId_and_action_required'},{status:400});
+    if(action==='review_contract'){const contractId=String(value?.contractId||'');if(!contractId)return json({error:'contractId_required'},{status:400});await db.prepare("UPDATE contract_reviews SET status='approved',decision=?,reviewed_at=datetime('now') WHERE id=? AND board_id=?").bind(String(value?.decision||'approved'),String(value?.reviewId||''),boardId).run();return json({ok:true,action,contractId,status:'approved',requiresHumanApproval:false});}
+    if(action==='activate_mandate'){const mandateId=String(value?.mandateId||'');if(!mandateId)return json({error:'mandateId_required'},{status:400});await db.prepare("UPDATE mandates SET status='active' WHERE id=? AND board_id=? AND status='draft'").bind(mandateId,boardId).run();return json({ok:true,action,mandateId,status:'active',requiresEvidence:true});}
+    if(action==='create_contract_review'){const contractId=String(value?.contractId||'');if(!contractId)return json({error:'contractId_required'},{status:400});const reviewId=id('review');await db.prepare("INSERT INTO contract_reviews (id,board_id,contract_id,review_type,status,owner_id,findings,due_date) VALUES (?,?,?,?,?,?,?,?)").bind(reviewId,boardId,contractId,String(value?.reviewType||'risk'),'open',value?.ownerId||null,'[]',value?.dueDate||null).run();return json({ok:true,action,id:reviewId,status:'open'},{status:201});}
+    return json({error:'unknown_action',allowed:['review_contract','activate_mandate','create_contract_review']},{status:400});
+  } catch(error) { return json({error:'database_unavailable',detail:error instanceof Error?error.message:'unknown'},{status:503}); }
+};

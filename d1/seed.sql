@@ -44,6 +44,15 @@ INSERT OR IGNORE INTO crm_accounts (id,board_id,company_name,org_number,stage,ow
 ('crm-1','board-1','Nordic Demo AS','987654321','proposal','person-2','Avklar sikkerhetskrav',35000000,'NOK');
 INSERT OR IGNORE INTO contracts (id,board_id,title,counterparty,contract_type,status,start_date,end_date,owner_id,renewal_notice_date) VALUES
 ('contract-1','board-1','ERP-avtale — demo','Demo ERP AS','supplier','review','2026-01-01','2026-12-31','person-3','2026-10-01');
+INSERT OR IGNORE INTO contract_reviews (id,board_id,contract_id,review_type,status,owner_id,findings,decision,due_date) VALUES
+('review-1','board-1','contract-1','renewal','in_review','person-3','[{"finding":"Automatisk fornyelse krever 90 dagers varsel","severity":"medium"}]',NULL,'2026-09-15');
+INSERT OR IGNORE INTO mandates (id,board_id,holder_id,mandate_type,scope,status,valid_from,valid_until,evidence_ref) VALUES
+('mandate-1','board-1','person-2','prokura','Kan inngå ordinære driftsavtaler inntil 250 000 NOK','active','2026-01-01','2026-12-31','res-2026-02');
+INSERT OR IGNORE INTO mandates (id,board_id,holder_id,mandate_type,scope,status,valid_from,valid_until,evidence_ref) VALUES
+('mandate-2','board-1','person-3','purchase','Innkjøp og leverandøravtaler over 50 000 NOK','draft','2026-01-01','2026-12-31','Mangler styrevedtak');
+INSERT OR IGNORE INTO equity_holders (id,board_id,holder_name,holder_type,shares,share_class,ownership_percent,vesting_status) VALUES
+('equity-1','board-1','Demo Gründer AS','company',700000,'A',70,'fully_vested'),
+('equity-2','board-1','Demo Ansattpool','option_pool',300000,'A',30,'vesting_plan');
 INSERT OR IGNORE INTO sustainability_items (id,board_id,item_type,title,status,severity,scope,due_date) VALUES
 ('sustain-1','board-1','hms_incident','Nestenulykke — illustrasjon','open','medium','Kontor','2026-09-05'),
 ('sustain-2','board-1','vendor_due_diligence','Åpenhetsloven leverandørgjennomgang','in_progress','high','Leverandørkjede','2026-09-30');

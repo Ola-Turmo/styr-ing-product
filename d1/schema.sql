@@ -322,6 +322,26 @@ CREATE INDEX IF NOT EXISTS idx_contracts_board ON contracts(board_id);
 CREATE INDEX IF NOT EXISTS idx_sustainability_board ON sustainability_items(board_id);
 CREATE INDEX IF NOT EXISTS idx_integrations_board ON integration_registry(board_id);
 
+-- Governance, contract review and equity control records.
+CREATE TABLE IF NOT EXISTS contract_reviews (
+  id TEXT PRIMARY KEY, board_id TEXT NOT NULL REFERENCES boards(id) ON DELETE CASCADE,
+  contract_id TEXT NOT NULL REFERENCES contracts(id) ON DELETE CASCADE, review_type TEXT NOT NULL DEFAULT 'renewal' CHECK(review_type IN ('renewal','redline','risk','approval')),
+  status TEXT NOT NULL DEFAULT 'open' CHECK(status IN ('open','in_review','approved','rejected','closed')), owner_id TEXT REFERENCES people(id) ON DELETE SET NULL,
+  findings TEXT NOT NULL DEFAULT '[]', decision TEXT, due_date TEXT, reviewed_at TEXT, created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+CREATE TABLE IF NOT EXISTS mandates (
+  id TEXT PRIMARY KEY, board_id TEXT NOT NULL REFERENCES boards(id) ON DELETE CASCADE,
+  holder_id TEXT REFERENCES people(id) ON DELETE SET NULL, mandate_type TEXT NOT NULL CHECK(mandate_type IN ('prokura','signing','purchase','bank','board')), scope TEXT NOT NULL,
+  status TEXT NOT NULL DEFAULT 'active' CHECK(status IN ('draft','active','suspended','expired')), valid_from TEXT, valid_until TEXT, evidence_ref TEXT, created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+CREATE TABLE IF NOT EXISTS equity_holders (
+  id TEXT PRIMARY KEY, board_id TEXT NOT NULL REFERENCES boards(id) ON DELETE CASCADE,
+  holder_name TEXT NOT NULL, holder_type TEXT NOT NULL DEFAULT 'person' CHECK(holder_type IN ('person','company','option_pool')), shares INTEGER NOT NULL DEFAULT 0, share_class TEXT NOT NULL DEFAULT 'A', ownership_percent REAL NOT NULL DEFAULT 0, vesting_status TEXT, updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+CREATE INDEX IF NOT EXISTS idx_contract_reviews_board ON contract_reviews(board_id,status,due_date);
+CREATE INDEX IF NOT EXISTS idx_mandates_board ON mandates(board_id,status,valid_until);
+CREATE INDEX IF NOT EXISTS idx_equity_holders_board ON equity_holders(board_id,holder_name);
+
 -- Norwegian accounting core: balanced vouchers, immutable numbering and period locks.
 CREATE TABLE IF NOT EXISTS ledger_accounts (
   id TEXT PRIMARY KEY, board_id TEXT NOT NULL REFERENCES boards(id) ON DELETE CASCADE,
