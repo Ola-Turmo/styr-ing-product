@@ -4,7 +4,7 @@ const checks = [
   ['auth session', '/api/auth', 200],
   ['legal status', '/api/legal?boardId=board-1', 200],
   ['billing status', '/api/billing?boardId=board-1', 200],
-  ['billing checkout guard', '/api/billing-checkout', 400],
+  ['billing checkout guard', '/api/billing-checkout', 401],
   ['boards', '/api/boards', 200],
   ['event mesh summary', '/api/events?boardId=board-1&view=summary', 200],
   ['compliance summary', '/api/compliance?boardId=board-1&view=summary', 200],
