@@ -2,7 +2,7 @@
 
 Norwegian governance concept demo — board portal, deadline tracking, and internal-control workflows for SMB and mid-market boards.
 
-**Stack:** Astro 4 static output, deployed on Cloudflare Pages
+**Stack:** Astro 4 static frontend + Cloudflare Pages Functions + Cloudflare D1 (EEUR)
 **Offer status:** No separate active Styr.ing offer, public price, self-service account, or checkout. Samsvarlig is the active front door for the frozen control-cycle offer.
 **Commercial policy:** Any later Styr.ing scope, onboarding, functionality, data processing, and price require a separate documented order or customer agreement.
 
@@ -40,7 +40,19 @@ wrangler pages deploy dist
 - `src/pages/` — statically generated Astro pages
 - `src/layouts/` — Shared layout
 
-The deployed public site has no active database binding, authentication, lead capture, billing, notifications, signing, export, or AI execution. Do not add production credentials to this static offer-boundary release.
+The public preview is safe to explore with fictional data. The deployed backend now exposes a real D1/API contract for boards, operating entities, review states, events and health checks. Public pages still render illustrative data and do not accept customer data without an authenticated production workflow.
+
+### Backend API
+
+- `GET /api/health` — binding and service health (no secrets returned)
+- `GET /api/boards` — active boards
+- `GET /api/board/:id` — board plus members, meetings, actions, resolutions, documents and risks
+- `GET|POST|DELETE /api/reviews` — auditable review state (`boardId`, `entityType`, `entityId`)
+- `POST /api/events` — append-only event intake contract for future event mesh adapters
+
+Initialize or update the remote database with `wrangler d1 execute styr-ing-db --remote --file=d1/schema.sql`, then seed the illustrative board with `wrangler d1 execute styr-ing-db --remote --file=d1/seed.sql`.
+
+The API is deliberately not a claim that all PRD adapters are live. Altinn/NAV, bank/payment, EHF/PEPPOL, Stripe, eID, payroll, cards, collections, CRM enrichment, AI providers and external MCP consumers each require credentials, contracts, legal approval, authentication, authorization, monitoring and dedicated adapter implementation before production use.
 
 ## STY Issues
 - STY-33 (schema/API) — DONE
