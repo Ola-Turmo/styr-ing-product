@@ -154,6 +154,8 @@ INSERT OR IGNORE INTO payroll_items (id,board_id,payroll_run_id,person_id,gross_
 ('payitem-1','board-1','payrun-1','person-1',4200000,1050000,428400,84000,'reviewed'),
 ('payitem-2','board-1','payrun-1','person-2',4800000,1200000,489600,96000,'calculated'),
 ('payitem-3','board-1','payrun-1','person-3',3500000,850000,357000,70000,'calculated');
+INSERT OR IGNORE INTO payroll_compliance_checks (id,board_id,payroll_run_id,holiday_rate,otp_rate,holiday_pay_minor,otp_minor,employee_count,status,assumptions) VALUES
+('paycheck-1','board-1','payrun-1',0.102,0.02,1275000,250000,3,'review','{"holiday_basis":"gross wages","otp_basis":"pensionable salary","source":"payroll_items"}');
 INSERT OR IGNORE INTO compliance_submissions (id,board_id,submission_type,period,status,payload_hash,notes) VALUES
 ('submit-1','board-1','a_melding','2026-08','prepared','demo-a-melding-hash','Klar for kontroll; Altinn/MOTP-adapter ikke konfigurert.'),
 ('submit-2','board-1','mva','2026-07','review','demo-mva-hash','SAF-T-grunnlag klart; innsending krever autorisasjon.');

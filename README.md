@@ -60,6 +60,7 @@ The public preview is safe to explore with fictional data. The deployed backend 
 - `POST /api/assets` (API key) — approve depreciation entries; ledger posting remains separately controlled
 - `GET /api/treasury?boardId=...&view=summary|payroll|submissions|liquidity|collections` — tenant-scoped payroll, statutory-submission preparation, liquidity and collections data
 - `POST /api/treasury` (API key) — approve payroll/submission preparation, prepare collection reminders, or create liquidity snapshots; external senders remain unconfigured
+- `GET|POST /api/payroll` — calculate and approve holiday-pay/OTP compliance checks from a payroll run; Altinn/NAV submission remains unconfigured
 - `GET /api/cards?boardId=...&view=summary|cards|transactions` — tenant-scoped corporate-card, receipt and expense control data
 - `POST /api/cards` (API key) — attach receipt references and approve transactions; card issuing, settlement and ledger posting remain unconfigured
 - `GET /api/procurement?boardId=...&view=summary|orders|receipts|invoices` — tenant-scoped procure-to-pay control trail and three-way matching data

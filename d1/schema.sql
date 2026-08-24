@@ -605,6 +605,13 @@ CREATE TABLE IF NOT EXISTS payroll_items (
   holiday_pay_minor INTEGER NOT NULL DEFAULT 0, otp_minor INTEGER NOT NULL DEFAULT 0, status TEXT NOT NULL DEFAULT 'calculated' CHECK(status IN ('calculated','reviewed','excluded')),
   created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
+CREATE TABLE IF NOT EXISTS payroll_compliance_checks (
+  id TEXT PRIMARY KEY, board_id TEXT NOT NULL REFERENCES boards(id) ON DELETE CASCADE, payroll_run_id TEXT NOT NULL REFERENCES payroll_runs(id) ON DELETE CASCADE,
+  holiday_rate REAL NOT NULL DEFAULT 0.102, otp_rate REAL NOT NULL DEFAULT 0.02, holiday_pay_minor INTEGER NOT NULL DEFAULT 0, otp_minor INTEGER NOT NULL DEFAULT 0,
+  employee_count INTEGER NOT NULL DEFAULT 0, status TEXT NOT NULL DEFAULT 'calculated' CHECK(status IN ('calculated','review','approved')),
+  assumptions TEXT NOT NULL DEFAULT '{}', reviewed_by TEXT, reviewed_at TEXT, created_at TEXT NOT NULL DEFAULT (datetime('now')), UNIQUE(payroll_run_id)
+);
+CREATE INDEX IF NOT EXISTS idx_payroll_checks_board ON payroll_compliance_checks(board_id,status);
 CREATE TABLE IF NOT EXISTS compliance_submissions (
   id TEXT PRIMARY KEY, board_id TEXT NOT NULL REFERENCES boards(id) ON DELETE CASCADE, submission_type TEXT NOT NULL CHECK(submission_type IN ('a_melding','tax_return','mva','nav_income','annual_accounts')),
   period TEXT NOT NULL, status TEXT NOT NULL DEFAULT 'prepared' CHECK(status IN ('prepared','review','approved','submitted','rejected')), payload_hash TEXT, external_reference TEXT,
