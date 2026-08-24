@@ -32,3 +32,17 @@ export function authorizeBoardRead(request: Request, env: Env, boardId: string) 
 }
 
 export function id(prefix: string) { return `${prefix}-${crypto.randomUUID()}`; }
+
+export async function recordAudit(db: D1Database, input: {
+  boardId: string;
+  action: string;
+  entityType?: string;
+  entityId?: string;
+  details?: Record<string, unknown>;
+  userId?: string;
+  ipAddress?: string;
+}) {
+  await db.prepare('INSERT INTO audit_log (id,user_id,board_id,action,entity_type,entity_id,details,ip_address) VALUES (?,?,?,?,?,?,?,?)')
+    .bind(id('audit'), input.userId || null, input.boardId, input.action, input.entityType || null, input.entityId || null, input.details ? JSON.stringify(input.details) : null, input.ipAddress || null)
+    .run();
+}

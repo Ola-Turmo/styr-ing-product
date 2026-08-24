@@ -1,4 +1,4 @@
-import { authorizeBoardRead, authorizeWrite, body, json, requireDb, type Env } from './_lib';
+import { authorizeBoardRead, authorizeWrite, body, json, recordAudit, requireDb, type Env } from './_lib';
 
 const views = new Set(['summary', 'items']);
 
@@ -32,8 +32,10 @@ export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
     const controlId = String(value?.controlId || '').trim();
     const status = String(value?.status || '').trim();
     if (!boardId || !controlId || !['green', 'yellow', 'red'].includes(status)) return json({ error: 'boardId_controlId_valid_status_required' }, { status: 400 });
-    const result = await requireDb(env).prepare('UPDATE control_items SET status=?, last_review=date(\'now\') WHERE id=? AND board_id=?').bind(status, controlId, boardId).run();
+    const db = requireDb(env);
+    const result = await db.prepare('UPDATE control_items SET status=?, last_review=date(\'now\') WHERE id=? AND board_id=?').bind(status, controlId, boardId).run();
     if (!result.meta?.changes) return json({ error: 'control_not_found' }, { status: 404 });
+    await recordAudit(db, { boardId, action: 'control_status_changed', entityType: 'control_item', entityId: controlId, details: { status } });
     return json({ ok: true, controlId, status, requiresHumanReview: status !== 'green' });
   } catch (error) {
     return json({ error: 'database_unavailable', detail: error instanceof Error ? error.message : 'unknown' }, { status: 503 });

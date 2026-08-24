@@ -5,6 +5,7 @@ const checks = [
   ['event mesh summary', '/api/events?boardId=board-1&view=summary', 200],
   ['compliance summary', '/api/compliance?boardId=board-1&view=summary', 200],
   ['controls summary', '/api/controls?boardId=board-1&view=summary', 200],
+  ['audit trail', '/api/audit?boardId=board-1', 200],
   ['SAF-T export', '/api/finance?boardId=board-1&view=saf-t', 200],
   ['private board guard', '/api/events?boardId=board-2&view=summary', 403],
 ];
