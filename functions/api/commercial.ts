@@ -10,13 +10,14 @@ export const onRequestGet: PagesFunction<Env> = async ({ env, request }) => {
     if(view==='rooms')return json({boardId,view,data:(await db.prepare(`SELECT r.id,r.name,r.status,r.buyer_contact,r.expires_at,a.company_name,q.quote_number FROM sales_rooms r LEFT JOIN crm_accounts a ON a.id=r.account_id LEFT JOIN quotes q ON q.id=r.quote_id WHERE r.board_id=? ORDER BY r.created_at DESC`).bind(boardId).all()).results});
     if(view==='subscriptions')return json({boardId,view,data:(await db.prepare(`SELECT s.id,s.plan_name,s.status,s.recurring_minor,s.currency,s.interval,s.start_date,s.renewal_date,a.company_name FROM customer_subscriptions s JOIN crm_accounts a ON a.id=s.account_id WHERE s.board_id=? ORDER BY s.renewal_date`).bind(boardId).all()).results});
     if(view==='cases')return json({boardId,view,data:(await db.prepare(`SELECT c.id,c.case_number,c.title,c.priority,c.status,c.channel,c.first_response_due,c.resolution_due,c.first_responded_at,c.resolved_at,a.company_name,p.name AS assignee_name,CASE WHEN c.status IN ('resolved','closed') THEN 'closed' WHEN c.first_responded_at IS NULL AND c.first_response_due IS NOT NULL AND c.first_response_due < datetime('now') THEN 'first_response_breached' WHEN c.resolution_due IS NOT NULL AND c.resolution_due < datetime('now') THEN 'resolution_breached' WHEN c.first_responded_at IS NULL THEN 'awaiting_first_response' ELSE 'within_sla' END AS sla_state FROM customer_cases c LEFT JOIN crm_accounts a ON a.id=c.account_id LEFT JOIN people p ON p.id=c.assignee_id WHERE c.board_id=? ORDER BY CASE c.priority WHEN 'critical' THEN 1 WHEN 'high' THEN 2 ELSE 3 END,c.created_at DESC`).bind(boardId).all()).results});
-    const [pipeline,quotes,rooms,activeSubs,cases]=await Promise.all([
+    const [pipeline,quotes,rooms,activeSubs,cases,slaBreaches]=await Promise.all([
       db.prepare("SELECT COUNT(*) AS count,COALESCE(SUM(estimated_value_minor),0) AS value_minor FROM crm_accounts WHERE board_id=? AND stage NOT IN ('won','lost')").bind(boardId).first(),
       db.prepare("SELECT COUNT(*) AS count FROM quotes WHERE board_id=? AND status IN ('pending_approval','sent')").bind(boardId).first(),
       db.prepare("SELECT COUNT(*) AS count FROM sales_rooms WHERE board_id=? AND status='active'").bind(boardId).first(),
       db.prepare("SELECT COUNT(*) AS count,COALESCE(SUM(recurring_minor),0) AS mrr_minor FROM customer_subscriptions WHERE board_id=? AND status IN ('trial','active')").bind(boardId).first(),
       db.prepare("SELECT COUNT(*) AS count FROM customer_cases WHERE board_id=? AND status NOT IN ('resolved','closed')").bind(boardId).first(),
-    ]);return json({boardId,view,data:{pipeline,quotes,rooms,activeSubs,cases}});
+      db.prepare("SELECT COUNT(*) AS count FROM customer_cases WHERE board_id=? AND status NOT IN ('resolved','closed') AND ((first_responded_at IS NULL AND first_response_due IS NOT NULL AND first_response_due < datetime('now')) OR (resolution_due IS NOT NULL AND resolution_due < datetime('now'))) ").bind(boardId).first(),
+    ]);return json({boardId,view,data:{pipeline,quotes,rooms,activeSubs,cases,slaBreaches}});
   }catch(error){return json({error:'database_unavailable',detail:error instanceof Error?error.message:'unknown'},{status:503});}
 };
 
