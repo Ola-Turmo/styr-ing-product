@@ -30,7 +30,7 @@ const specs: SearchSpec[] = [
   { table: 'candidates', type: 'Kandidat', title: 'name', snippet: "coalesce(stage,'') || ' · Score: ' || coalesce(score,'') || ' · Samtykke: ' || coalesce(consent_status,'')", source: 'Rekruttering' },
   { table: 'goals', type: 'Mål', title: 'title', snippet: "coalesce(period,'') || ' · ' || coalesce(status,'') || ' · Fremdrift: ' || progress || '%'", source: 'Mål og OKR' },
   { table: 'handbook_documents', type: 'Håndbok', title: 'title', snippet: "coalesce(category,'') || ' · v' || coalesce(version,'') || ' · ' || coalesce(status,'')", source: 'Personalhåndbok' },
-  { table: 'training_courses', type: 'Kurs', title: 'title', snippet: "coalesce(category,'') || ' · ' || coalesce(status,'') || ' · ' || coalesce(duration_minutes,'') || ' min", source: 'LMS' },
+  { table: 'training_courses', type: 'Kurs', title: 'title', snippet: "coalesce(category,'') || ' · ' || coalesce(status,'') || ' · ' || coalesce(duration_minutes,'') || ' min'", source: 'LMS' },
   { table: 'it_assets', type: 'IT-eiendel', title: "asset_tag || ' · ' || name", snippet: "coalesce(asset_type,'') || ' · ' || coalesce(status,'') || ' · ' || coalesce(vendor,'')", source: 'IT og utstyr' },
   { table: 'service_tickets', type: 'Sak', title: 'title', snippet: "coalesce(priority,'') || ' · ' || coalesce(status,'') || ' · ' || coalesce(category,'')", source: 'Service desk' },
   { table: 'saas_subscriptions', type: 'SaaS', title: 'name', snippet: "coalesce(vendor,'') || ' · Fornyes: ' || coalesce(renewal_date,'') || ' · Utnyttelse: ' || coalesce(utilization_percent,'') || '%'", source: 'SaaS-forbruk' },
