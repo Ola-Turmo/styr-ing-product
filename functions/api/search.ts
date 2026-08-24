@@ -46,6 +46,7 @@ const specs: SearchSpec[] = [
   { table: 'mandates', type: 'Fullmakt', title: 'scope', snippet: "coalesce(mandate_type,'') || ' · ' || coalesce(status,'') || ' · Gyldig til: ' || coalesce(valid_until,'')", source: 'Fullmaktsregister' },
   { table: 'equity_holders', type: 'Eier', title: 'holder_name', snippet: "coalesce(holder_type,'') || ' · ' || coalesce(ownership_percent,'') || '% · Klasse ' || coalesce(share_class,'')", source: 'Eierskap' },
   { table: 'sustainability_items', type: 'HMS/ESG', title: 'title', snippet: "coalesce(item_type,'') || ' · ' || coalesce(status,'') || ' · ' || coalesce(severity,'')", source: 'HMS og ESG' },
+  { table: 'sustainability_items', type: 'HMS/ESG', title: 'title', snippet: "coalesce(item_type,'') || ' · ' || coalesce(status,'') || ' · ' || coalesce(severity,'')", source: 'HMS og ESG' },
 ];
 
 export async function searchBoard(db: D1Database, boardId: string, query: string): Promise<SearchResult[]> {

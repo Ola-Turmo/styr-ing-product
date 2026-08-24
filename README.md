@@ -63,6 +63,8 @@ The public preview is safe to explore with fictional data. The deployed backend 
 - `POST /api/commercial` (API key) — approve/send quote records and create/resolve customer cases; external delivery, e-signing and payment remain unconfigured
 - `GET /api/governance?boardId=...&view=summary|contracts|mandates|equity` — tenant-scoped contract reviews, powers of attorney and equity register
 - `POST /api/governance` (API key) — create/review contract controls and activate mandate proposals; evidence and legal sign-off remain required
+- `GET /api/sustainability?boardId=...&view=summary|items` — tenant-scoped HMS, SJA, safety, carbon and supplier-diligence records
+- `POST /api/sustainability` (API key) — create or close a GRC record; regulatory reporting and carbon methodology remain human-reviewed
 
 Initialize or update the remote database with `wrangler d1 execute styr-ing-db --remote --file=d1/schema.sql`, then seed the illustrative board with `wrangler d1 execute styr-ing-db --remote --file=d1/seed.sql`.
 
