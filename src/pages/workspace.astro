@@ -84,7 +84,8 @@ const activities = [
 
     <section id="all-activity" class="activity-section"><div class="section-intro"><div><span class="section-kicker">Siste aktivitet</span><h2>Hold tråden samlet</h2></div><div class="activity-filter"><button class="filter active" data-filter="all">Alle</button><button class="filter" data-filter="green">Fullført</button><button class="filter" data-filter="amber">Til behandling</button></div></div><div class="activity-list">{activities.map(activity => <article class="activity-item" data-tone={activity.tone}><time>{activity.time}</time><div class="activity-symbol tone-{activity.tone}"></div><div class="activity-body"><h3>{activity.title}</h3><p>{activity.meta}</p></div><span class={`activity-status status-${activity.tone}`}>{activity.status}</span><span class="activity-chevron">→</span></article>)}</div></section>
 
-    <section class="trust-strip"><div><span class="trust-mark">✦</span><strong>Norsk arbeidsflate for styre og virksomhet</strong></div><span>Demo med fiktive data · ingen produksjonsløfter på denne siden</span><a href="/personvern">Personvern ↗</a></section>
+    <section class="trust-strip"><div><span class="trust-mark">✦</span><strong>Norsk arbeidsflate for styre og virksomhet</strong></div><span>Demo med fiktive data · API og D1 kan aktiveres for avtalt produksjonsoppsett</span><a href="/trust">Sikkerhet ↗</a></section>
+    <section class="api-strip" aria-label="Backend-status"><div><span class="api-dot"></span><strong>Backend-kontrakt tilgjengelig</strong><span id="api-status">Sjekker API…</span></div><a href="/api/health">Åpne helsesjekk ↗</a></section>
   </main>
 </Layout>
 
@@ -107,6 +108,10 @@ const activities = [
     document.querySelectorAll('.activity-item').forEach((item) => { item.hidden = filter !== 'all' && item.dataset.tone !== filter; });
   }));
 </script>
+<script is:inline>
+  const status = document.getElementById('api-status');
+  fetch('/api/health').then((r) => r.json()).then((data) => { status.textContent = data.database === 'ready' ? 'D1 tilkoblet' : 'Preview-modus · D1 ikke aktivert'; }).catch(() => { status.textContent = 'Preview-modus · API ikke tilgjengelig'; });
+</script>
 
 <style>
   .workspace-shell { max-width: 1180px; margin: 0 auto; padding: 38px 24px 72px; }
@@ -126,4 +131,5 @@ const activities = [
   .module-orange { color:#b66f32; }.module-teal { color:#2c7d83; }.module-lime { color:#6f8f38; }.module-indigo { color:#586ca5; }.module-plum { color:#8a5f87; }.module-cyan { color:#3a8395; }
   .capability-map { margin-top:70px; padding-top:10px; }.capability-note { color:var(--muted); font:600 .72rem/1.3 system-ui,sans-serif; }.capability-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1px; overflow:hidden; border:1px solid rgba(16,36,31,.1); border-radius:16px; background:rgba(16,36,31,.1); }.capability-grid > div { min-height:106px; padding:20px; background:#fff; display:flex; flex-direction:column; gap:9px; }.capability-grid strong { font:600 .92rem/1.2 system-ui,sans-serif; }.capability-grid span { color:var(--muted); font: .74rem/1.45 system-ui,sans-serif; }.capability-footnote { color:var(--muted); font: .72rem/1.5 system-ui,sans-serif; margin:13px 0 0; }
   @media (max-width: 560px) { .capability-grid { grid-template-columns:1fr; }.capability-note { align-self:flex-start; } }
+  .api-strip { display:flex; justify-content:space-between; gap:12px; align-items:center; flex-wrap:wrap; margin-top:14px; padding:12px 15px; border:1px solid rgba(31,111,91,.16); border-radius:12px; background:#f5faf3; color:var(--muted); font:600 .72rem/1.3 system-ui,sans-serif; }.api-strip > div { display:flex; align-items:center; gap:8px; }.api-strip strong { color:var(--ink); }.api-strip a { color:var(--accent); }.api-dot { width:8px; height:8px; border-radius:50%; background:#d6a13e; box-shadow:0 0 0 4px rgba(214,161,62,.15); }
 </style>

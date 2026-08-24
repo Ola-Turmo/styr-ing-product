@@ -1,7 +1,7 @@
 import { defineConfig } from 'astro/config';
 
-// Static demo build for Cloudflare Pages.
-// No SSR, database bindings, or production auth flows are enabled here.
+// Cloudflare Pages build. Static pages remain fast while Pages Functions expose
+// the production-ready D1 contract when a DB binding is configured.
 export default defineConfig({
   output: 'static',
   site: 'https://styr.ing',

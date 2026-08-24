@@ -171,3 +171,91 @@ CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
 CREATE INDEX IF NOT EXISTS idx_audit_log_user ON audit_log(user_id);
 CREATE INDEX IF NOT EXISTS idx_audit_log_board ON audit_log(board_id);
 CREATE INDEX IF NOT EXISTS idx_demo_requests_status ON demo_requests(status);
+
+-- PRD operating-system extensions. These tables keep operational state separate
+-- from the public static preview and are safe to create repeatedly in D1.
+CREATE TABLE IF NOT EXISTS risks (
+  id TEXT PRIMARY KEY,
+  board_id TEXT NOT NULL REFERENCES boards(id) ON DELETE CASCADE,
+  code TEXT NOT NULL,
+  title TEXT NOT NULL,
+  level TEXT NOT NULL CHECK(level IN ('critical','high','medium','low')),
+  trend TEXT NOT NULL DEFAULT 'stable' CHECK(trend IN ('up','down','stable')),
+  owner TEXT,
+  status TEXT NOT NULL DEFAULT 'open' CHECK(status IN ('open','treating','monitoring','closed')),
+  treatment TEXT,
+  due_date TEXT,
+  created_at TEXT NOT NULL DEFAULT (datetime('now')),
+  updated_at TEXT
+);
+
+CREATE TABLE IF NOT EXISTS action_items (
+  id TEXT PRIMARY KEY,
+  board_id TEXT NOT NULL REFERENCES boards(id) ON DELETE CASCADE,
+  meeting_id TEXT REFERENCES meetings(id) ON DELETE SET NULL,
+  resolution_id TEXT,
+  title TEXT NOT NULL,
+  description TEXT,
+  assigned_to TEXT,
+  due_date TEXT,
+  priority TEXT NOT NULL DEFAULT 'medium' CHECK(priority IN ('critical','high','medium','low')),
+  status TEXT NOT NULL DEFAULT 'open' CHECK(status IN ('open','in_progress','blocked','completed')),
+  completed_at TEXT,
+  created_at TEXT NOT NULL DEFAULT (datetime('now')),
+  updated_at TEXT
+);
+
+CREATE TABLE IF NOT EXISTS resolutions (
+  id TEXT PRIMARY KEY,
+  board_id TEXT NOT NULL REFERENCES boards(id) ON DELETE CASCADE,
+  meeting_id TEXT REFERENCES meetings(id) ON DELETE SET NULL,
+  number TEXT NOT NULL,
+  title TEXT NOT NULL,
+  description TEXT,
+  status TEXT NOT NULL DEFAULT 'proposed' CHECK(status IN ('proposed','adopted','signed','rejected')),
+  votes_for INTEGER NOT NULL DEFAULT 0,
+  votes_against INTEGER NOT NULL DEFAULT 0,
+  votes_abstain INTEGER NOT NULL DEFAULT 0,
+  signature_status TEXT NOT NULL DEFAULT 'not_required' CHECK(signature_status IN ('not_required','pending','partial','complete')),
+  adoption_date TEXT,
+  created_at TEXT NOT NULL DEFAULT (datetime('now')),
+  updated_at TEXT
+);
+
+CREATE TABLE IF NOT EXISTS board_documents (
+  id TEXT PRIMARY KEY,
+  board_id TEXT NOT NULL REFERENCES boards(id) ON DELETE CASCADE,
+  meeting_id TEXT REFERENCES meetings(id) ON DELETE SET NULL,
+  title TEXT NOT NULL,
+  category TEXT,
+  type TEXT NOT NULL DEFAULT 'other',
+  status TEXT NOT NULL DEFAULT 'draft' CHECK(status IN ('draft','final','archived')),
+  version TEXT NOT NULL DEFAULT '1.0',
+  file_url TEXT,
+  uploaded_by TEXT,
+  created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+CREATE TABLE IF NOT EXISTS review_states (
+  id TEXT PRIMARY KEY,
+  board_id TEXT NOT NULL REFERENCES boards(id) ON DELETE CASCADE,
+  entity_type TEXT NOT NULL CHECK(entity_type IN ('risk','action','resolution','document','control','agenda','minutes')),
+  entity_id TEXT NOT NULL,
+  reviewed_by TEXT,
+  reviewed_at TEXT NOT NULL DEFAULT (datetime('now')),
+  UNIQUE(board_id, entity_type, entity_id)
+);
+
+CREATE TABLE IF NOT EXISTS api_events (
+  id TEXT PRIMARY KEY,
+  board_id TEXT,
+  event_type TEXT NOT NULL,
+  payload TEXT NOT NULL DEFAULT '{}',
+  created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+CREATE INDEX IF NOT EXISTS idx_risks_board ON risks(board_id);
+CREATE INDEX IF NOT EXISTS idx_actions_board ON action_items(board_id);
+CREATE INDEX IF NOT EXISTS idx_resolutions_board ON resolutions(board_id);
+CREATE INDEX IF NOT EXISTS idx_documents_board ON board_documents(board_id);
+CREATE INDEX IF NOT EXISTS idx_review_states_entity ON review_states(board_id, entity_type, entity_id);

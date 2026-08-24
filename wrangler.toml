@@ -2,6 +2,9 @@ name = "styr-ing"
 compatibility_date = "2024-01-01"
 pages_build_output_dir = "dist"
 
-# Static Cloudflare Pages deployment target.
-# Deploy the built `dist` directory with:
-#   wrangler pages deploy dist --project-name styr-ing --branch main
+# D1 powers Pages Functions under functions/api. Static preview pages continue
+# to work when the binding is unavailable and never accept real customer data.
+[[d1_databases]]
+binding = "DB"
+database_name = "styr-ing-db"
+database_id = "745ab44e-8069-489d-8333-d1fd4049ae1d"
