@@ -622,3 +622,19 @@ CREATE TABLE IF NOT EXISTS project_invoice_drafts (
   UNIQUE(board_id,project_id,period)
 );
 CREATE INDEX IF NOT EXISTS idx_project_invoice_drafts_board ON project_invoice_drafts(board_id,status,period);
+
+-- Corporate-card and employee-expense control records. Issuing and settlement stay external.
+CREATE TABLE IF NOT EXISTS corporate_cards (
+  id TEXT PRIMARY KEY, board_id TEXT NOT NULL REFERENCES boards(id) ON DELETE CASCADE,
+  card_name TEXT NOT NULL, last_four TEXT, holder_id TEXT REFERENCES people(id) ON DELETE SET NULL,
+  status TEXT NOT NULL DEFAULT 'proposed' CHECK(status IN ('proposed','active','paused','closed')),
+  monthly_limit_minor INTEGER NOT NULL DEFAULT 0, currency TEXT NOT NULL DEFAULT 'NOK', provider TEXT, created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+CREATE TABLE IF NOT EXISTS card_transactions (
+  id TEXT PRIMARY KEY, board_id TEXT NOT NULL REFERENCES boards(id) ON DELETE CASCADE, card_id TEXT REFERENCES corporate_cards(id) ON DELETE SET NULL,
+  transaction_date TEXT NOT NULL, merchant TEXT NOT NULL, amount_minor INTEGER NOT NULL DEFAULT 0, currency TEXT NOT NULL DEFAULT 'NOK',
+  category TEXT, status TEXT NOT NULL DEFAULT 'needs_receipt' CHECK(status IN ('needs_receipt','ready_for_review','approved','rejected','reconciled')),
+  receipt_ref TEXT, reviewed_by TEXT, reviewed_at TEXT, external_reference TEXT, created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+CREATE INDEX IF NOT EXISTS idx_corporate_cards_board ON corporate_cards(board_id,status);
+CREATE INDEX IF NOT EXISTS idx_card_transactions_board ON card_transactions(board_id,status,transaction_date);

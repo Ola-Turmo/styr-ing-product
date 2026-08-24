@@ -40,6 +40,7 @@ const specs: SearchSpec[] = [
   { table: 'compliance_submissions', type: 'Innsending', title: "submission_type || ' · ' || period", snippet: "coalesce(status,'') || ' · ' || coalesce(notes,'')", source: 'Innsendinger' },
   { table: 'liquidity_snapshots', type: 'Likviditet', title: "as_of_date || ' · Likviditetsbilde'", snippet: "coalesce(status,'') || ' · Runway: ' || coalesce(runway_months,'') || ' måneder'", source: 'Likviditet' },
   { table: 'collection_cases', type: 'Innkrevingssak', title: 'reference', snippet: "coalesce(status,'') || ' · ' || coalesce(next_action,'')", source: 'Innkrevingsspor' },
+  { table: 'card_transactions', type: 'Kortkjøp', title: "merchant || ' · ' || transaction_date", snippet: "coalesce(status,'') || ' · ' || coalesce(category,'') || ' · ' || coalesce(amount_minor,'')", source: 'Kort og utlegg' },
   { table: 'purchase_orders', type: 'Bestilling', title: "order_number || ' · ' || supplier_name", snippet: "coalesce(status,'') || ' · ' || coalesce(total_minor,'')", source: 'Innkjøp' },
   { table: 'supplier_invoices', type: 'Leverandørfaktura', title: "invoice_number || ' · ' || supplier_name", snippet: "coalesce(match_status,'') || ' · ' || coalesce(status,'')", source: 'Leverandørfakturaer' },
   { table: 'crm_accounts', type: 'Kunde', title: 'company_name', snippet: "coalesce(stage,'') || ' · Neste steg: ' || coalesce(next_action,'')", source: 'Kundeoppfølging' },

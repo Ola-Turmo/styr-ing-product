@@ -156,3 +156,8 @@ INSERT OR IGNORE INTO supplier_invoices (id,board_id,purchase_order_id,invoice_n
 ('si-1','board-1','po-1','INV-2026-001','Demo Leverandør AS',1250000,'NOK','2026-09-01','matched','matched');
 INSERT OR IGNORE INTO project_invoice_drafts (id,board_id,project_id,period,source_minutes,amount_minor,currency,status,created_by) VALUES
 ('invprep-1','board-1','project-1','2026-08',240,560000,'NOK','prepared','CFO');
+INSERT OR IGNORE INTO corporate_cards (id,board_id,card_name,last_four,holder_id,status,monthly_limit_minor,currency,provider) VALUES
+('card-1','board-1','Demo driftskort','4242','person-2','proposed',5000000,'NOK','Provider not configured');
+INSERT OR IGNORE INTO card_transactions (id,board_id,card_id,transaction_date,merchant,amount_minor,currency,category,status,receipt_ref) VALUES
+('cardtx-1','board-1','card-1','2026-08-23','Nordic kontorrekvisita',125000,'NOK','Kontor','needs_receipt',NULL),
+('cardtx-2','board-1','card-1','2026-08-21','Cloud hosting demo',89000,'NOK','Programvare','ready_for_review','receipt-demo-2');
