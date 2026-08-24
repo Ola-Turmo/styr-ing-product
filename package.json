@@ -6,6 +6,7 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
+    "verify:concept-boundary": "npm run build && node scripts/verify-concept-boundary.mjs",
     "deploy": "npm run build && wrangler pages deploy dist --project-name styr-ing --branch main"
   },
   "dependencies": {

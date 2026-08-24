@@ -59,11 +59,11 @@ const faqSchema = {
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>{title} | Styr.ing</title>
-  <meta name="description" content="Konsept- og demoflater for norsk styrearbeid og internkontroll. Produksjonsomfang, funksjoner og pris bekreftes før aktivering." />
+  <meta name="description" content="Styr.ing samler styrearbeid, risiko, internkontroll og virksomhetsoppfølging i én norsk SaaS-arbeidsflate." />
   <meta name="keywords" content="styreportal, internkontroll, compliance, styreverktøy, norsk styre, Aksjeloven, GDPR, board portal, governance, Norway" />
   <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1" />
   <meta property="og:title" content={`${title} | Styr.ing`} />
-  <meta property="og:description" content="Konsept- og demoflater for norsk styrearbeid og internkontroll. Omfang avtales før produksjonsbruk." />
+  <meta property="og:description" content="Én arbeidsflate for styre, risiko, kontroll og oppfølging." />
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="Styr.ing" />
   <meta property="og:locale" content="nb_NO" />
@@ -82,6 +82,8 @@ const faqSchema = {
       --paper: #f6f2ea;
       --accent: #1f6f5b;
       --gold: #d8a94d;
+      --night: #10241f;
+      --glow: #dff7c9;
     }
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     html { scroll-behavior: smooth; }
@@ -117,8 +119,10 @@ const faqSchema = {
       backdrop-filter: blur(12px);
       border-bottom: 1px solid rgba(16,36,31,0.08);
     }
-    .logo { font-size: 1.25rem; font-weight: 700; letter-spacing: -0.02em; color: var(--ink); }
-    .logo span { color: var(--accent); }
+    .logo { display: inline-flex; align-items: center; gap: 9px; font-size: 1.25rem; font-weight: 700; letter-spacing: -0.02em; color: var(--ink); }
+    .logo > span:last-child { color: var(--ink); }
+    .logo-mark { width: 30px; height: 30px; border-radius: 10px; display: grid; place-items: center; background: var(--night); color: var(--glow); font: 700 1.05rem/1 Georgia, serif; box-shadow: 0 5px 14px rgba(16,36,31,.15); }
+    .logo-dot { color: var(--accent); }
     .nav-links { display: flex; gap: 20px; list-style: none; font-family: system-ui, sans-serif; font-size: 0.85rem; align-items: center; }
     .nav-links a { color: var(--muted); font-weight: 500; }
     .nav-links a:hover { color: var(--accent); }
@@ -128,14 +132,17 @@ const faqSchema = {
       padding: 8px 18px; border-radius: 100px;
       font-family: system-ui, sans-serif; font-size: 0.8rem; font-weight: 600;
     }
-    .nav-cta:hover { background: #0d4a3a; color: #fff; }
+    .nav-cta:hover { background: #0d4a3a; color: #fff; transform: translateY(-1px); }
+    .mobile-nav-toggle { display: none; border: 1px solid rgba(16,36,31,.14); background: #fff; color: var(--ink); border-radius: 999px; padding: 8px 13px; font: 600 .78rem/1 system-ui, sans-serif; }
 
     .container { max-width: 1100px; margin: 0 auto; }
     [id] { scroll-margin-top: 80px; }
 
     @media (max-width: 760px) {
-      nav { align-items: flex-start; gap: 12px; flex-wrap: wrap; }
-      .nav-links { width: 100%; gap: 10px 14px; flex-wrap: wrap; }
+      nav { align-items: center; gap: 12px; flex-wrap: wrap; }
+      .mobile-nav-toggle { display: inline-flex; margin-left: auto; }
+      .nav-links { display: none; width: 100%; gap: 10px 14px; flex-wrap: wrap; padding-top: 4px; }
+      .nav-links.open { display: flex; }
       .nav-cta { margin-left: 0 !important; }
     }
 
@@ -151,18 +158,20 @@ const faqSchema = {
 </head>
 <body>
   <nav>
-    <a href="/" class="logo">styr<span>.</span>ing</a>
-    <ul class="nav-links" aria-label="Hovedmeny">
-      <li><a href="/board" class={activeNav === 'boards' ? 'active' : ''}>Styreportal</a></li>
-      <li><a href="/compliance" class={activeNav === 'compliance' ? 'active' : ''}>Compliance</a></li>
-      <li><a href="/internkontroll" class={activeNav === 'internkontroll' ? 'active' : ''}>Internkontroll</a></li>
-      <li><a href="/login">Tilgang</a></li>
-      <li><a href="https://samsvarlig.no/" class="nav-cta" style="margin-left: 8px;">Se Samsvarlig</a></li>
+    <a href="/" class="logo" aria-label="Styr.ing forsiden"><span class="logo-mark">s</span><span>styr<span class="logo-dot">.</span>ing</span></a>
+    <button class="mobile-nav-toggle" type="button" aria-expanded="false" aria-controls="primary-nav">Meny</button>
+    <ul id="primary-nav" class="nav-links" aria-label="Hovedmeny">
+      <li><a href="/workspace" class={activeNav === 'workspace' ? 'active' : ''}>Arbeidsflate</a></li>
+      <li><a href="/board" class={activeNav === 'boards' ? 'active' : ''}>Styre</a></li>
+      <li><a href="/risk" class={activeNav === 'risk' ? 'active' : ''}>Risiko</a></li>
+      <li><a href="/internkontroll" class={activeNav === 'internkontroll' ? 'active' : ''}>Kontroll</a></li>
+      <li><a href="/onboarding" class={activeNav === 'onboarding' ? 'active' : ''}>Oppsett</a></li>
+      <li><a href="/workspace#ai" class="nav-cta">Åpne demoen <span aria-hidden="true">↗</span></a></li>
     </ul>
   </nav>
 
   <div class="site-boundary" role="note">
-    Offentlig konseptdemo med illustrasjonsdata. Ingen konto, lagring, varsling, signering, eksport eller KI-kjøring skjer på disse sidene.
+    Styr.ing SaaS-preview · illustrasjonsdata i denne offentlige flaten · ingen reelle virksomhetsdata må legges inn.
   </div>
 
   <main>
@@ -178,4 +187,12 @@ const faqSchema = {
     </div>
   </footer>
 </body>
+<script is:inline>
+  const toggle = document.querySelector('.mobile-nav-toggle');
+  const nav = document.querySelector('#primary-nav');
+  toggle?.addEventListener('click', () => {
+    const open = nav?.classList.toggle('open') ?? false;
+    toggle.setAttribute('aria-expanded', String(open));
+  });
+</script>
 </html>

@@ -1,135 +1,25 @@
 ---
-// Landing Page — /index.astro
-// Marketing page for styr.ing — Norwegian board portal
 import Layout from '../layouts/Layout.astro';
+const capabilities = [
+  ['⌁', 'Styrearbeid', 'Møter, sakspapirer, vedtak og protokoller i én struktur.'],
+  ['◈', 'Risiko og GRC', 'Få oversikt over risiko, hendelser, indikatorer og tiltak.'],
+  ['✓', 'Internkontroll', 'Knytt kontroller til ansvar, bevis og oppfølging.'],
+  ['◒', 'Frister og oppgaver', 'Fra styrevedtak til tydelig eier, frist og status.'],
+  ['＋', 'Mennesker og policy', 'Roller, håndbok, OKR og opplæring på samme sted.'],
+  ['⌂', 'Økonomi og leverandører', 'Gjør budsjett, avtaler og innkjøpssporet lesbart.'],
+];
 ---
-<Layout title="Konseptdemo for norsk styrearbeid" activeNav="home">
-  <!-- HERO -->
-  <section style="background: linear-gradient(135deg, #065f46 0%, #0a7c5c 100%); color: white; padding: 5rem 2rem; text-align: center;">
-    <div style="max-width: 720px; margin: 0 auto;">
-      <span style="background: rgba(255,255,255,0.15); padding: 0.3rem 1rem; border-radius: 999px; font-size: 0.85rem; font-weight: 600;">Norsk arbeidsflate · Personvern i fokus · Assistert oppsett</span>
-      <h1 style="font-size: clamp(2rem, 5vw, 3.2rem); font-weight: 800; margin: 1.5rem 0 1rem; line-height: 1.1;">Styreportal og internkontroll<br/>for norske selskaper</h1>
-      <p style="font-size: 1.15rem; opacity: 0.9; margin-bottom: 2rem;">Samle styremateriale, oppgaver og kontrollaktiviteter i én arbeidsflate. Bygget for norske virksomheter.</p>
-      <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
-        <a href="https://samsvarlig.no/" class="btn-primary" style="background: #fbbf24; color: #065f46; padding: 0.85rem 2rem; font-size: 1.05rem;">Se aktivt kontrolltilbud</a>
-        <a href="/board" class="btn-secondary" style="color: white; border-color: white; padding: 0.85rem 2rem; font-size: 1.05rem;">Se demo</a>
-      </div>
-    </div>
-  </section>
-
-  <!-- TRUST BAR -->
-  <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; padding: 1.5rem 2rem; background: white; border-bottom: 1px solid #eee;">
-    <span class="badge badge-green" style="font-size: 0.8rem;">✓ Utviklet for norske virksomheter</span>
-    <span class="badge badge-green" style="font-size: 0.8rem;">✓ Nettbasert arbeidsflate</span>
-    <span class="badge badge-green" style="font-size: 0.8rem;">✓ Oppsett avtales før oppstart</span>
-    <span class="badge badge-green" style="font-size: 0.8rem;">✓ Regelverk og frister kan struktureres i løsningen</span>
-  </div>
-
-  <!-- FEATURES -->
-  <section class="container" style="padding-top: 4rem; padding-bottom: 4rem;">
-    <h2 style="text-align:center; margin-bottom: 3rem; font-size: 1.8rem;">Alt styret trenger — på ett sted</h2>
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem;">
-      {[
-        ['📋', 'Digitale styrebøker', 'Alle styredokumenter samlet med versjonskontroll. Aldri mer løse e-postvedlegg.'],
-        ['📅', 'Fristkalender', 'Samle frister og ansvar virksomheten selv har identifisert.'],
-        ['🛡️', 'Internkontroll', 'Dokumenter kontroller, ansvar, oppfølging og bevis i én arbeidsflate.'],
-        ['🤖', 'KI-assistert arbeidsflyt', 'Når KI-funksjoner er aktivert, kan de lage utkast som må kvalitetssikres av brukeren.'],
-        ['📊', 'Mål- og resultatstyring', 'Sett mål for styret og organisasjonen, følg opp i pågående møter.'],
-        ['📁', 'Avviksregistrering', 'Registrer avvik fra rutiner og prosesser. Spor oppfølging og korrigerende tiltak.'],
-      ].map(([icon, title, desc]) => (
-        <div style="background: white; border-radius: 12px; padding: 1.5rem; box-shadow: 0 1px 4px rgba(0,0,0,0.08);">
-          <div style="font-size: 2rem; margin-bottom: 0.75rem;">{icon}</div>
-          <h3 style="color: #065f46; margin-bottom: 0.5rem; font-size: 1.05rem;">{title}</h3>
-          <p style="color: #555; font-size: 0.9rem; line-height: 1.5;">{desc}</p>
-        </div>
-      ))}
-    </div>
-  </section>
-
-  <!-- HOW IT WORKS -->
-  <section style="background: white; padding: 4rem 2rem;">
-    <div class="container">
-      <div style="text-align: center; margin-bottom: 3rem;">
-        <div class="section-label" style="color: #065f46; font-weight: 700; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px;">Slik fungerer det</div>
-        <h2 style="font-size: 1.8rem; margin-top: 0.5rem;">Fra forespørsel til avtalt oppsett</h2>
-      </div>
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 2rem; max-width: 800px; margin: 0 auto;">
-        {[
-          ['1', 'Utforsk konseptet', 'Bruk de offentlige sidene som en statisk illustrasjon, uten å sende virksomhetsdata.'],
-          ['2', 'Bruk Samsvarlig', 'Det aktive tilbudet for en tilbakevendende kontrollsyklus ligger på Samsvarlig.'],
-          ['3', 'Hold Styr.ing avgrenset', 'Egen Styr.ing-aktivering krever senere dokumentert kjøper, behov og avtale.'],
-        ].map(([num, title, desc]) => (
-          <div style="text-align: center;">
-            <div style="width: 52px; height: 52px; border-radius: 50%; background: #065f46; color: white; font-weight: 700; font-size: 1.4rem; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem;">{num}</div>
-            <h3 style="font-size: 1rem; margin-bottom: 0.5rem;">{title}</h3>
-            <p style="color: #666; font-size: 0.85rem; line-height: 1.5;">{desc}</p>
-          </div>
-        ))}
-      </div>
-    </div>
-  </section>
-
-  <!-- VALUE -->
-  <div style="background: #065f46; color: white; text-align: center; padding: 3rem 2rem;">
-    <p style="font-size: clamp(1rem, 2.5vw, 1.3rem); max-width: 680px; margin: 0 auto; line-height: 1.5;">
-      <strong>Styr.ing samler styremateriale, oppgaver og internkontroll i ett norsk arbeidsrom.</strong><br/>
-      Felles oversikt over styremateriale, oppgaver og kontrollaktiviteter.
-    </p>
-    <span style="font-size: 0.82em; opacity: 0.75; display: block; margin-top: 8px;">Konseptet er ikke et separat kjøps- eller registreringstilbud på denne siden.</span>
-  </div>
-
-  <!-- OFFER BOUNDARY -->
-  <section style="padding: 4rem 2rem; background: #1a1a1a; color: white; text-align: center;">
-    <div class="section-label" style="color: #fbbf24; font-weight: 700; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px;">Tilbudsgrense</div>
-    <h2 style="font-size: 1.8rem; margin: 0.5rem 0 2rem;">Styr.ing er ikke et separat aktivt kjøpstilbud</h2>
-    <div style="max-width: 500px; margin: 0 auto; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); border-radius: 20px; padding: 3rem 2rem;">
-      <div style="font-size: clamp(1.8rem, 5vw, 2.6rem); font-weight: 800; line-height: 1.1;">Ingen pris eller selvbetjent aktivering</div>
-      <div style="color: rgba(255,255,255,0.65); margin: 1rem 0 2rem;">Samsvarlig er frontdøren for den frosne kontrollsyklusen. Styr.ing forblir en illustrert modul/alternativ retning inntil separat betalt etterspørsel er bevist.</div>
-      <ul style="list-style: none; text-align: left; max-width: 300px; margin: 0 auto 2rem;">
-        {['Ingen konto eller registrering', 'Ingen skjult bestilling', 'Ingen lovet produksjonsfunksjon', 'Illustrasjonsdata kan utforskes', 'Samsvarlig håndterer aktivt kontrolltilbud'].map(f => (
-          <li style="padding: 0.5rem 0; border-bottom: 1px solid rgba(255,255,255,0.07); font-size: 0.9rem; display: flex; align-items: center; gap: 0.5rem;">✓ {f}</li>
-        ))}
-      </ul>
-      <a href="https://samsvarlig.no/" class="btn-primary" style="background: #fbbf24; color: #065f46; width: 100%; padding: 1rem; font-size: 1.05rem;">Gå til Samsvarlig →</a>
-    </div>
-  </section>
-
-  <!-- CTA -->
-  <section style="padding: 4rem 2rem; text-align: center;">
-    <div style="max-width: 650px; margin: 0 auto; background: rgba(6,95,70,0.06); border: 1px solid rgba(6,95,70,0.15); border-radius: 20px; padding: 3rem 2rem;">
-      <h2 style="font-size: 1.6rem; margin-bottom: 1rem;">Utforsk den statiske styrevisningen</h2>
-      <p style="color: #666; max-width: 500px; margin: 0 auto 2rem;">Se hvordan styremateriale, oppfølging og internkontroll kan organiseres, uten å opprette konto eller sende data.</p>
-      <div style="display: flex; gap: 1.5rem; justify-content: center; flex-wrap: wrap; margin-bottom: 2rem;">
-        <span style="font-size: 0.85rem; color: #666;">✓ Styreportal</span>
-        <span style="font-size: 0.85rem; color: #666;">✓ Fristkalender</span>
-        <span style="font-size: 0.85rem; color: #666;">✓ Internkontroll</span>
-      </div>
-      <a href="/board" class="btn-primary" style="padding: 0.85rem 2rem; font-size: 1rem;">Åpne konseptdemo →</a>
-    </div>
-  </section>
-
-  <!-- USE-CASE BADGES -->
-  <section class="container" style="padding: 2rem;">
-    <h2 style="text-align:center; margin-bottom: 1.5rem; font-size: 1.3rem;">Bygget for norsk næringsliv</h2>
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 0.75rem; text-align: center;">
-      {['Styremateriale', 'Møter', 'Oppgaver', 'Frister', 'Kontroller', 'Avvik'].map(item => (
-        <div style="background: white; padding: 0.75rem; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); font-weight: 600; color: #065f46; font-size: 0.85rem;">{item}</div>
-      ))}
-    </div>
-  </section>
-
-  <!-- NEXT STEP -->
-  <section style="padding: 3rem 2rem; background: #f8faf9;" id="contact">
-    <div style="max-width: 500px; margin: 0 auto;">
-      <h2 style="text-align: center; font-size: 1.5rem; margin-bottom: 0.5rem;">Neste aktive steg</h2>
-      <p style="text-align: center; color: #666; margin-bottom: 2rem;">Bruk Samsvarlig for det nåværende tilbudet om én tilbakevendende kontrollsyklus.</p>
-      <div style="display: flex; flex-direction: column; gap: 1rem;">
-        <a href="https://samsvarlig.no/" class="btn-primary" style="padding: 0.85rem; font-size: 1rem; text-align: center;">Se Samsvarlig →</a>
-        <a href="/board" class="btn-secondary" style="padding: 0.85rem; font-size: 1rem; text-align: center;">Fortsett i konseptdemoen →</a>
-      </div>
-      <div style="text-align: center; padding: 2rem 1rem 0;">
-        <p style="color: #666; margin-top: 0.5rem;">Styr.ing-trafikk og separat aktivering er holdt inntil et eget kjøperbehov er dokumentert.</p>
-      </div>
-    </div>
-  </section>
+<Layout title="Styrearbeid med retning" activeNav="home">
+  <main class="landing">
+    <section class="landing-hero"><div class="hero-copy"><span class="eyebrow"><i></i>Norsk SaaS for bedre styring</span><h1>Gjør det komplekse<br /><em>lett å styre.</em></h1><p>Styr.ing samler styrearbeid, risiko, internkontroll og oppfølging i én rolig arbeidsflate — slik at flere ser hva som skjer, hva som mangler og hva som må besluttes.</p><div class="hero-cta"><a class="button button-primary" href="/workspace">Utforsk arbeidsflaten <span>↗</span></a><a class="button button-ghost" href="#capabilities">Se hva som er mulig <span>↓</span></a></div><div class="hero-proof"><span><b>01</b> Norske arbeidsmønstre</span><span><b>02</b> Mennesket i kontroll</span><span><b>03</b> Ett spor fra sak til handling</span></div></div><div class="hero-visual"><div class="visual-window"><div class="window-bar"><span class="window-brand"><i>s</i> styr.ing</span><span class="window-context">Pilotselskap AS · <b>Q2 2026</b></span></div><div class="window-body"><aside><span class="aside-active">⌁ <b>Oversikt</b></span><span>◈ Risiko</span><span>✓ Kontroll</span><span>＋ Oppgaver</span><span>⌂ Dokumenter</span></aside><div class="window-main"><div class="mini-heading"><div><small>God morgen, Ola</small><strong>Her er det viktigste nå.</strong></div><span class="mini-avatar">OT</span></div><div class="mini-stats"><div><small>Neste møte</small><b>15. juni</b><em>8 saker</em></div><div><small>Åpne oppgaver</small><b>6</b><em class="orange">2 høy prioritet</em></div><div><small>Kontrollstatus</small><b>94%</b><em class="green">+6% siste kvartal</em></div></div><div class="mini-chart"><div class="chart-head"><b>Kontroll og oppfølging</b><span>6 måneder ↗</span></div><div class="bars"><i style="height:44%"></i><i style="height:57%"></i><i style="height:52%"></i><i style="height:72%"></i><i style="height:66%"></i><i style="height:87%"></i><i style="height:94%"></i></div><div class="chart-labels"><span>Jan</span><span>Feb</span><span>Mar</span><span>Apr</span><span>Mai</span><span>Jun</span><span>Nå</span></div></div><div class="mini-task"><span class="task-dot"></span><div><b>Budsjett H2 2026 er klart for behandling</b><small>CFO · Frist 30. mai</small></div><span class="task-pill">Til behandling</span></div></div></div></div><div class="float-card float-top"><span class="float-icon">✦</span><div><small>Styr.assistent</small><b>3 punkter krever oppmerksomhet</b></div></div><div class="float-card float-bottom"><span class="float-check">✓</span><div><small>Kontrollbevis</small><b>Dokumentert i dag</b></div></div></div></section>
+    <section class="capability-intro" id="capabilities"><span class="section-kicker">Én arbeidsflate</span><h2>Fra styrebordet til<br /><em>hele virksomheten.</em></h2><p>Se sammenhengen mellom beslutninger, mennesker, risiko og dokumentasjon — uten å hoppe mellom verktøy.</p></section>
+    <section class="capability-grid">{capabilities.map((item, index) => <a href={index === 0 ? '/board' : index === 1 ? '/risk' : index === 2 ? '/internkontroll' : index === 3 ? '/compliance' : '/workspace'} class={`capability capability-${index}`}><span class="cap-icon">{item[0]}</span><span class="cap-number">0{index + 1}</span><h3>{item[1]}</h3><p>{item[2]}</p><span class="cap-arrow">↗</span></a>)}</section>
+    <section class="signal-section"><div class="signal-copy"><span class="section-kicker">Bygget for beslutninger</span><h2>Gode møter skaper<br /><em>gode spor.</em></h2><p>Et vedtak er først nyttig når noen vet hva det betyr, hvem som eier det og når det skal følges opp. Styr.ing holder hele tråden synlig.</p><a class="button button-dark" href="/board/board-1">Se et illustrert møteforløp <span>↗</span></a></div><div class="signal-steps"><div class="signal-step"><span>01</span><div><b>Forbered</b><p>Samle agenda, dokumenter og beslutningsgrunnlag.</p></div></div><div class="signal-step active"><span>02</span><div><b>Beslutt</b><p>Gjør sak, ansvar og utfall tydelig for alle.</p></div></div><div class="signal-step"><span>03</span><div><b>Følg opp</b><p>La oppgaver, kontroller og frister leve videre.</p></div></div></div></section>
+    <section class="final-cta"><span class="section-kicker">Klarere styring starter her</span><h2>Se hva som blir<br /><em>mulig når alt henger sammen.</em></h2><p>Utforsk den offentlige arbeidsflaten med fiktive data. Ingen konto eller virkelige virksomhetsdata kreves.</p><a class="button button-primary" href="/workspace">Åpne Styr.ing-demoen <span>↗</span></a></section>
+  </main>
 </Layout>
+<style>
+  .landing{overflow:hidden}.landing-hero{max-width:1180px;margin:0 auto;padding:74px 24px 82px;display:grid;grid-template-columns:.9fr 1.1fr;gap:34px;align-items:center}.eyebrow,.section-kicker{font:700 .69rem/1 system-ui,sans-serif;letter-spacing:.15em;text-transform:uppercase}.eyebrow{display:inline-flex;align-items:center;gap:8px;color:var(--accent)}.eyebrow i{width:7px;height:7px;border-radius:50%;background:#4da572;box-shadow:0 0 0 4px rgba(77,165,114,.14)}.hero-copy h1{font-size:clamp(3.1rem,6vw,5.4rem);line-height:.93;letter-spacing:-.065em;font-weight:500;margin:22px 0}.hero-copy h1 em,.capability-intro h2 em,.signal-copy h2 em,.final-cta h2 em{color:var(--accent);font-style:normal}.hero-copy>p{max-width:510px;color:var(--muted);font:1rem/1.65 system-ui,sans-serif;margin:0 0 28px}.hero-cta{display:flex;align-items:center;gap:16px;flex-wrap:wrap}.button{display:inline-flex;align-items:center;gap:15px;border-radius:10px;padding:14px 18px;font:700 .8rem/1 system-ui,sans-serif}.button-primary{background:#10241f;color:#fff;box-shadow:0 9px 20px rgba(16,36,31,.13)}.button-primary:hover{background:#1f5c48;color:#fff}.button-ghost{color:var(--ink)}.button-ghost:hover{color:var(--accent)}.button-dark{color:#fff;background:#10241f}.hero-proof{display:flex;flex-wrap:wrap;gap:13px 18px;margin-top:42px;color:#809088;font:600 .65rem/1.2 system-ui,sans-serif}.hero-proof b{color:var(--accent);margin-right:4px}.hero-visual{min-width:0;position:relative;min-height:440px;display:grid;place-items:center}.hero-visual:before{content:'';position:absolute;width:82%;aspect-ratio:1;border-radius:50%;background:radial-gradient(circle,#e4f1d6 0%,rgba(228,241,214,.35) 42%,transparent 68%)}.visual-window{width:min(100%,570px);position:relative;z-index:1;border-radius:15px;overflow:hidden;background:#f7f8f5;border:1px solid rgba(16,36,31,.14);box-shadow:0 25px 60px rgba(16,36,31,.2);transform:rotate(2deg)}.window-bar{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px 14px;background:#fff;border-bottom:1px solid rgba(16,36,31,.08);font:600 .61rem/1 system-ui,sans-serif}.window-brand{color:var(--ink)}.window-brand i{display:inline-grid;place-items:center;width:18px;height:18px;margin-right:5px;border-radius:5px;background:#10241f;color:#d5fb98;font:700 .7rem/1 Georgia,serif;font-style:normal}.window-context{color:#87948c}.window-context b{color:var(--accent)}.window-body{display:grid;grid-template-columns:116px 1fr;min-height:325px}.window-body aside{padding:18px 10px;display:flex;flex-direction:column;gap:5px;background:#edf2ec;color:#809088;font:600 .62rem/1 system-ui,sans-serif}.window-body aside span{padding:9px 8px;border-radius:7px}.window-body aside .aside-active{background:#d8ead7;color:var(--accent)}.window-main{padding:18px 17px}.mini-heading{display:flex;justify-content:space-between;align-items:center}.mini-heading small,.mini-stats small{display:block;color:#87948c;font:600 .58rem/1.2 system-ui,sans-serif}.mini-heading strong{display:block;color:var(--ink);font:500 1.15rem/1.15 Georgia,serif;margin-top:4px}.mini-avatar{display:grid;place-items:center;width:29px;height:29px;border-radius:50%;background:#1f6f5b;color:#fff;font:700 .58rem/1 system-ui,sans-serif}.mini-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin:18px 0 12px}.mini-stats>div{padding:10px 9px;border-radius:8px;background:#fff;border:1px solid rgba(16,36,31,.06)}.mini-stats b{display:block;margin:7px 0 3px;color:var(--ink);font:500 1.05rem/1 Georgia,serif}.mini-stats em{font:600 .55rem/1 system-ui,sans-serif;font-style:normal;color:#5b9b6b}.mini-stats em.orange{color:#b68130}.mini-chart{padding:12px 10px 8px;background:#fff;border:1px solid rgba(16,36,31,.06);border-radius:8px}.chart-head{display:flex;justify-content:space-between;color:#5c6b65;font:600 .62rem/1 system-ui,sans-serif}.chart-head span{color:#9aa7a0;font-size:.55rem}.bars{height:85px;margin-top:12px;display:flex;align-items:end;gap:7px;border-bottom:1px solid #e3e9e2}.bars i{flex:1;border-radius:3px 3px 0 0;background:linear-gradient(#80c47f,#3e9068)}.chart-labels{display:flex;justify-content:space-between;color:#9aa7a0;font:.5rem/1 system-ui,sans-serif;margin-top:5px}.mini-task{display:flex;align-items:center;gap:9px;margin-top:11px;padding:10px;border-radius:8px;background:#fff;border:1px solid rgba(16,36,31,.06)}.task-dot{width:7px;height:7px;flex-shrink:0;border-radius:50%;background:#dda242}.mini-task div{flex:1}.mini-task b{display:block;color:var(--ink);font:600 .62rem/1.2 system-ui,sans-serif}.mini-task small{display:block;color:#8b9990;font:.56rem/1 system-ui,sans-serif;margin-top:3px}.task-pill{color:#a36e21;background:#fff1d8;padding:5px 6px;border-radius:5px;font:600 .52rem/1 system-ui,sans-serif;white-space:nowrap}.float-card{position:absolute;z-index:2;display:flex;align-items:center;gap:9px;padding:10px 12px;background:#fff;border:1px solid rgba(16,36,31,.1);border-radius:11px;box-shadow:0 12px 25px rgba(16,36,31,.13)}.float-card small{display:block;color:#8b9990;font:600 .55rem/1 system-ui,sans-serif}.float-card b{display:block;color:var(--ink);font:700 .64rem/1.2 system-ui,sans-serif;margin-top:4px}.float-icon,.float-check{width:26px;height:26px;border-radius:8px;display:grid;place-items:center;font-size:.85rem}.float-icon{background:#dff3be;color:#4f8059}.float-check{background:#dff3e5;color:#3b8e61}.float-top{top:34px;right:-3px}.float-bottom{bottom:28px;left:0}.capability-intro{max-width:670px;margin:0 auto;padding:50px 24px 28px;text-align:center}.section-kicker{color:var(--accent)}.capability-intro h2{font-size:clamp(2.2rem,4vw,3.4rem);line-height:1;letter-spacing:-.05em;font-weight:500;margin:14px 0}.capability-intro p{color:var(--muted);font:.9rem/1.6 system-ui,sans-serif;max-width:500px;margin:0 auto}.capability-grid{max-width:1180px;margin:0 auto;padding:0 24px 78px;display:grid;grid-template-columns:repeat(3,1fr);gap:13px}.capability{min-height:220px;padding:20px;border:1px solid rgba(16,36,31,.09);border-radius:16px;background:#fff;color:var(--ink);position:relative;overflow:hidden;transition:.2s ease}.capability:hover{transform:translateY(-3px);box-shadow:0 14px 28px rgba(16,36,31,.09)}.capability:after{content:'';position:absolute;width:130px;height:130px;right:-42px;bottom:-42px;border-radius:50%;background:currentColor;opacity:.055}.capability-0{color:#1f6f5b}.capability-1{color:#726bb3}.capability-2{color:#b38329}.capability-3{color:#3974a1}.capability-4{color:#ad607c}.capability-5{color:#576a6a}.cap-icon{display:grid;place-items:center;width:38px;height:38px;border-radius:11px;background:rgba(16,36,31,.07);font-size:1.3rem}.cap-number{position:absolute;top:20px;right:20px;color:#97a49d;font:700 .63rem/1 system-ui,sans-serif;letter-spacing:.12em}.capability h3{color:var(--ink);font-size:1.15rem;margin:40px 0 7px}.capability p{color:var(--muted);font:.78rem/1.5 system-ui,sans-serif;max-width:230px}.cap-arrow{position:absolute;right:18px;bottom:15px;color:currentColor;font:1.2rem/1 system-ui,sans-serif}.signal-section{max-width:1180px;margin:0 auto 80px;padding:65px 24px;display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:center;background:#eaf2e7}.signal-copy h2{font-size:clamp(2.3rem,4vw,3.5rem);line-height:.98;letter-spacing:-.05em;font-weight:500;margin:13px 0 18px}.signal-copy p{color:var(--muted);font:.9rem/1.65 system-ui,sans-serif;max-width:430px;margin:0 0 24px}.signal-steps{display:flex;flex-direction:column;gap:10px}.signal-step{display:flex;gap:14px;align-items:flex-start;padding:17px 18px;border:1px solid rgba(16,36,31,.08);border-radius:13px;background:rgba(255,255,255,.55)}.signal-step.active{background:#fff;border-color:rgba(31,111,91,.28);box-shadow:0 10px 24px rgba(16,36,31,.06)}.signal-step>span{color:#73907e;font:700 .68rem/1 system-ui,sans-serif;padding-top:2px}.signal-step b{color:var(--ink);font:700 .85rem/1 system-ui,sans-serif}.signal-step p{color:var(--muted);font:.75rem/1.45 system-ui,sans-serif;margin:6px 0 0}.final-cta{text-align:center;max-width:650px;margin:0 auto;padding:22px 24px 90px}.final-cta h2{font-size:clamp(2.4rem,4vw,3.5rem);line-height:.98;letter-spacing:-.05em;font-weight:500;margin:14px 0 18px}.final-cta p{color:var(--muted);font:.9rem/1.55 system-ui,sans-serif;margin:0 auto 23px;max-width:500px}
+  @media(max-width:850px){.landing-hero{grid-template-columns:1fr;padding-top:50px}.hero-visual{min-height:405px}.capability-grid{grid-template-columns:repeat(2,1fr)}.signal-section{grid-template-columns:1fr;gap:35px}}
+  @media(max-width:560px){.landing-hero{padding:35px 16px 50px}.hero-copy h1{font-size:3.25rem}.hero-proof{gap:9px 12px;margin-top:30px}.hero-visual{min-height:330px;transform:scale(.92);margin:0 -14px}.window-body{grid-template-columns:78px 1fr}.window-body aside{font-size:.5rem;padding:13px 6px}.window-main{padding:14px 10px}.mini-stats b{font-size:.85rem}.mini-stats em{font-size:.45rem}.float-top{right:-5px}.float-bottom{left:-3px}.capability-grid{grid-template-columns:1fr;padding:0 16px 55px}.capability{min-height:185px}.signal-section{padding:42px 20px;margin-bottom:55px}.final-cta{padding-bottom:65px}}
+</style>

@@ -1,127 +1,76 @@
 ---
-// /vilkar — Vilkår for bruk av Styr.ing
-// v2.0 content upgrade — uses Layout.astro wrapper + emerald/cream design tokens.
+// /vilkar — terms for the public, static Styr.ing concept demo.
 import Layout from '../layouts/Layout.astro';
 ---
-<Layout title="Vilkår" activeNav="">
+<Layout title="Vilkår for konseptdemoen" activeNav="">
   <article class="container legal-page" style="max-width: 860px; margin: 0 auto; padding: 2.5rem 20px 4rem;">
     <header style="margin-bottom: 2rem;">
       <p style="font-family: system-ui, sans-serif; color: var(--muted); font-size: 0.875rem; margin: 0 0 0.5rem;">
-        Sist oppdatert: 2026-07-19 · v2.1
+        Sist oppdatert: 2026-08-03 · v3.0
       </p>
-      <h1 style="font-size: 2.25rem; color: var(--ink); margin: 0 0 0.5rem; line-height: 1.2;">Vilkår for bruk</h1>
+      <h1 style="font-size: 2.25rem; color: var(--ink); margin: 0 0 0.5rem; line-height: 1.2;">Vilkår for konseptdemoen</h1>
       <p style="font-family: system-ui, sans-serif; color: var(--muted); font-size: 1rem; margin: 0;">
-        Disse vilkårene regulerer din bruk av Styr.ings styreportal, compliance-kalender og internkontrollverktøy.
+        Disse vilkårene gjelder bare de offentlige, statiske demosidene på Styr.ing. Sidene er ikke en aktiv tjeneste, et abonnement eller et kjøpstilbud.
       </p>
     </header>
 
     <nav aria-label="Innholdsfortegnelse" style="background: rgba(31, 111, 91, 0.06); border: 1px solid rgba(31, 111, 91, 0.18); border-radius: 12px; padding: 1.25rem 1.5rem; margin-bottom: 2rem; font-family: system-ui, sans-serif; font-size: 0.9rem;">
       <strong style="color: var(--ink); display: block; margin-bottom: 0.5rem;">Innhold</strong>
       <ol style="margin: 0; padding-left: 1.25rem; color: var(--muted); line-height: 1.7;">
-        <li><a href="#acceptance">Aksept</a></li>
-        <li><a href="#eligibility">Hvem som kan bruke tjenesten</a></li>
-        <li><a href="#account">Konto og sikkerhet</a></li>
-        <li><a href="#use">Akseptabel bruk</a></li>
-        <li><a href="#ai">KI-assistert beslutningsstøtte</a></li>
-        <li><a href="#subscription">Abonnement og betaling</a></li>
-        <li><a href="#beta">Beta-funksjoner</a></li>
-        <li><a href="#suspension">Suspensjon og oppsigelse</a></li>
-        <li><a href="#ip">Immaterielle rettigheter</a></li>
-        <li><a href="#third-party">Tredjepartstjenester</a></li>
-        <li><a href="#disclaimers">Ansvarsfraskrivelse</a></li>
-        <li><a href="#liability">Ansvarsbegrensning</a></li>
-        <li><a href="#changes">Endringer</a></li>
-        <li><a href="#law">Lovvalg</a></li>
-        <li><a href="#contact">Kontakt</a></li>
+        <li><a href="#scope">Hva vilkårene gjelder</a></li>
+        <li><a href="#no-service">Ingen aktiv tjeneste eller bestilling</a></li>
+        <li><a href="#data">Demo- og personopplysninger</a></li>
+        <li><a href="#use">Forsvarlig bruk</a></li>
+        <li><a href="#limitations">Demoens grenser</a></li>
+        <li><a href="#rights">Rettigheter og illustrasjonsinnhold</a></li>
+        <li><a href="#future">Eventuell fremtidig produksjonsløsning</a></li>
+        <li><a href="#contact">Endringer, lovvalg og kontakt</a></li>
       </ol>
     </nav>
 
-    <section id="acceptance" style="margin-bottom: 2rem;">
-      <h2 style="color: var(--ink); font-size: 1.35rem; margin: 0 0 0.5rem;">1. Aksept</h2>
-      <p style="font-family: system-ui, sans-serif;">Disse vilkårene beskriver rammen for en eventuell avtalt produksjonsløsning. De offentlige sidene er en statisk konseptdemo og oppretter ikke konto eller abonnement. En konkret bestilling eller kundeavtale må være inngått før produksjonsbruk.</p>
+    <section id="scope" style="margin-bottom: 2rem;">
+      <h2 style="color: var(--ink); font-size: 1.35rem; margin: 0 0 0.5rem;">1. Hva vilkårene gjelder</h2>
+      <p style="font-family: system-ui, sans-serif;">Styr.ing er på disse offentlige sidene en statisk konseptdemo med fiktive illustrasjonsdata. Demoen viser mulige arbeidsmønstre for styrearbeid, risiko og internkontroll. Den oppretter ikke kontoer, utfører ikke produksjonsfunksjoner og inngår ingen kundeavtale.</p>
+      <p style="font-family: system-ui, sans-serif;">Du kan bruke demoen til å lese og utforske konseptet innenfor grensene nedenfor.</p>
     </section>
 
-    <section id="eligibility" style="margin-bottom: 2rem;">
-      <h2 style="color: var(--ink); font-size: 1.35rem; margin: 0 0 0.5rem;">2. Hvem som kan bruke tjenesten</h2>
-      <p style="font-family: system-ui, sans-serif;">Du må være 16 år eller eldre, og ha fullmakt til å opptre på vegne av den organisasjonen du registrerer. Styr.ing er primært rettet mot norske styrer og SMB-organisasjoner. Tilgang til bestemte funksjoner kan kreve ytterligere fullmakt (f.eks. styrelederrolle, daglig leder).</p>
+    <section id="no-service" style="margin-bottom: 2rem;">
+      <h2 style="color: var(--ink); font-size: 1.35rem; margin: 0 0 0.5rem;">2. Ingen aktiv tjeneste eller bestilling</h2>
+      <p style="font-family: system-ui, sans-serif;">Demoen har ingen offentlig pris, registrering, innlogging, betaling, produktaktivering eller separat Styr.ing-pilot. Navigasjon til <a href="https://samsvarlig.no/" style="color: var(--accent);">Samsvarlig</a> er en lenke til et annet tilbud med egne opplysninger og vilkår; den aktiverer ikke Styr.ing.</p>
+      <p style="font-family: system-ui, sans-serif;">Tekst, illustrerte knapper og demoarbeidsflyter er ikke løfter om at en funksjon finnes i produksjon eller vil bli levert.</p>
     </section>
 
-    <section id="account" style="margin-bottom: 2rem;">
-      <h2 style="color: var(--ink); font-size: 1.35rem; margin: 0 0 0.5rem;">3. Konto og sikkerhet</h2>
-      <p style="font-family: system-ui, sans-serif;">Du er ansvarlig for dine kontoopplysninger og all aktivitet under kontoen din. Bruk et sterkt, unikt passord og eventuelle ekstra sikkerhetsmekanismer som tilbys i den avtalte løsningen. Hvis kontoen din er knyttet til en organisasjon, er organisasjonen ansvarlig for å fjerne tilgangen din når du slutter. Varsle oss umiddelbart på <a href="mailto:ola@styr.ing" style="color: var(--accent);">ola@styr.ing</a> ved mistanke om uautorisert tilgang.</p>
+    <section id="data" style="margin-bottom: 2rem;">
+      <h2 style="color: var(--ink); font-size: 1.35rem; margin: 0 0 0.5rem;">3. Demo- og personopplysninger</h2>
+      <p style="font-family: system-ui, sans-serif;">De offentlige demosidene sender ikke inn eller lagrer styre-, virksomhets- eller kontodata hos Styr.ing. Eventuelle felt er lokale illustrasjoner. Ikke skriv inn virkelige personopplysninger, fortrolig informasjon eller virksomhetsdata i demoen.</p>
+      <p style="font-family: system-ui, sans-serif;">Hvis du selv velger å sende e-post, behandles den henvendelsen separat fra demoen. Se <a href="/personvern" style="color: var(--accent);">personvernerklæringen</a>.</p>
     </section>
 
     <section id="use" style="margin-bottom: 2rem;">
-      <h2 style="color: var(--ink); font-size: 1.35rem; margin: 0 0 0.5rem;">4. Akseptabel bruk</h2>
-      <p style="font-family: system-ui, sans-serif;">Du kan ikke bruke Styr.ing til å:</p>
-      <ul style="font-family: system-ui, sans-serif; padding-left: 1.25rem; line-height: 1.7;">
-        <li>Bryte norsk lov, EU-forordninger eller andre gjeldende regelverk.</li>
-        <li>Krenke immaterielle rettigheter, personvern eller andre rettigheter til tredjepart.</li>
-        <li>Spre skadevare, søppelpost eller uønsket kommunikasjon.</li>
-        <li>Forsøke uautorisert tilgang til tjenesten eller andre brukeres kontoer.</li>
-        <li>Forstyrre tjenesten eller dens infrastruktur (DDoS, scraping uten tillatelse, reverse engineering).</li>
-        <li>Bruke tjenesten til å bygge et konkurrerende produkt, eller til systematisk datauthenting.</li>
-        <li>Laste opp innhold som er ulovlig, ærekrenkende, falskt eller misvisende.</li>
-        <li>Bruke KI-funksjonene til å fatte automatiske vedtak med juridisk eller vesentlig effekt uten menneskelig godkjenning.</li>
-      </ul>
+      <h2 style="color: var(--ink); font-size: 1.35rem; margin: 0 0 0.5rem;">4. Forsvarlig bruk</h2>
+      <p style="font-family: system-ui, sans-serif;">Du må ikke bruke de offentlige sidene til å bryte lov, krenke andres rettigheter, spre skadevare, omgå tekniske sperrer, forstyrre tilgjengeligheten eller gjennomføre uautorisert automatisert uthenting.</p>
     </section>
 
-    <section id="ai" style="margin-bottom: 2rem;">
-      <h2 style="color: var(--ink); font-size: 1.35rem; margin: 0 0 0.5rem;">5. KI-assistert beslutningsstøtte</h2>
-      <p style="font-family: system-ui, sans-serif;">Når KI-funksjoner er avtalt og aktivert, kan de hjelpe med å lage utkast og beslutningsstøtte. <strong>KI-utdata er forslag, ikke vedtak.</strong> Du er ansvarlig for å gjennomgå og godkjenne alle KI-utdata før de brukes som grunnlag for styrevedtak, oppsigelser, regulatorisk rapportering eller andre handlinger med vesentlig effekt.</p>
-      <p style="font-family: system-ui, sans-serif;"><strong>Merking og kontroll:</strong> Der KI-assistert innhold tilbys, skal kunden behandle det som et utkast og selv kontrollere, merke og godkjenne det i den sammenhengen hvor det brukes.</p>
-      <p style="font-family: system-ui, sans-serif;"><strong>Leverandører:</strong> Aktive modellleverandører, dataflyt og behandlingsvilkår fremgår av kundeavtalen og gjeldende underdatabehandleroversikt.</p>
-      <p style="font-family: system-ui, sans-serif;"><strong>Automatiserte beslutninger:</strong> Kunden må selv vurdere og oppfylle kravene til menneskelig inngripen og andre rettigheter når GDPR art. 22 eller annet regelverk gjelder.</p>
+    <section id="limitations" style="margin-bottom: 2rem;">
+      <h2 style="color: var(--ink); font-size: 1.35rem; margin: 0 0 0.5rem;">5. Demoens grenser</h2>
+      <p style="font-family: system-ui, sans-serif;">Demoen er kun en illustrasjon. Den gir ikke juridisk, finansiell, sikkerhets-, revisjons- eller etterlevelsesrådgivning, og dokumenterer ikke at en virksomhet oppfyller krav. Virksomheten må selv identifisere plikter og få nødvendig faglig vurdering.</p>
+      <p style="font-family: system-ui, sans-serif;">Ingen tilgjengelighet, funksjonalitet, tidsbesparelse, økonomisk gevinst, varsling, lagring, signering, eksport, KI-kjøring eller regulatorisk effekt garanteres på demosidene.</p>
     </section>
 
-    <section id="subscription" style="margin-bottom: 2rem;">
-      <h2 style="color: var(--ink); font-size: 1.35rem; margin: 0 0 0.5rem;">6. Abonnement og betaling</h2>
-      <p style="font-family: system-ui, sans-serif;">Pris, faktureringsperiode, oppsigelse, eventuell refusjon og tidspunkt for prisendringer følger bestillingen og kundeavtalen, med forbehold for ufravikelig lov.</p>
+    <section id="rights" style="margin-bottom: 2rem;">
+      <h2 style="color: var(--ink); font-size: 1.35rem; margin: 0 0 0.5rem;">6. Rettigheter og illustrasjonsinnhold</h2>
+      <p style="font-family: system-ui, sans-serif;">Utforming, tekst og kode på demosidene er beskyttet etter gjeldende regler. Navn, personer, virksomheter, møter, dokumenter, risikoer og andre data som vises i demoen er illustrasjoner og skal ikke behandles som virkelige forhold eller råd.</p>
     </section>
 
-    <section id="beta" style="margin-bottom: 2rem;">
-      <h2 style="color: var(--ink); font-size: 1.35rem; margin: 0 0 0.5rem;">7. Beta-funksjoner</h2>
-      <p style="font-family: system-ui, sans-serif;">Funksjoner merket "beta" eller "preview" leveres "som de er", kan være ufullstendige, og ansvar er begrenset oppad til NOK 1 000. Ingen SLA gjelder for beta-funksjoner. Vi kan endre eller fjerne beta-funksjoner uten forvarsel.</p>
-    </section>
-
-    <section id="suspension" style="margin-bottom: 2rem;">
-      <h2 style="color: var(--ink); font-size: 1.35rem; margin: 0 0 0.5rem;">8. Suspensjon og oppsigelse</h2>
-      <p style="font-family: system-ui, sans-serif;">Vi kan suspendere eller avslutte kontoen din hvis du bryter disse vilkårene, unnlater å betale, eller utgjør en sikkerhets- eller juridisk risiko. Vi gir varsel der det er rimelig mulig. Ved oppsigelse opphører din rett til å bruke tjenesten, og vi kan slette dine data i henhold til vår lagringspolicy.</p>
-    </section>
-
-    <section id="ip" style="margin-bottom: 2rem;">
-      <h2 style="color: var(--ink); font-size: 1.35rem; margin: 0 0 0.5rem;">9. Immaterielle rettigheter</h2>
-      <p style="font-family: system-ui, sans-serif;">Vi beholder alle rettigheter til Styr.ing og underliggende teknologi. Du beholder alle rettigheter til styrerelatert innhold du laster opp (møtereferater, beslutningsdokumenter, saksmapper). Du gir oss en begrenset lisens til å behandle og vise innholdet ditt for å levere tjenesten.</p>
-    </section>
-
-    <section id="third-party" style="margin-bottom: 2rem;">
-      <h2 style="color: var(--ink); font-size: 1.35rem; margin: 0 0 0.5rem;">10. Tredjepartstjenester</h2>
-      <p style="font-family: system-ui, sans-serif;">Den avtalte løsningen kan bruke tredjepartstjenester for blant annet drift, betaling, e-post, datakilder og KI. Aktive leverandører og relevante vilkår fremgår av bestillingen, kundeavtalen og underdatabehandleroversikten.</p>
-    </section>
-
-    <section id="disclaimers" style="margin-bottom: 2rem;">
-      <h2 style="color: var(--ink); font-size: 1.35rem; margin: 0 0 0.5rem;">11. Ansvarsfraskrivelse</h2>
-      <p style="font-family: system-ui, sans-serif;">TJENESTEN LEVERES "SOM DEN ER" UTEN GARANTIER AV NOE SLAG. KI-utdata kan være unøyaktige, ufullstendige eller upassende. Styr.ing er et styringsverktøy — det erstatter ikke juridisk, finansiell eller annen profesjonell rådgivning.</p>
-    </section>
-
-    <section id="liability" style="margin-bottom: 2rem;">
-      <h2 style="color: var(--ink); font-size: 1.35rem; margin: 0 0 0.5rem;">12. Ansvarsbegrensning</h2>
-      <p style="font-family: system-ui, sans-serif;">I DEN GRAD LOVEN TILLATER DET ER STYR.INGS SAMLEDE ANSVAR BEGRENSET TIL DET HØYESTE AV (A) DET DU BETALTE OSS I DE 12 SISTE MÅNEDENE FØR KRAVET, ELLER (B) 10 000 KRONER. VI ER IKKE ANSVARLIGE FOR INDIREKTE, TILFELDIGE ELLER FØLGESKADER.</p>
-    </section>
-
-    <section id="changes" style="margin-bottom: 2rem;">
-      <h2 style="color: var(--ink); font-size: 1.35rem; margin: 0 0 0.5rem;">13. Endringer</h2>
-      <p style="font-family: system-ui, sans-serif;">Vi kan oppdatere disse vilkårene. Vesentlige endringer varsles på en egnet måte og i samsvar med kundeavtalen før de trer i kraft.</p>
-    </section>
-
-    <section id="law" style="margin-bottom: 2rem;">
-      <h2 style="color: var(--ink); font-size: 1.35rem; margin: 0 0 0.5rem;">14. Lovvalg</h2>
-      <p style="font-family: system-ui, sans-serif;">Disse vilkårene er underlagt norsk lov. For B2C-kunder gjelder Forbrukertvistlova. Tvister avgjøres ved norske domstoler (Oslo tingrett som verneting).</p>
+    <section id="future" style="margin-bottom: 2rem;">
+      <h2 style="color: var(--ink); font-size: 1.35rem; margin: 0 0 0.5rem;">7. Eventuell fremtidig produksjonsløsning</h2>
+      <p style="font-family: system-ui, sans-serif;">En eventuell produksjonsløsning krever en separat, uttrykkelig bestilling eller kundeavtale. Den må blant annet fastsette omfang, pris, ansvar, sikkerhet, databehandling, leverandører, oppsigelse og andre relevante vilkår før aktivering. Disse demovilkårene fyller ikke den funksjonen.</p>
     </section>
 
     <section id="contact" style="margin-bottom: 2rem;">
-      <h2 style="color: var(--ink); font-size: 1.35rem; margin: 0 0 0.5rem;">15. Kontakt</h2>
-      <p style="font-family: system-ui, sans-serif;"><strong>Styr.ing</strong><br>E-post: <a href="mailto:ola@styr.ing" style="color: var(--accent);">ola@styr.ing</a><br>Se også <a href="/personvern" style="color: var(--accent);">personvernerklæringen</a>.</p>
+      <h2 style="color: var(--ink); font-size: 1.35rem; margin: 0 0 0.5rem;">8. Endringer, lovvalg og kontakt</h2>
+      <p style="font-family: system-ui, sans-serif;">Demoen og disse vilkårene kan endres eller fjernes. Bruk av de offentlige demosidene reguleres av norsk rett, med forbehold for ufravikelige regler.</p>
+      <p style="font-family: system-ui, sans-serif;"><strong>Styr.ing</strong><br>E-post: <a href="mailto:ola@styr.ing" style="color: var(--accent);">ola@styr.ing</a></p>
     </section>
   </article>
 </Layout>
