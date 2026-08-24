@@ -111,7 +111,7 @@ const faqSchema = {
       outline-offset: 3px;
     }
 
-    nav {
+    .site-nav {
       position: sticky; top: 0; z-index: 100;
       display: flex; align-items: center; justify-content: space-between;
       padding: 16px clamp(20px,5vw,60px);
@@ -153,7 +153,7 @@ const faqSchema = {
       .nav-cta { padding-inline: 13px; }
     }
     @media (max-width: 760px) {
-      nav { align-items: center; gap: 12px; flex-wrap: wrap; }
+      .site-nav { align-items: center; gap: 12px; flex-wrap: wrap; }
       .mobile-nav-toggle { display: inline-flex; margin-left: auto; }
       .nav-links { display: none; width: 100%; gap: 12px 14px; flex-wrap: wrap; padding-top: 4px; white-space: normal; }
       .nav-links.open { display: flex; }
@@ -173,7 +173,7 @@ const faqSchema = {
   </style>
 </head>
 <body>
-  <nav>
+  <nav class="site-nav">
     <a href="/" class="logo" aria-label="Styr.ing forsiden"><span class="logo-mark">s</span><span>styr<span class="logo-dot">.</span>ing</span></a>
     <button class="mobile-nav-toggle" type="button" aria-expanded="false" aria-controls="primary-nav">Meny</button>
     <ul id="primary-nav" class="nav-links" aria-label="Hovedmeny">
