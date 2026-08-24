@@ -1,4 +1,4 @@
-import { authorizeBoardRead, authorizeWrite, body, id, json, requireDb, type Env } from './_lib';
+import { authorizeBoardRead, authorizeBoardWrite, body, id, json, recordAudit, requireDb, type Env } from './_lib';
 
 const views = new Set(['summary', 'risks', 'actions']);
 const levels = ['critical', 'high', 'medium', 'low'];
@@ -25,16 +25,18 @@ export const onRequestGet: PagesFunction<Env> = async ({ env, request }) => {
 };
 
 export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
-  if (!authorizeWrite(request, env)) return json({ error: 'write_not_authorized' }, { status: 401 });
   try {
     const value = await body(request); const boardId = String(value?.boardId || '').trim(); const action = String(value?.action || '').trim();
     if (!boardId || !action) return json({ error: 'boardId_and_action_required' }, { status: 400 });
+    const authorization = await authorizeBoardWrite(request, env, boardId);
+    if (!authorization.allowed) return json({ error: 'write_not_authorized' }, { status: 401 });
     const db = requireDb(env);
     if (action === 'create_risk') {
       const title = String(value?.title || '').trim(); const level = String(value?.level || 'medium');
       if (!title || !levels.includes(level)) return json({ error: 'title_and_valid_level_required' }, { status: 400 });
       const riskId = id('risk'); const code = String(value?.code || `R-${Date.now().toString().slice(-5)}`);
       await db.prepare("INSERT INTO risks (id,board_id,code,title,level,trend,owner,status,treatment,due_date) VALUES (?,?,?,?,?,'stable',?,'open',?,?)").bind(riskId, boardId, code, title, level, value?.owner || null, value?.treatment || null, value?.dueDate || null).run();
+      await recordAudit(db, { boardId, action: 'risk_created', entityType: 'risk', entityId: riskId, userId: authorization.userId || undefined, details: { level, title } });
       return json({ ok: true, action, id: riskId, status: 'open', requiresHumanReview: true }, { status: 201 });
     }
     if (action === 'update_risk') {
@@ -42,12 +44,14 @@ export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
       if (!riskId || !statuses.includes(status)) return json({ error: 'riskId_and_valid_status_required' }, { status: 400 });
       const result = await db.prepare('UPDATE risks SET status=?,level=COALESCE(?,level),trend=COALESCE(?,trend),treatment=COALESCE(?,treatment),due_date=COALESCE(?,due_date),updated_at=datetime(\'now\') WHERE id=? AND board_id=?').bind(status, value?.level || null, value?.trend || null, value?.treatment || null, value?.dueDate || null, riskId, boardId).run();
       if (!result.meta?.changes) return json({ error: 'risk_not_found' }, { status: 404 });
+      await recordAudit(db, { boardId, action: 'risk_status_changed', entityType: 'risk', entityId: riskId, userId: authorization.userId || undefined, details: { status } });
       return json({ ok: true, action, riskId, status, requiresHumanReview: true });
     }
     if (action === 'complete_action') {
       const actionId = String(value?.actionId || '').trim(); if (!actionId) return json({ error: 'actionId_required' }, { status: 400 });
       const result = await db.prepare("UPDATE action_items SET status='completed',completed_at=datetime('now'),updated_at=datetime('now') WHERE id=? AND board_id=? AND status <> 'completed'").bind(actionId, boardId).run();
       if (!result.meta?.changes) return json({ error: 'action_not_open_or_found' }, { status: 409 });
+      await recordAudit(db, { boardId, action: 'action_completed', entityType: 'action_item', entityId: actionId, userId: authorization.userId || undefined });
       return json({ ok: true, action, actionId, status: 'completed' });
     }
     return json({ error: 'unknown_action', allowed: ['create_risk', 'update_risk', 'complete_action'] }, { status: 400 });
