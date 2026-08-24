@@ -15,7 +15,7 @@ const tabs = [
   <main class="ops-shell">
     <section class="ops-hero">
       <div><span class="eyebrow"><i></i> Pilotselskap AS · operativ cockpit</span><h1>Fra signal.<br /><em>Til neste handling.</em></h1><p>Én oversikt for de arbeidsområdene som gjør virksomheten levende — mennesker, systemer, penger, kunder og AI.</p></div>
-      <div class="pulse-card"><span class="pulse-label">Dagens signal</span><strong>7</strong><span>oppgaver bør avklares før kl. 16:00</span><div class="pulse-bar"><i></i></div><a href="#action-queue">Åpne handlingskø <span>↓</span></a></div>
+      <div class="pulse-card"><span class="pulse-label">Dagens signal</span><strong id="attention-count">—</strong><span>oppgaver bør avklares før neste beslutning</span><div class="pulse-bar"><i id="attention-bar"></i></div><a href="#action-queue">Åpne handlingskø <span>↓</span></a></div>
     </section>
 
     <nav class="ops-tabs" aria-label="Operative arbeidsområder">{tabs.map((tab, index) => <button class={`ops-tab ${index === 0 ? 'active' : ''} tab-${tab.accent}`} data-tab={tab.key}><span>0{index + 1}</span>{tab.label}</button>)}</nav>
@@ -23,7 +23,7 @@ const tabs = [
     <section class="ops-content">
       {tabs.map((tab, index) => <div class={`ops-view ${index === 0 ? 'active' : ''}`} data-view={tab.key}>
         <div class="view-intro"><span class={`view-kicker ${tab.accent}`}>{tab.kicker}</span><h2>{tab.title}</h2><p>{tab.description}</p><a class="view-link" href={tab.link}>Åpne arbeidsområde <span>↗</span></a></div>
-        <div class="metric-grid">{tab.metrics.map(metric => <div class="ops-metric"><span>{metric[0]}</span><strong>{metric[1]}</strong><small>{metric[2]}</small></div>)}</div>
+        <div class="metric-grid">{tab.metrics.map((metric, metricIndex) => <div class="ops-metric" data-metric={`${tab.key}-${metricIndex}`}><span>{metric[0]}</span><strong>{metric[1]}</strong><small>{metric[2]}</small></div>)}</div>
         <div class="view-divider"><span>Siste signaler</span><span>Illustrasjonsdata · {tab.label}</span></div>
         <div class="signal-list">{tab.actions.map((action, actionIndex) => <article class="signal-item" data-action-id={`${tab.key}-${actionIndex}`}><span class={`signal-status status-${action[3].toLowerCase()}`}></span><div><strong>{action[0]}</strong><p>{action[1]}</p></div><time>{action[2]}</time><span class="priority">{action[3]}</span><button class="signal-open" aria-label={`Marker ${action[0]} som gjennomgått`} aria-pressed="false">→</button></article>)}</div>
       </div>)}
@@ -45,6 +45,13 @@ const tabs = [
   document.querySelectorAll('.signal-open').forEach(button => button.addEventListener('click', () => { const item = button.closest('.signal-item'); const id = item?.dataset.actionId; if (!id) return; reviewed.has(id) ? reviewed.delete(id) : reviewed.add(id); persist(); paintReviewed(); }));
   document.querySelector('#reset-demo')?.addEventListener('click', () => { reviewed.clear(); persist(); paintReviewed(); });
   paintReviewed();
+  const setMetric = (key, index, value, note) => { const card = document.querySelector(`[data-metric="${key}-${index}"]`); if (!card) return; const strong = card.querySelector('strong'); const small = card.querySelector('small'); if (strong) strong.textContent = value; if (small && note) small.textContent = note; };
+  fetch('/api/operations?boardId=board-1').then(r => r.json()).then((data) => {
+    const attention = Number(data.attentionCount || 0); const count = document.querySelector('#attention-count'); const bar = document.querySelector('#attention-bar');
+    if (count) count.textContent = String(attention); if (bar) bar.style.width = `${Math.min(100, Math.max(8, attention * 8))}%`;
+    Object.entries(data.metrics || {}).forEach(([key, metrics]) => (metrics || []).forEach((metric, index) => setMetric(key, index, String(metric[0]), metric[1])));
+    document.querySelectorAll('.view-divider span:last-child').forEach((el) => { el.textContent = 'Live fra D1 · krever menneskelig oppfølging'; });
+  }).catch(() => { const status = document.querySelector('#attention-count'); if (status) status.textContent = '—'; });
 </script>
 
 <style>
