@@ -23,7 +23,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ env, request }) => {
       db.prepare("SELECT COUNT(*) AS count FROM meeting_attendance WHERE board_id=? AND attendance_status='present'").bind(boardId).first(),
       db.prepare('SELECT COUNT(*) AS count FROM resolution_ballots WHERE board_id=?').bind(boardId).first(),
     ]);
-    return json({ boardId, view, data: { meetings, upcoming, present, ballots } });
+    return json({ boardId, view, data: { meetings, upcoming, present, quorum: present, ballots } });
   } catch (error) {
     return json({ error: 'database_unavailable', detail: error instanceof Error ? error.message : 'unknown' }, { status: 503 });
   }
