@@ -9,6 +9,20 @@ INSERT OR IGNORE INTO board_members (id,board_id,name,email,role,since) VALUES
 INSERT OR IGNORE INTO meetings (id,board_id,title,date,time,location,status,agenda,minutes) VALUES
 ('mtg-ext-1','board-1','Q1 Resultater','2026-05-15','09:00','Styrerommet','completed','["Åpning","Resultater","Likviditet"]','Illustrert protokollutkast'),
 ('mtg-ext-2','board-1','Strategi 2027','2026-09-12','10:00','Digitalt','planned','["Strategi","Investeringer"]',NULL);
+
+INSERT OR IGNORE INTO compliance_events (id,board_id,title,deadline,authority,type,status,notes) VALUES
+('ce-1','board-1','Årsberetning','2026-02-28','Brønnøysundregistrene','annual','done','Årlig gjennomgang'),
+('ce-2','board-1','Personverngjennomgang','2026-03-31','Datatilsynet','privacy','done','Gjennomgå behandlingsgrunnlag og databehandlere'),
+('ce-3','board-1','Internkontrollrapportering','2026-09-30','Internt ansvar','compliance','in_progress','Krever dokumentert kontrollgjennomgang'),
+('ce-4','board-1','Bærekraftsgrunnlag','2026-10-31','Virksomhetens rapportering','esg','pending','Avklar rapporteringsplikt før innsending'),
+('ce-5','board-1','Halvårsregnskap','2026-08-31','Regnskapsansvarlig','financial','pending','Kontroller perioder og avstemming');
+
+INSERT OR IGNORE INTO control_items (id,board_id,title,owner,frequency,status,last_review,notes,category) VALUES
+('ctrl-1','board-1','Tilgangsstyring IT-systemer','IT-ansvarlig','Kvartalsvis','green','2026-08-15','Kontroller aktive brukere, roller og administratorrettigheter','control_activities'),
+('ctrl-2','board-1','Økonomirutiner og attestasjon','CFO','Månedlig','green','2026-08-01','Kontroller arbeidsdeling, beløpsgrenser og attestasjon','control_activities'),
+('ctrl-3','board-1','HMS-dokumentasjon','HMS-ansvarlig','Halvårlig','yellow','2026-05-20','Nytt bevisgrunnlag må lastes opp','monitoring'),
+('ctrl-4','board-1','Styreinstruks og vedtekter','Styresekretær','Årlig','green','2026-01-10','Sammenhold instruks med vedtak og fullmakter','control_environment'),
+('ctrl-5','board-1','Databehandleravtaler','Juridisk ansvarlig','Ved behov','red','2025-06-15','To leverandører mangler oppdatert databehandleravtale','risk_assessment');
 INSERT OR IGNORE INTO meeting_attendance (id,board_id,meeting_id,member_id,attendance_status,conflict_flag) VALUES
 ('att-1','board-1','mtg-ext-1','m1','present',0),('att-2','board-1','mtg-ext-1','m2','present',0),('att-3','board-1','mtg-ext-1','m3','present',0),
 ('att-4','board-1','mtg-ext-2','m1','invited',0),('att-5','board-1','mtg-ext-2','m2','invited',0),('att-6','board-1','mtg-ext-2','m3','invited',0);
