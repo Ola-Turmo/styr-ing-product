@@ -9,7 +9,7 @@ const checks = [
   ['controls summary', '/api/controls?boardId=board-1&view=summary', 200],
   ['HMS and ESG summary', '/api/sustainability?boardId=board-1&view=summary', 200],
   ['HMS and ESG items', '/api/sustainability?boardId=board-1&view=items', 200],
-  ['HCM goals', '/api/hcm?boardId=board-1&view=goals', 200],
+  ['HCM summary', '/api/hcm?boardId=board-1&view=summary', 200], ['HCM people', '/api/hcm?boardId=board-1&view=people', 200], ['HCM goals', '/api/hcm?boardId=board-1&view=goals', 200], ['HCM candidates', '/api/hcm?boardId=board-1&view=candidates', 200], ['HCM handbook', '/api/hcm?boardId=board-1&view=handbook', 200], ['HCM training', '/api/hcm?boardId=board-1&view=training', 200], ['HCM reviews', '/api/hcm?boardId=board-1&view=reviews', 200], ['HCM offboarding', '/api/hcm?boardId=board-1&view=offboarding', 200],
   ['board governance summary', '/api/board_governance?boardId=board-1&view=summary', 200],
   ['board governance attendance', '/api/board_governance?boardId=board-1&view=attendance', 200],
   ['operations cockpit', '/api/operations?boardId=board-1', 200],
