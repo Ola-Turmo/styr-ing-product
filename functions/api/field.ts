@@ -1,4 +1,4 @@
-import { authorizeBoardRead, authorizeWrite, body, id, json, requireDb, type Env } from './_lib';
+import { authorizeBoardRead, authorizeBoardWrite, body, id, json, recordAudit, requireDb, type Env } from './_lib';
 
 const views = new Set(['summary', 'fleet', 'trips', 'maintenance', 'facilities', 'projects', 'rates', 'time', 'wip', 'invoice_drafts']);
 
@@ -40,13 +40,15 @@ export const onRequestGet: PagesFunction<Env> = async ({ env, request }) => {
 };
 
 export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
-  if (!authorizeWrite(request, env)) return json({ error: 'write_not_authorized' }, { status: 401 });
   try {
     const value = await body(request);
-    const boardId = String(value?.boardId || '');
+    const boardId = String(value?.boardId || '').trim();
     const action = String(value?.action || '');
     const db = requireDb(env);
     if (!boardId || !action) return json({ error: 'boardId_and_action_required' }, { status: 400 });
+    const authorization = await authorizeBoardWrite(request, env, boardId);
+    if (!authorization.allowed) return json({ error: 'write_not_authorized' }, { status: 401 });
+    const audit = (entityType: string, entityId: string, details: Record<string, unknown> = {}) => recordAudit(db, { boardId, action: `field_${action}`, entityType, entityId, userId: authorization.userId || undefined, details });
     if (action === 'prepare_invoice') {
       const projectId = String(value?.projectId || '');
       const period = String(value?.period || new Date().toISOString().slice(0, 7));
@@ -54,12 +56,14 @@ export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
       if (!aggregate || Number(aggregate.source_minutes) <= 0) return json({ error: 'no_billable_time_ready' }, { status: 409 });
       const draftId = id('invprep');
       await db.prepare("INSERT INTO project_invoice_drafts (id,board_id,project_id,period,source_minutes,amount_minor,currency,status,created_by) VALUES (?,?,?,?,?,?, 'NOK','prepared',?)").bind(draftId, boardId, projectId, period, aggregate.source_minutes, aggregate.amount_minor, value?.createdBy || 'api').run();
+      await audit('project_invoice_draft', draftId, { status: 'prepared', externalInvoicing: 'not_configured' });
       return json({ ok: true, action, draftId, status: 'prepared', sourceMinutes: aggregate.source_minutes, amountMinor: aggregate.amount_minor, externalInvoicing: 'not_configured' }, { status: 201 });
     }
     if (action === 'approve_invoice_draft') {
       const draftId = String(value?.draftId || '');
       const result = await db.prepare("UPDATE project_invoice_drafts SET status='approved',approved_by=?,approved_at=datetime('now') WHERE id=? AND board_id=? AND status IN ('prepared','review')").bind(value?.approvedBy || 'api', draftId, boardId).run();
       if (!result.meta?.changes) return json({ error: 'invoice_draft_not_found_or_already_approved' }, { status: 409 });
+      await audit('project_invoice_draft', draftId, { status: 'approved', externalInvoicing: 'not_configured' });
       return json({ ok: true, action, draftId, status: 'approved', externalInvoicing: 'not_configured' });
     }
     if (action === 'classify_trip') {
@@ -67,18 +71,21 @@ export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
       if (!['business', 'private', 'commute', 'unknown'].includes(type)) return json({ error: 'invalid_trip_type' }, { status: 400 });
       const result = await db.prepare("UPDATE trip_logs SET trip_type=?,status='classified',tax_basis=? WHERE id=? AND board_id=? AND status='draft'").bind(type, value?.taxBasis || null, tripId, boardId).run();
       if (!result.meta?.changes) return json({ error: 'trip_not_draft_or_found' }, { status: 409 });
+      await audit('trip_log', tripId, { status: 'classified', tripType: type, requiresHumanApproval: true });
       return json({ ok: true, action, tripId, status: 'classified', requiresHumanApproval: true });
     }
     if (action === 'approve_time') {
       const entryId = String(value?.entryId || '');
       const result = await db.prepare("UPDATE time_entries SET status='approved',approved_by=?,approved_at=datetime('now') WHERE id=? AND board_id=? AND status='submitted'").bind(value?.approvedBy || 'api', entryId, boardId).run();
       if (!result.meta?.changes) return json({ error: 'time_not_submitted_or_found' }, { status: 409 });
+      await audit('time_entry', entryId, { status: 'approved' });
       return json({ ok: true, action, entryId, status: 'approved' });
     }
     if (action === 'complete_maintenance') {
       const maintenanceId = String(value?.maintenanceId || '');
       const result = await db.prepare("UPDATE fleet_maintenance SET status='complete' WHERE id=? AND board_id=? AND status IN ('scheduled','booked','overdue')").bind(maintenanceId, boardId).run();
       if (!result.meta?.changes) return json({ error: 'maintenance_not_open_or_found' }, { status: 409 });
+      await audit('fleet_maintenance', maintenanceId, { status: 'complete' });
       return json({ ok: true, action, maintenanceId, status: 'complete' });
     }
     return json({ error: 'unknown_action', allowed: ['prepare_invoice', 'approve_invoice_draft', 'classify_trip', 'approve_time', 'complete_maintenance'] }, { status: 400 });

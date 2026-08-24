@@ -18,6 +18,9 @@ const checks = [
   ['treasury summary', '/api/treasury?boardId=board-1&view=summary', 200], ['treasury payroll', '/api/treasury?boardId=board-1&view=payroll', 200],
   ['treasury submissions', '/api/treasury?boardId=board-1&view=submissions', 200], ['treasury liquidity', '/api/treasury?boardId=board-1&view=liquidity', 200],
   ['treasury collections', '/api/treasury?boardId=board-1&view=collections', 200],
+  ['field summary', '/api/field?boardId=board-1&view=summary', 200], ['field projects', '/api/field?boardId=board-1&view=projects', 200],
+  ['field time', '/api/field?boardId=board-1&view=time', 200], ['field WIP', '/api/field?boardId=board-1&view=wip', 200],
+  ['field invoice drafts', '/api/field?boardId=board-1&view=invoice_drafts', 200],
   ['private board guard', '/api/events?boardId=board-2&view=summary', 403],
 ];
 const failures = [];
@@ -41,6 +44,7 @@ for (const [label, path, payload] of [
   ['finance period write guard', '/api/finance', { boardId: 'board-1', action: 'lock_period', period: '2026-99' }],
   ['payroll write guard', '/api/payroll', { boardId: 'board-1', action: 'calculate_compliance', payrollRunId: 'fixture-not-used' }],
   ['treasury write guard', '/api/treasury', { boardId: 'board-1', action: 'create_liquidity_snapshot' }],
+  ['field write guard', '/api/field', { boardId: 'board-1', action: 'approve_time', entryId: 'fixture-not-used' }],
   ['billing checkout guard', '/api/billing-checkout', { boardId: 'board-1', plan: 'paid' }],
   ['privacy request guard', '/api/privacy', { boardId: 'board-1', requestType: 'access' }],
   ['invite guard', '/api/auth', { action: 'invite_user', boardId: 'board-1', email: 'invite@example.invalid', name: 'Invite User' }],
