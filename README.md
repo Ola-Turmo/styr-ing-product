@@ -55,6 +55,8 @@ The public preview is safe to explore with fictional data. The deployed backend 
 - `GET /api/finance?boardId=...&view=summary|accounts|periods|vouchers` — tenant-scoped accounting workspace data
 - `GET /api/finance?boardId=...&view=saf-t&from=YYYY-MM&to=YYYY-MM` — SAF‑T Financial 1.3 XML export contract
 - `POST /api/finance` (API key) — balanced voucher posting or period locking (`action: create_voucher|lock_period`)
+- `GET /api/hcm?boardId=...&view=summary|people|candidates|handbook|training|reviews|offboarding` — tenant-scoped HCM workspace data
+- `POST /api/hcm` (API key) — controlled candidate, handbook, training and offboarding actions; sensitive actions remain approval-gated
 
 Initialize or update the remote database with `wrangler d1 execute styr-ing-db --remote --file=d1/schema.sql`, then seed the illustrative board with `wrangler d1 execute styr-ing-db --remote --file=d1/seed.sql`.
 

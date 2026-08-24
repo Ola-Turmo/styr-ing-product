@@ -64,3 +64,21 @@ INSERT OR IGNORE INTO vouchers (id,board_id,voucher_number,voucher_date,period,d
 ('voucher-1001','board-1',1001,'2026-08-02','2026-08','Kontorrekvisita — demo','illustration','posted','INV-DEMO-001');
 INSERT OR IGNORE INTO voucher_lines (id,voucher_id,account_id,description,debit_minor,credit_minor,vat_code) VALUES
 ('line-1001-1','voucher-1001','acct-6800','Kontorrekvisita',100000,0,'1'),('line-1001-2','voucher-1001','acct-1920','Betalt fra bank',0,100000,NULL);
+
+INSERT OR IGNORE INTO job_requisitions (id,board_id,title,department,owner_id,status,employment_type,location,description,opened_at) VALUES
+('req-1','board-1','Senior prosjektleder','Leveranse','person-1','open','full_time','Oslo','Lede kundeprosjekter og bygge bedre leveransespor.','2026-08-01');
+INSERT OR IGNORE INTO candidates (id,board_id,requisition_id,name,email,stage,skills,score,consent_status) VALUES
+('candidate-1','board-1','req-1','Demo Kandidat','candidate@example.invalid','interview','["prosjektledelse","SaaS"]',82,'granted');
+INSERT OR IGNORE INTO handbook_documents (id,board_id,title,category,version,status,content,requires_ack,published_at) VALUES
+('handbook-1','board-1','Personalhåndbok 2026','Policy','2.1','published','Reise, OTP, HMS, varsling og etiske retningslinjer — illustrert innhold.',1,'2026-01-15');
+INSERT OR IGNORE INTO handbook_acknowledgements (id,board_id,handbook_id,person_id) VALUES
+('ack-1','board-1','handbook-1','person-1'),('ack-2','board-1','handbook-1','person-2');
+INSERT OR IGNORE INTO training_courses (id,board_id,title,category,description,duration_minutes,required,due_days,status) VALUES
+('course-1','board-1','HMS og avvik','HMS','Obligatorisk introduksjon til HMS og avviksrapportering.',35,1,30,'active'),
+('course-2','board-1','GDPR i praksis','Personvern','Grunnkurs i personvern for alle ansatte.',25,1,45,'active');
+INSERT OR IGNORE INTO training_enrollments (id,board_id,course_id,person_id,status,due_date,score) VALUES
+('enroll-1','board-1','course-1','person-1','passed','2026-08-31',92),('enroll-2','board-1','course-1','person-2','in_progress','2026-08-31',NULL),('enroll-3','board-1','course-2','person-3','assigned','2026-09-15',NULL);
+INSERT OR IGNORE INTO performance_reviews (id,board_id,person_id,period,reviewer_id,status,summary,rating,due_date) VALUES
+('review-1','board-1','person-2','2026-H2','person-1','manager_review','Fokus på likviditet og bedre beslutningsgrunnlag.',4,'2026-09-20');
+INSERT OR IGNORE INTO offboarding_cases (id,board_id,person_id,last_day,status,access_revoked,assets_returned,payroll_reviewed,notes) VALUES
+('offboard-1','board-1','person-3','2026-12-31','planned',0,0,0,'Illustrert sak — krever HR/IT/lønnsgodkjenning.');

@@ -354,3 +354,62 @@ CREATE INDEX IF NOT EXISTS idx_accounting_periods_board ON accounting_periods(bo
 CREATE INDEX IF NOT EXISTS idx_vouchers_board_date ON vouchers(board_id, voucher_date);
 CREATE INDEX IF NOT EXISTS idx_voucher_lines_voucher ON voucher_lines(voucher_id);
 CREATE INDEX IF NOT EXISTS idx_saf_t_exports_board ON saf_t_exports(board_id, created_at);
+
+-- HCM, talent, handbook and learning workflows.
+CREATE TABLE IF NOT EXISTS job_requisitions (
+  id TEXT PRIMARY KEY, board_id TEXT NOT NULL REFERENCES boards(id) ON DELETE CASCADE,
+  title TEXT NOT NULL, department TEXT, owner_id TEXT REFERENCES people(id) ON DELETE SET NULL,
+  status TEXT NOT NULL DEFAULT 'draft' CHECK(status IN ('draft','open','paused','closed')),
+  employment_type TEXT NOT NULL DEFAULT 'full_time', location TEXT, description TEXT, opened_at TEXT, closed_at TEXT,
+  created_at TEXT NOT NULL DEFAULT (datetime('now')), updated_at TEXT
+);
+CREATE TABLE IF NOT EXISTS candidates (
+  id TEXT PRIMARY KEY, board_id TEXT NOT NULL REFERENCES boards(id) ON DELETE CASCADE,
+  requisition_id TEXT REFERENCES job_requisitions(id) ON DELETE SET NULL, name TEXT NOT NULL, email TEXT,
+  stage TEXT NOT NULL DEFAULT 'new' CHECK(stage IN ('new','screening','interview','offer','hired','rejected')),
+  skills TEXT NOT NULL DEFAULT '[]', score INTEGER CHECK(score BETWEEN 0 AND 100), consent_status TEXT NOT NULL DEFAULT 'pending' CHECK(consent_status IN ('pending','granted','withdrawn')),
+  created_at TEXT NOT NULL DEFAULT (datetime('now')), updated_at TEXT
+);
+CREATE TABLE IF NOT EXISTS handbook_documents (
+  id TEXT PRIMARY KEY, board_id TEXT NOT NULL REFERENCES boards(id) ON DELETE CASCADE,
+  title TEXT NOT NULL, category TEXT, version TEXT NOT NULL DEFAULT '1.0', status TEXT NOT NULL DEFAULT 'draft' CHECK(status IN ('draft','published','archived')),
+  content TEXT NOT NULL DEFAULT '', requires_ack INTEGER NOT NULL DEFAULT 1, published_at TEXT, created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+CREATE TABLE IF NOT EXISTS handbook_acknowledgements (
+  id TEXT PRIMARY KEY, board_id TEXT NOT NULL REFERENCES boards(id) ON DELETE CASCADE,
+  handbook_id TEXT NOT NULL REFERENCES handbook_documents(id) ON DELETE CASCADE, person_id TEXT NOT NULL REFERENCES people(id) ON DELETE CASCADE,
+  acknowledged_at TEXT NOT NULL DEFAULT (datetime('now')), UNIQUE(handbook_id, person_id)
+);
+CREATE TABLE IF NOT EXISTS training_courses (
+  id TEXT PRIMARY KEY, board_id TEXT NOT NULL REFERENCES boards(id) ON DELETE CASCADE,
+  title TEXT NOT NULL, category TEXT NOT NULL, description TEXT, duration_minutes INTEGER, required INTEGER NOT NULL DEFAULT 1,
+  due_days INTEGER NOT NULL DEFAULT 30, status TEXT NOT NULL DEFAULT 'active' CHECK(status IN ('draft','active','archived')), created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+CREATE TABLE IF NOT EXISTS training_enrollments (
+  id TEXT PRIMARY KEY, board_id TEXT NOT NULL REFERENCES boards(id) ON DELETE CASCADE,
+  course_id TEXT NOT NULL REFERENCES training_courses(id) ON DELETE CASCADE, person_id TEXT NOT NULL REFERENCES people(id) ON DELETE CASCADE,
+  status TEXT NOT NULL DEFAULT 'assigned' CHECK(status IN ('assigned','in_progress','passed','expired','waived')), due_date TEXT, completed_at TEXT,
+  score INTEGER CHECK(score BETWEEN 0 AND 100), UNIQUE(course_id, person_id)
+);
+CREATE TABLE IF NOT EXISTS performance_reviews (
+  id TEXT PRIMARY KEY, board_id TEXT NOT NULL REFERENCES boards(id) ON DELETE CASCADE,
+  person_id TEXT NOT NULL REFERENCES people(id) ON DELETE CASCADE, period TEXT NOT NULL, reviewer_id TEXT REFERENCES people(id) ON DELETE SET NULL,
+  status TEXT NOT NULL DEFAULT 'draft' CHECK(status IN ('draft','self_review','manager_review','complete')),
+  summary TEXT, rating INTEGER CHECK(rating BETWEEN 1 AND 5), due_date TEXT, completed_at TEXT, created_at TEXT NOT NULL DEFAULT (datetime('now')),
+  UNIQUE(person_id, period)
+);
+CREATE TABLE IF NOT EXISTS offboarding_cases (
+  id TEXT PRIMARY KEY, board_id TEXT NOT NULL REFERENCES boards(id) ON DELETE CASCADE,
+  person_id TEXT NOT NULL REFERENCES people(id) ON DELETE CASCADE, last_day TEXT NOT NULL,
+  status TEXT NOT NULL DEFAULT 'planned' CHECK(status IN ('planned','in_progress','complete','cancelled')),
+  access_revoked INTEGER NOT NULL DEFAULT 0, assets_returned INTEGER NOT NULL DEFAULT 0, payroll_reviewed INTEGER NOT NULL DEFAULT 0,
+  notes TEXT, created_at TEXT NOT NULL DEFAULT (datetime('now')), completed_at TEXT
+);
+CREATE INDEX IF NOT EXISTS idx_requisitions_board ON job_requisitions(board_id, status);
+CREATE INDEX IF NOT EXISTS idx_candidates_board ON candidates(board_id, stage);
+CREATE INDEX IF NOT EXISTS idx_handbook_board ON handbook_documents(board_id, status);
+CREATE INDEX IF NOT EXISTS idx_handbook_ack_board ON handbook_acknowledgements(board_id, person_id);
+CREATE INDEX IF NOT EXISTS idx_courses_board ON training_courses(board_id, status);
+CREATE INDEX IF NOT EXISTS idx_enrollments_board ON training_enrollments(board_id, status);
+CREATE INDEX IF NOT EXISTS idx_reviews_board ON performance_reviews(board_id, period);
+CREATE INDEX IF NOT EXISTS idx_offboarding_board ON offboarding_cases(board_id, status);
