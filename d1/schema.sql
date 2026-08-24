@@ -321,3 +321,36 @@ CREATE INDEX IF NOT EXISTS idx_crm_board ON crm_accounts(board_id);
 CREATE INDEX IF NOT EXISTS idx_contracts_board ON contracts(board_id);
 CREATE INDEX IF NOT EXISTS idx_sustainability_board ON sustainability_items(board_id);
 CREATE INDEX IF NOT EXISTS idx_integrations_board ON integration_registry(board_id);
+
+-- Norwegian accounting core: balanced vouchers, immutable numbering and period locks.
+CREATE TABLE IF NOT EXISTS ledger_accounts (
+  id TEXT PRIMARY KEY, board_id TEXT NOT NULL REFERENCES boards(id) ON DELETE CASCADE,
+  code TEXT NOT NULL, name TEXT NOT NULL, account_type TEXT NOT NULL CHECK(account_type IN ('asset','liability','equity','revenue','expense')),
+  vat_code TEXT, active INTEGER NOT NULL DEFAULT 1, created_at TEXT NOT NULL DEFAULT (datetime('now')),
+  UNIQUE(board_id, code)
+);
+CREATE TABLE IF NOT EXISTS accounting_periods (
+  id TEXT PRIMARY KEY, board_id TEXT NOT NULL REFERENCES boards(id) ON DELETE CASCADE,
+  period TEXT NOT NULL, status TEXT NOT NULL DEFAULT 'open', locked_by TEXT, locked_at TEXT, created_at TEXT NOT NULL DEFAULT (datetime('now')),
+  UNIQUE(board_id, period)
+);
+CREATE TABLE IF NOT EXISTS vouchers (
+  id TEXT PRIMARY KEY, board_id TEXT NOT NULL REFERENCES boards(id) ON DELETE CASCADE,
+  voucher_number INTEGER NOT NULL, voucher_date TEXT NOT NULL, period TEXT NOT NULL, description TEXT NOT NULL,
+  source TEXT NOT NULL DEFAULT 'manual', status TEXT NOT NULL DEFAULT 'posted', external_reference TEXT, created_by TEXT, created_at TEXT NOT NULL DEFAULT (datetime('now')),
+  UNIQUE(board_id, voucher_number)
+);
+CREATE TABLE IF NOT EXISTS voucher_lines (
+  id TEXT PRIMARY KEY, voucher_id TEXT NOT NULL REFERENCES vouchers(id) ON DELETE CASCADE, account_id TEXT NOT NULL REFERENCES ledger_accounts(id),
+  description TEXT, debit_minor INTEGER NOT NULL DEFAULT 0, credit_minor INTEGER NOT NULL DEFAULT 0, vat_code TEXT, created_at TEXT NOT NULL DEFAULT (datetime('now')),
+  CHECK(debit_minor >= 0 AND credit_minor >= 0), CHECK(NOT (debit_minor > 0 AND credit_minor > 0))
+);
+CREATE TABLE IF NOT EXISTS saf_t_exports (
+  id TEXT PRIMARY KEY, board_id TEXT NOT NULL REFERENCES boards(id) ON DELETE CASCADE, period_from TEXT NOT NULL, period_to TEXT NOT NULL,
+  status TEXT NOT NULL DEFAULT 'prepared', row_count INTEGER NOT NULL DEFAULT 0, checksum TEXT, created_by TEXT, created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+CREATE INDEX IF NOT EXISTS idx_ledger_accounts_board ON ledger_accounts(board_id);
+CREATE INDEX IF NOT EXISTS idx_accounting_periods_board ON accounting_periods(board_id, period);
+CREATE INDEX IF NOT EXISTS idx_vouchers_board_date ON vouchers(board_id, voucher_date);
+CREATE INDEX IF NOT EXISTS idx_voucher_lines_voucher ON voucher_lines(voucher_id);
+CREATE INDEX IF NOT EXISTS idx_saf_t_exports_board ON saf_t_exports(board_id, created_at);

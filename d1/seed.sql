@@ -51,3 +51,16 @@ INSERT OR IGNORE INTO integration_registry (id,board_id,key,display_name,domain,
 ('int-1','board-1','altinn','Altinn / NAV','public-sector','planned','EEA','Maskinporten og avtale kreves'),
 ('int-2','board-1','ehf','EHF / PEPPOL','finance','planned','EEA','Peppol access point kreves'),
 ('int-3','board-1','stripe','Stripe Billing','billing','configuration','EEA','Konto, priser og skatt må godkjennes');
+
+INSERT OR IGNORE INTO ledger_accounts (id,board_id,code,name,account_type,vat_code) VALUES
+('acct-1920','board-1','1920','Bankinnskudd','asset',NULL),
+('acct-2400','board-1','2400','Leverandørgjeld','liability',NULL),
+('acct-3000','board-1','3000','Salgsinntekt','revenue','3'),
+('acct-4300','board-1','4300','Innkjøp varer og tjenester','expense','1'),
+('acct-6800','board-1','6800','Kontorrekvisita','expense','1');
+INSERT OR IGNORE INTO accounting_periods (id,board_id,period,status) VALUES
+('period-2026-08','board-1','2026-08','open'),('period-2026-07','board-1','2026-07','locked');
+INSERT OR IGNORE INTO vouchers (id,board_id,voucher_number,voucher_date,period,description,source,status,external_reference) VALUES
+('voucher-1001','board-1',1001,'2026-08-02','2026-08','Kontorrekvisita — demo','illustration','posted','INV-DEMO-001');
+INSERT OR IGNORE INTO voucher_lines (id,voucher_id,account_id,description,debit_minor,credit_minor,vat_code) VALUES
+('line-1001-1','voucher-1001','acct-6800','Kontorrekvisita',100000,0,'1'),('line-1001-2','voucher-1001','acct-1920','Betalt fra bank',0,100000,NULL);
