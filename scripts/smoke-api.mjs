@@ -48,6 +48,8 @@ for (const [label, path, expected] of checks) {
 for (const [label, path, payload] of [
   ['event mesh write guard', '/api/events', { boardId: 'board-1' }], ['assistant write guard', '/api/assistant', { boardId: 'board-1', question: 'status' }],
   ['domain write guard', '/api/domains/people', { boardId: 'board-1', data: { name: 'Unauthorised' } }],
+  ['meeting write guard', '/api/board_governance', { boardId: 'board-1', action: 'create_meeting', title: 'Unauthorised', date: '2026-08-25' }],
+  ['resolution write guard', '/api/board_governance', { boardId: 'board-1', action: 'create_resolution', number: 'X-UNAUTH', title: 'Unauthorised' }],
   ['compliance write guard', '/api/compliance', { boardId: 'board-1', eventId: 'fixture-not-used', status: 'pending' }],
   ['controls write guard', '/api/controls', { boardId: 'board-1', controlId: 'fixture-not-used', status: 'green' }],
   ['HMS and ESG write guard', '/api/sustainability', { boardId: 'board-1', action: 'close_item', itemId: 'fixture-not-used' }],

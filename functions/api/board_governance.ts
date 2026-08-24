@@ -1,4 +1,4 @@
-import { authorizeBoardRead, authorizeBoardWrite, body, json, recordAudit, requireDb, type Env } from './_lib';
+import { authorizeBoardRead, authorizeBoardWrite, body, id, json, recordAudit, requireDb, type Env } from './_lib';
 
 const views = new Set(['summary', 'meetings', 'attendance', 'ballots']);
 
@@ -38,6 +38,37 @@ export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
     if (!boardId || !action) return json({ error: 'boardId_and_action_required' }, { status: 400 });
     const authorization = await authorizeBoardWrite(request, env, boardId);
     if (!authorization.allowed) return json({ error: 'write_not_authorized' }, { status: 401 });
+    if (action === 'create_meeting') {
+      const title = String(value?.title || '').trim();
+      const date = String(value?.date || '').trim();
+      if (!title || !date) return json({ error: 'title_and_date_required' }, { status: 400 });
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return json({ error: 'invalid_meeting_date' }, { status: 400 });
+      const meetingId = id('meeting');
+      await db.prepare("INSERT INTO meetings (id,board_id,title,date,time,location,status,agenda,created_by) VALUES (?,?,?,?,?,?,?,?,?)")
+        .bind(meetingId, boardId, title, date, value?.time || null, value?.location || null, 'planned', value?.agenda || null, authorization.userId || null).run();
+      const members = await db.prepare('SELECT id FROM board_members WHERE board_id=? AND (until IS NULL OR until>=?)').bind(boardId, date).all<{ id: string }>();
+      for (const member of members.results || []) {
+        await db.prepare("INSERT OR IGNORE INTO meeting_attendance (id,board_id,meeting_id,member_id,attendance_status) VALUES (?,?,?,?,?)")
+          .bind(id('attendance'), boardId, meetingId, member.id, 'invited').run();
+      }
+      await recordAudit(db, { boardId, action: 'meeting_created', entityType: 'meeting', entityId: meetingId, userId: authorization.userId || undefined, details: { title, date, invitedCount: members.results?.length || 0 } });
+      return json({ ok: true, action, meetingId, invitedCount: members.results?.length || 0, signature: 'not_configured' }, { status: 201 });
+    }
+    if (action === 'create_resolution') {
+      const number = String(value?.number || '').trim();
+      const title = String(value?.title || '').trim();
+      if (!number || !title) return json({ error: 'number_and_title_required' }, { status: 400 });
+      const meetingId = value?.meetingId ? String(value.meetingId).trim() : null;
+      if (meetingId) {
+        const meeting = await db.prepare('SELECT 1 AS allowed FROM meetings WHERE id=? AND board_id=?').bind(meetingId, boardId).first();
+        if (!meeting) return json({ error: 'meeting_not_found' }, { status: 404 });
+      }
+      const resolutionId = id('resolution');
+      await db.prepare("INSERT INTO resolutions (id,board_id,meeting_id,number,title,description,status,signature_status) VALUES (?,?,?,?,?,?,?,?)")
+        .bind(resolutionId, boardId, meetingId, number, title, value?.description || null, 'proposed', 'pending').run();
+      await recordAudit(db, { boardId, action: 'resolution_created', entityType: 'resolution', entityId: resolutionId, userId: authorization.userId || undefined, details: { number, title, meetingId } });
+      return json({ ok: true, action, resolutionId, signature: 'not_configured', requiresHumanReview: true }, { status: 201 });
+    }
     if (action === 'record_attendance') {
       const attendanceId = String(value?.attendanceId || '').trim();
       const status = String(value?.attendanceStatus || 'present');
@@ -59,7 +90,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
       await recordAudit(db, { boardId, action: 'resolution_ballot_recorded', entityType: 'resolution_ballot', entityId: ballotId, userId: authorization.userId || undefined, details: { resolutionId, memberId, vote } });
       return json({ ok: true, action, ballotId, vote, signature: 'not_configured', requiresHumanReview: true });
     }
-    return json({ error: 'unknown_action', allowed: ['record_attendance', 'cast_ballot'] }, { status: 400 });
+    return json({ error: 'unknown_action', allowed: ['create_meeting', 'create_resolution', 'record_attendance', 'cast_ballot'] }, { status: 400 });
   } catch (error) {
     return json({ error: 'database_unavailable', detail: error instanceof Error ? error.message : 'unknown' }, { status: 503 });
   }
