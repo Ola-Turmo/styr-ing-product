@@ -58,6 +58,10 @@ INSERT OR IGNORE INTO mandates (id,board_id,holder_id,mandate_type,scope,status,
 INSERT OR IGNORE INTO equity_holders (id,board_id,holder_name,holder_type,shares,share_class,ownership_percent,vesting_status) VALUES
 ('equity-1','board-1','Demo Gründer AS','company',700000,'A',70,'fully_vested'),
 ('equity-2','board-1','Demo Ansattpool','option_pool',300000,'A',30,'vesting_plan');
+INSERT OR IGNORE INTO equity_grants (id,board_id,holder_id,grant_name,instrument,granted_shares,strike_minor,currency,grant_date,vesting_start,vesting_months,vested_shares,status,tax_review_status,evidence_ref) VALUES
+('grant-1','board-1','person-2','Demo opsjonsprogram 2026','option',50000,1250,'NOK','2026-01-15','2026-01-15',48,6250,'active','review','board-resolution-2026-02');
+INSERT OR IGNORE INTO contract_redlines (id,board_id,contract_id,clause_ref,original_text,proposed_text,risk_level,recommendation,status) VALUES
+('redline-1','board-1','contract-1','§ 8 Automatisk fornyelse','Avtalen fornyes automatisk.','Fornyelse krever skriftlig bekreftelse 90 dager før utløp.','high','Krev eksplisitt fornyelsesbeslutning og fristvakt.','review');
 INSERT OR IGNORE INTO sustainability_items (id,board_id,item_type,title,status,severity,scope,due_date) VALUES
 ('sustain-1','board-1','hms_incident','Nestenulykke — illustrasjon','open','medium','Kontor','2026-09-05'),
 ('sustain-2','board-1','vendor_due_diligence','Åpenhetsloven leverandørgjennomgang','in_progress','high','Leverandørkjede','2026-09-30');

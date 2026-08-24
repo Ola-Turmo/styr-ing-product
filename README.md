@@ -71,8 +71,8 @@ The public preview is safe to explore with fictional data. The deployed backend 
 - `GET /api/revenue?boardId=...&view=summary|contracts|obligations|schedule` — tenant-scoped revenue-contract, performance-obligation and periodization preparation data
 - `POST /api/revenue` (API key) — approve schedule entries; billing and ledger posting remain separate controls
 - `POST /api/commercial` (API key) — approve/send quote records and create/resolve customer cases; external delivery, e-signing and payment remain unconfigured
-- `GET /api/governance?boardId=...&view=summary|contracts|mandates|equity` — tenant-scoped contract reviews, powers of attorney and equity register
-- `POST /api/governance` (API key) — create/review contract controls and activate mandate proposals; evidence and legal sign-off remain required
+- `GET /api/governance?boardId=...&view=summary|contracts|redlines|mandates|equity|grants` — tenant-scoped contract reviews, AI-redline preparation, powers of attorney, equity and option grants
+- `POST /api/governance` (API key) — create/review contract controls, accept redline proposals, approve grant records and activate mandate proposals; evidence, tax and legal sign-off remain required
 - `GET /api/board_governance?boardId=...&view=summary|meetings|attendance|ballots` — tenant-scoped meeting attendance, quorum and ballot trail
 - `POST /api/board_governance` (API key) — record attendance/conflicts and cast ballots; eID/PAdES signing remains unconfigured
 - `GET /api/sustainability?boardId=...&view=summary|items` — tenant-scoped HMS, SJA, safety, carbon and supplier-diligence records

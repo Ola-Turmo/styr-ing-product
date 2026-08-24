@@ -342,6 +342,28 @@ CREATE INDEX IF NOT EXISTS idx_contract_reviews_board ON contract_reviews(board_
 CREATE INDEX IF NOT EXISTS idx_mandates_board ON mandates(board_id,status,valid_until);
 CREATE INDEX IF NOT EXISTS idx_equity_holders_board ON equity_holders(board_id,holder_name);
 
+-- Equity grants and contract redline controls. These are preparation records only;
+-- tax filing, e-signature and automated legal advice stay outside this boundary.
+CREATE TABLE IF NOT EXISTS equity_grants (
+  id TEXT PRIMARY KEY, board_id TEXT NOT NULL REFERENCES boards(id) ON DELETE CASCADE,
+  holder_id TEXT REFERENCES people(id) ON DELETE SET NULL, grant_name TEXT NOT NULL,
+  instrument TEXT NOT NULL DEFAULT 'option' CHECK(instrument IN ('option','warrant','rsu')),
+  granted_shares INTEGER NOT NULL DEFAULT 0, strike_minor INTEGER NOT NULL DEFAULT 0,
+  currency TEXT NOT NULL DEFAULT 'NOK', grant_date TEXT, vesting_start TEXT, vesting_months INTEGER NOT NULL DEFAULT 48,
+  vested_shares INTEGER NOT NULL DEFAULT 0, status TEXT NOT NULL DEFAULT 'draft' CHECK(status IN ('draft','approved','active','exercised','cancelled')),
+  tax_review_status TEXT NOT NULL DEFAULT 'not_reviewed' CHECK(tax_review_status IN ('not_reviewed','review','cleared')),
+  evidence_ref TEXT, created_at TEXT NOT NULL DEFAULT (datetime('now')), updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+CREATE TABLE IF NOT EXISTS contract_redlines (
+  id TEXT PRIMARY KEY, board_id TEXT NOT NULL REFERENCES boards(id) ON DELETE CASCADE,
+  contract_id TEXT NOT NULL REFERENCES contracts(id) ON DELETE CASCADE, clause_ref TEXT NOT NULL,
+  original_text TEXT, proposed_text TEXT, risk_level TEXT NOT NULL DEFAULT 'medium' CHECK(risk_level IN ('low','medium','high','critical')),
+  recommendation TEXT, status TEXT NOT NULL DEFAULT 'draft' CHECK(status IN ('draft','review','accepted','rejected')),
+  reviewed_by TEXT, reviewed_at TEXT, created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+CREATE INDEX IF NOT EXISTS idx_equity_grants_board ON equity_grants(board_id,status,grant_date);
+CREATE INDEX IF NOT EXISTS idx_contract_redlines_board ON contract_redlines(board_id,status,risk_level);
+
 -- Norwegian accounting core: balanced vouchers, immutable numbering and period locks.
 CREATE TABLE IF NOT EXISTS ledger_accounts (
   id TEXT PRIMARY KEY, board_id TEXT NOT NULL REFERENCES boards(id) ON DELETE CASCADE,
