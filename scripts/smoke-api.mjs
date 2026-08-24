@@ -8,6 +8,7 @@ const checks = [
   ['compliance summary', '/api/compliance?boardId=board-1&view=summary', 200],
   ['controls summary', '/api/controls?boardId=board-1&view=summary', 200],
   ['HCM goals', '/api/hcm?boardId=board-1&view=goals', 200],
+  ['board governance summary', '/api/board_governance?boardId=board-1&view=summary', 200],
   ['audit trail', '/api/audit?boardId=board-1', 200], ['SAF-T export', '/api/finance?boardId=board-1&view=saf-t', 200],
   ['private board guard', '/api/events?boardId=board-2&view=summary', 403],
 ];
