@@ -6,6 +6,7 @@ const checks = [
   ['billing status', '/api/billing?boardId=board-1', 200],
   ['privacy center', '/api/privacy?boardId=board-1', 200],
   ['membership guard', '/api/members?boardId=board-1', 401],
+  ['invite activation page', '/activate/', 200],
   ['boards', '/api/boards', 200],
   ['event mesh summary', '/api/events?boardId=board-1&view=summary', 200],
   ['compliance summary', '/api/compliance?boardId=board-1&view=summary', 200],
@@ -29,6 +30,7 @@ for (const [label, path, payload] of [
   ['controls write guard', '/api/controls', { boardId: 'board-1', controlId: 'fixture-not-used', status: 'green' }],
   ['billing checkout guard', '/api/billing-checkout', { boardId: 'board-1', plan: 'paid' }],
   ['privacy request guard', '/api/privacy', { boardId: 'board-1', requestType: 'access' }],
+  ['invite guard', '/api/auth', { action: 'invite_user', boardId: 'board-1', email: 'invite@example.invalid', name: 'Invite User' }],
 ]) {
   const response = await fetch(`${baseUrl}${path}`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(payload) });
   if (response.status !== 401) failures.push(`${label}: expected 401, got ${response.status}`);

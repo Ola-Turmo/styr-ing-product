@@ -36,7 +36,7 @@ export function authorizeWrite(request: Request, env: Env) {
 // The public preview is intentionally limited to its fictional board. Any
 // customer board must come through an authenticated service boundary (the
 // write key is the current adapter credential until end-user SSO is enabled).
-function bytesToBase64(bytes: Uint8Array) {
+export function bytesToBase64(bytes: Uint8Array) {
   let binary = '';
   for (const byte of bytes) binary += String.fromCharCode(byte);
   return btoa(binary);
@@ -47,7 +47,7 @@ function base64ToBytes(value: string) {
   return Uint8Array.from(binary, (character) => character.charCodeAt(0));
 }
 
-async function sha256(value: string) {
+export async function sha256(value: string) {
   const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(value));
   return bytesToBase64(new Uint8Array(digest));
 }
