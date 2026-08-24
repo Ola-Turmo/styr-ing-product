@@ -25,6 +25,8 @@ const specs: SearchSpec[] = [
   { table: 'resolutions', type: 'Vedtak', title: "number || ' · ' || title", snippet: "coalesce(status,'') || ' · ' || coalesce(signature_status,'')", source: 'Styrevedtak' },
   { table: 'board_documents', type: 'Dokument', title: 'title', snippet: "coalesce(category,'') || ' · v' || coalesce(version,'') || ' · ' || coalesce(status,'')", source: 'Dokumentarkiv' },
   { table: 'meetings', type: 'Møte', title: 'title', snippet: "coalesce(date,'') || ' · ' || coalesce(status,'')", source: 'Møter' },
+  { table: 'meeting_attendance', type: 'Fremmøte', title: "meeting_id || ' · ' || member_id", snippet: "coalesce(attendance_status,'') || ' · Habilitet: ' || coalesce(conflict_flag,'')", source: 'Møte og habilitet' },
+  { table: 'resolution_ballots', type: 'Stemme', title: "resolution_id || ' · ' || member_id", snippet: "coalesce(vote,'') || ' · ' || coalesce(note,'')", source: 'Avstemninger' },
   { table: 'people', type: 'Person', title: 'name', snippet: "coalesce(role,'') || ' · ' || coalesce(department,'') || ' · ' || coalesce(employment_status,'')", source: 'Mennesker' },
   { table: 'job_requisitions', type: 'Stilling', title: 'title', snippet: "coalesce(department,'') || ' · ' || coalesce(status,'') || ' · ' || coalesce(location,'')", source: 'Rekruttering' },
   { table: 'candidates', type: 'Kandidat', title: 'name', snippet: "coalesce(stage,'') || ' · Score: ' || coalesce(score,'') || ' · Samtykke: ' || coalesce(consent_status,'')", source: 'Rekruttering' },

@@ -680,3 +680,16 @@ CREATE TABLE IF NOT EXISTS revenue_schedule_entries (
 );
 CREATE INDEX IF NOT EXISTS idx_revenue_contracts_board ON revenue_contracts(board_id,status,start_date);
 CREATE INDEX IF NOT EXISTS idx_revenue_schedule_board ON revenue_schedule_entries(board_id,period,status);
+
+-- Board meeting attendance, quorum and ballot trail.
+CREATE TABLE IF NOT EXISTS meeting_attendance (
+  id TEXT PRIMARY KEY, board_id TEXT NOT NULL REFERENCES boards(id) ON DELETE CASCADE, meeting_id TEXT NOT NULL REFERENCES meetings(id) ON DELETE CASCADE,
+  member_id TEXT NOT NULL REFERENCES board_members(id) ON DELETE CASCADE, attendance_status TEXT NOT NULL DEFAULT 'invited' CHECK(attendance_status IN ('invited','present','absent','excused')),
+  conflict_flag INTEGER NOT NULL DEFAULT 0, conflict_note TEXT, recorded_at TEXT NOT NULL DEFAULT (datetime('now')), UNIQUE(meeting_id,member_id)
+);
+CREATE TABLE IF NOT EXISTS resolution_ballots (
+  id TEXT PRIMARY KEY, board_id TEXT NOT NULL REFERENCES boards(id) ON DELETE CASCADE, resolution_id TEXT NOT NULL REFERENCES resolutions(id) ON DELETE CASCADE,
+  member_id TEXT NOT NULL REFERENCES board_members(id) ON DELETE CASCADE, vote TEXT NOT NULL CHECK(vote IN ('for','against','abstain','recused')), note TEXT, cast_at TEXT NOT NULL DEFAULT (datetime('now')), UNIQUE(resolution_id,member_id)
+);
+CREATE INDEX IF NOT EXISTS idx_meeting_attendance_board ON meeting_attendance(board_id,meeting_id,attendance_status);
+CREATE INDEX IF NOT EXISTS idx_resolution_ballots_board ON resolution_ballots(board_id,resolution_id,vote);

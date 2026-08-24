@@ -9,6 +9,9 @@ INSERT OR IGNORE INTO board_members (id,board_id,name,email,role,since) VALUES
 INSERT OR IGNORE INTO meetings (id,board_id,title,date,time,location,status,agenda,minutes) VALUES
 ('mtg-ext-1','board-1','Q1 Resultater','2026-05-15','09:00','Styrerommet','completed','["Åpning","Resultater","Likviditet"]','Illustrert protokollutkast'),
 ('mtg-ext-2','board-1','Strategi 2027','2026-09-12','10:00','Digitalt','planned','["Strategi","Investeringer"]',NULL);
+INSERT OR IGNORE INTO meeting_attendance (id,board_id,meeting_id,member_id,attendance_status,conflict_flag) VALUES
+('att-1','board-1','mtg-ext-1','m1','present',0),('att-2','board-1','mtg-ext-1','m2','present',0),('att-3','board-1','mtg-ext-1','m3','present',0),
+('att-4','board-1','mtg-ext-2','m1','invited',0),('att-5','board-1','mtg-ext-2','m2','invited',0),('att-6','board-1','mtg-ext-2','m3','invited',0);
 
 INSERT OR IGNORE INTO risks (id,board_id,code,title,level,trend,owner,status,treatment,due_date) VALUES
 ('risk-1','board-1','R-001','Leverandørkonsentrasjon — single-source IT-drift','critical','up','CTO','treating','Kvalifiser alternativ leverandør','2026-09-30'),
@@ -20,6 +23,8 @@ INSERT OR IGNORE INTO action_items (id,board_id,meeting_id,title,description,ass
 
 INSERT OR IGNORE INTO resolutions (id,board_id,meeting_id,number,title,description,status,votes_for,signature_status,adoption_date) VALUES
 ('resolution-1','board-1','mtg-ext-1','2026/03','Godkjenning av årsberetning','Årsberetningen godkjennes som fremlagt','signed',3,'complete','2026-05-15');
+INSERT OR IGNORE INTO resolution_ballots (id,board_id,resolution_id,member_id,vote) VALUES
+('ballot-1','board-1','resolution-1','m1','for'),('ballot-2','board-1','resolution-1','m2','for'),('ballot-3','board-1','resolution-1','m3','for');
 
 INSERT OR IGNORE INTO board_documents (id,board_id,meeting_id,title,category,type,status,version,uploaded_by) VALUES
 ('doc-1','board-1','mtg-ext-1','Styrets årsberetning 2025','Årsoppgjør','report','final','1.0','Demo Sekretær'),
