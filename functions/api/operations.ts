@@ -35,12 +35,12 @@ export const onRequestGet: PagesFunction<Env> = async ({ env, request }) => {
     ]);
     const values = rows.map(count);
     const metrics = {
-      people: [[values[0], 'aktive i demo-organisasjonen'], [values[1], 'aktive kandidatløp'], [values[2], 'tildelt eller påbegynt']],
-      it: [[values[3], 'ikke løst eller lukket'], [values[4], 'registrert som aktive'], [values[5], 'krever vurdering']],
-      finance: [[values[6], 'godkjent og balansert'], [values[7], 'med låsespor'], [values[8], 'aktive kontoer']],
-      commercial: [[values[9], 'aktive kundeløp'], [values[10], 'utkast eller til godkjenning'], [values[11], 'ikke løst eller lukket']],
-      field: [[values[12], 'må klassifiseres'], [values[13], 'vedlikeholdsoppgaver åpne'], [values[14], 'innsendte eller godkjente føringer']],
-      platform: [[values[15], 'hendelser lagret'], [values[17], 'integrasjoner koblet'], [values[16], 'utkast krever gjennomgang']],
+      people: [[values[0], 'aktive ansatte'], [values[1], 'aktive kandidatløp'], [values[2], 'tildelt eller påbegynt opplæring']],
+      it: [[values[3], 'åpne servicesaker'], [values[4], 'aktive eiendeler'], [values[5], 'tilganger til vurdering']],
+      finance: [[values[6], 'godkjente og balanserte bilag'], [values[7], 'låste perioder'], [values[8], 'aktive kontoer']],
+      commercial: [[values[9], 'aktive kundeløp'], [values[10], 'tilbud til behandling'], [values[11], 'åpne kundesaker']],
+      field: [[values[12], 'kjørebøker som må klassifiseres'], [values[13], 'vedlikeholdsoppgaver åpne'], [values[14], 'timer innsendt eller godkjent']],
+      platform: [[values[15], 'hendelser lagret'], [values[17], 'integrasjoner koblet'], [values[16], 'AI-utkast til gjennomgang']],
     };
     return json({ boardId, source: 'd1', generatedAt: new Date().toISOString(), attentionCount: values[18] + values[19] + values[20] + values[5] + values[12] + values[13], metrics });
   } catch (error) {
