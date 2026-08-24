@@ -18,12 +18,13 @@ for (const [label, path, expected] of checks) {
     failures.push(`${label}: expected application/xml content type`);
   }
 }
-for (const [label, path] of [
-  ['event mesh write guard', '/api/events'],
-  ['assistant write guard', '/api/assistant'],
-  ['compliance write guard', '/api/compliance'],
+for (const [label, path, payload] of [
+  ['event mesh write guard', '/api/events', { boardId: 'board-1' }],
+  ['assistant write guard', '/api/assistant', {}],
+  ['compliance write guard', '/api/compliance', { boardId: 'board-1', eventId: 'fixture-not-used', status: 'pending' }],
+  ['controls write guard', '/api/controls', { boardId: 'board-1', controlId: 'fixture-not-used', status: 'green' }],
 ]) {
-  const response = await fetch(`${baseUrl}${path}`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ boardId: 'board-1' }) });
+  const response = await fetch(`${baseUrl}${path}`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(payload) });
   if (response.status !== 401) failures.push(`${label}: expected 401, got ${response.status}`);
 }
 const invalidLogin = await fetch(`${baseUrl}/api/auth`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ action: 'login', email: 'nobody@example.invalid', password: 'not-a-real-password' }) });
