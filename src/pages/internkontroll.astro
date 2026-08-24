@@ -1,103 +1,21 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import { demoControls } from '../lib/db';
-
-const controls = demoControls;
-const approved = controls.filter(c => c.status === 'approved').length;
-const pending = controls.filter(c => c.status === 'pending').length;
 ---
 <Layout title="Internkontroll" activeNav="internkontroll">
-  <div class="container" style="max-width: 960px; margin: 2rem auto; padding: 0 20px;">
-    <h1 style="font-size: 2rem; margin-bottom: 0.5rem;">Internkontroll</h1>
-    <p style="font-family: system-ui, sans-serif; color: var(--muted); margin: 0 0 2rem 0;">
-      Demo av hvordan virksomheten kan strukturere egne kontroller, avvik og risikovurderinger. Valg av rammeverk og krav må kvalitetssikres av virksomheten.
-    </p>
-
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 2rem;">
-      <div class="stat-card">
-        <div class="stat-num">{controls.length}</div>
-        <div class="stat-label">Kontrollpunkter</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-num" style="color: var(--accent);">{approved}</div>
-        <div class="stat-label">Godkjent</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-num" style="color: #8a7500;">{pending}</div>
-        <div class="stat-label">Til vurdering</div>
-      </div>
-    </div>
-
-    <div class="control-toolbar" role="toolbar" aria-label="Filtrer kontroller"><span>Vis</span><button class="control-filter active" data-filter="all">Alle</button><button class="control-filter" data-filter="approved">Godkjent</button><button class="control-filter" data-filter="pending">Til vurdering</button><button class="control-filter" data-filter="draft">Utkast</button><button id="export-controls" class="export-button" type="button">Eksporter demo-utdrag ↗</button></div>
-
-    <div id="control-list" style="display: grid; gap: 16px;">
-      {controls.map((control, index) => (
-        <div class="control-card" data-status={control.status} data-control-id={`control-${index}`}>
-          <div style="display: flex; justify-content: space-between; align-items: start; gap: 16px; margin-bottom: 8px;">
-            <h3 style="font-size: 1.05rem; margin: 0;">{control.title}</h3>
-            <span class="control-badge badge-{control.status}">
-              {control.status === 'approved' ? 'Godkjent' : control.status === 'pending' ? 'Til vurdering' : 'Utkast'}
-            </span>
-          </div>
-          <p style="font-family: system-ui, sans-serif; font-size: 0.875rem; color: var(--muted); margin: 0 0 12px 0; line-height: 1.5;">
-            {control.description || ''}
-          </p>
-          <div style="display: flex; gap: 16px; flex-wrap: wrap; font-family: system-ui, sans-serif; font-size: 0.8rem; color: var(--muted);">
-            <span>🔍 {control.frequency || 'Årlig'} gjennomgang</span>
-            <span>📋 Ansvar: {control.responsible || 'Styreleder'}</span>
-            {control.last_review && <span>📅 Sist vurdert: {control.last_review}</span>}
-          </div>
-          <button class="review-button" type="button" aria-pressed="false">Marker gjennomgått</button>
-        </div>
-      ))}
-    </div>
-
-    <div style="text-align: center; margin-top: 2rem; padding: 1.5rem; background: rgba(31,111,91,0.06); border-radius: 12px;">
-      <p style="font-family: system-ui, sans-serif; font-size: 0.9rem; color: var(--muted); margin: 0;">
-        Illustrasjonsdata. Denne siden oppretter eller lagrer ikke kontroller. <a href="/workspace" style="color: var(--accent); font-weight: 600;">Åpne Styr.ing-arbeidsflaten</a>.
-      </p>
-    </div>
+  <div class="container control-page">
+    <h1>Internkontroll</h1>
+    <p class="intro">Samle kontrollpunkter, ansvar og siste vurdering i én arbeidsflate. Et kontrollpunkt kan markeres etter faglig gjennomgang.</p>
+    <div class="stats"><div class="stat-card"><div id="control-total" class="stat-num">—</div><div class="stat-label">Kontrollpunkter</div></div><div class="stat-card"><div id="control-green" class="stat-num green">—</div><div class="stat-label">Grønn status</div></div><div class="stat-card"><div id="control-red" class="stat-num red">—</div><div class="stat-label">Krever tiltak</div></div></div>
+    <div class="toolbar" role="toolbar" aria-label="Filtrer kontroller"><span>Vis</span><button class="filter active" data-filter="all">Alle</button><button class="filter" data-filter="green">Grønn</button><button class="filter" data-filter="yellow">Gul</button><button class="filter" data-filter="red">Rød</button><button id="export-controls" class="export" type="button">Eksporter utdrag ↗</button></div>
+    <div id="control-list" class="control-list"><p class="empty">Henter kontroller…</p></div>
+    <div class="notice">D1-kilde og tenant-scope er aktivert. Kontrollbevis, varsling og rammeverksvalg krever virksomhetens egen kvalitetssikring.</div>
   </div>
 </Layout>
-
 <script is:inline>
-  const reviewKey = 'styring-demo-reviewed-controls';
-  let reviewed = new Set();
-  try { reviewed = new Set(JSON.parse(localStorage.getItem(reviewKey) || '[]')); } catch { reviewed = new Set(); }
-  const paint = () => document.querySelectorAll('.control-card').forEach(card => { const id = card.dataset.controlId; const done = reviewed.has(id); card.classList.toggle('reviewed', done); const button = card.querySelector('.review-button'); if (button) { button.textContent = done ? '✓ Gjennomgått' : 'Marker gjennomgått'; button.setAttribute('aria-pressed', String(done)); } });
-  const save = () => { try { localStorage.setItem(reviewKey, JSON.stringify([...reviewed])); } catch {} };
-  document.querySelectorAll('.control-filter').forEach(filter => filter.addEventListener('click', () => { document.querySelectorAll('.control-filter').forEach(item => item.classList.remove('active')); filter.classList.add('active'); const value = filter.dataset.filter; document.querySelectorAll('.control-card').forEach(card => { card.hidden = value !== 'all' && card.dataset.status !== value; }); }));
-  document.querySelectorAll('.review-button').forEach(button => button.addEventListener('click', () => { const id = button.closest('.control-card')?.dataset.controlId; if (!id) return; reviewed.has(id) ? reviewed.delete(id) : reviewed.add(id); save(); paint(); }));
-  document.querySelector('#export-controls')?.addEventListener('click', () => { const rows = [...document.querySelectorAll('.control-card:not([hidden])')].map(card => card.querySelector('h3')?.textContent?.trim()).filter(Boolean); const blob = new Blob([`Styr.ing demo-utdrag\n\n${rows.join('\n')}`], { type: 'text/plain;charset=utf-8' }); const url = URL.createObjectURL(blob); const link = document.createElement('a'); link.href = url; link.download = 'styring-demo-kontroller.txt'; link.click(); URL.revokeObjectURL(url); });
-  paint();
+  const esc = (v) => String(v ?? '').replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); const labels = { green:'Grønn', yellow:'Gul', red:'Rød' }; let rows = [];
+  const render = () => { const mode = document.querySelector('.filter.active')?.dataset.filter || 'all'; const visible = rows.filter((r) => mode === 'all' || r.status === mode); document.getElementById('control-list').innerHTML = visible.length ? visible.map((r) => `<article class="control-card"><div class="card-head"><h3>${esc(r.title)}</h3><span class="status status-${esc(r.status)}">${labels[r.status] || r.status}</span></div><p>${esc(r.notes || 'Kontrollpunkt med dokumentert ansvar og oppfølging.')}</p><div class="meta">Ansvar: ${esc(r.owner || 'Ikke satt')} · Frekvens: ${esc(r.frequency || 'Ikke satt')} · Sist vurdert: ${esc(r.last_review || 'Ikke vurdert')}</div><button class="review" type="button" data-control-id="${esc(r.id)}">Marker gjennomgått</button></article>`).join('') : '<p class="empty">Ingen kontroller i dette filteret.</p>'; document.querySelectorAll('.review').forEach((b) => b.addEventListener('click', async () => { const id = b.dataset.controlId; if (!id) return; const response = await fetch('/api/controls', { method:'POST', headers:{'content-type':'application/json','x-styr-api-key':'preview-write'}, body:JSON.stringify({boardId:'board-1',controlId:id,status:'green'}) }); if (response.ok) { const found = rows.find((r) => r.id === id); if (found) found.status = 'green'; render(); } })); };
+  const load = async () => { try { const [s, i] = await Promise.all([fetch('/api/controls?boardId=board-1&view=summary'), fetch('/api/controls?boardId=board-1&view=items')]); const summary = (await s.json()).data || {}; rows = (await i.json()).data || []; document.getElementById('control-total').textContent = summary.total?.count ?? rows.length; document.getElementById('control-green').textContent = summary.green?.count ?? 0; document.getElementById('control-red').textContent = (Number(summary.red?.count || 0) + Number(summary.yellow?.count || 0)); render(); } catch { document.getElementById('control-list').innerHTML = '<p class="empty">Kontrolldata er midlertidig utilgjengelig.</p>'; } }; document.querySelectorAll('.filter').forEach((b) => b.addEventListener('click', () => { document.querySelectorAll('.filter').forEach((x) => x.classList.remove('active')); b.classList.add('active'); render(); })); document.getElementById('export-controls')?.addEventListener('click', () => { const blob = new Blob([rows.map((r) => `${r.title} · ${r.status} · ${r.owner || 'Ikke satt'}`).join('\n')], {type:'text/plain'}); const link = document.createElement('a'); link.href = URL.createObjectURL(blob); link.download = 'styring-kontroller.txt'; link.click(); URL.revokeObjectURL(link.href); }); load();
 </script>
-
 <style>
-  .stat-card {
-    background: white;
-    border: 1px solid rgba(16,36,31,0.08);
-    border-radius: 12px;
-    padding: 16px;
-    text-align: center;
-  }
-  .stat-num { font-size: 1.75rem; font-weight: 700; color: var(--ink); }
-  .stat-label { font-family: system-ui, sans-serif; font-size: 0.8rem; color: var(--muted); margin-top: 2px; }
-  
-  .control-card {
-    background: white;
-    border: 1px solid rgba(16,36,31,0.08);
-    border-radius: 14px;
-    padding: 20px 24px;
-    transition: box-shadow 0.2s;
-  }
-  .control-card:hover { box-shadow: 0 4px 16px rgba(16,36,31,0.06); }
-  .control-card.reviewed { border-color: rgba(31,111,91,.34); background: linear-gradient(90deg,#fff,#f5fbf4); }.control-card[hidden] { display:none; }.control-toolbar { display:flex; align-items:center; flex-wrap:wrap; gap:7px; margin:0 0 18px; color:var(--muted); font:600 .7rem/1 system-ui,sans-serif; }.control-filter,.export-button,.review-button { border:1px solid rgba(16,36,31,.12); border-radius:999px; background:#fff; color:var(--muted); cursor:pointer; font:600 .68rem/1 system-ui,sans-serif; }.control-filter { padding:7px 10px; }.control-filter.active,.control-filter:hover { color:#fff; background:var(--night); border-color:var(--night); }.export-button { margin-left:auto; padding:8px 11px; color:var(--accent); }.review-button { margin-top:14px; padding:7px 10px; color:var(--accent); }.review-button:hover,.review-button[aria-pressed="true"] { color:#fff; background:var(--accent); border-color:var(--accent); }
-  
-  .control-badge {
-    font-family: system-ui, sans-serif; font-size: 0.75rem; font-weight: 600;
-    padding: 3px 12px; border-radius: 100px; white-space: nowrap;
-  }
-  .badge-approved { background: rgba(31,111,91,0.10); color: var(--accent); }
-  .badge-pending { background: rgba(216,169,77,0.15); color: #8a7500; }
-  .badge-draft { background: rgba(150,150,150,0.12); color: var(--muted); }
+  .control-page{max-width:960px;margin:2rem auto;padding:0 20px}.control-page h1{font-size:2rem;margin-bottom:.5rem}.intro{font-family:system-ui,sans-serif;color:var(--muted);margin:0 0 2rem}.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:2rem}.stat-card{background:#fff;border:1px solid rgba(16,36,31,.08);border-radius:12px;padding:16px;text-align:center}.stat-num{font-size:1.75rem;font-weight:700;color:var(--ink)}.stat-num.green{color:var(--accent)}.stat-num.red{color:#a04d4d}.stat-label{font-family:system-ui,sans-serif;font-size:.8rem;color:var(--muted);margin-top:2px}.toolbar{display:flex;align-items:center;flex-wrap:wrap;gap:7px;margin-bottom:18px;color:var(--muted);font:600 .7rem/1 system-ui,sans-serif}.filter,.export,.review{border:1px solid rgba(16,36,31,.12);border-radius:999px;background:#fff;color:var(--muted);cursor:pointer;font:600 .68rem/1 system-ui,sans-serif;padding:7px 10px}.filter.active,.filter:hover{color:#fff;background:var(--night);border-color:var(--night)}.export{margin-left:auto;color:var(--accent)}.control-list{display:grid;gap:16px}.control-card{background:#fff;border:1px solid rgba(16,36,31,.08);border-radius:14px;padding:20px 24px}.card-head{display:flex;justify-content:space-between;align-items:start;gap:16px}.card-head h3{font-size:1.05rem;margin:0}.control-card p{font-family:system-ui,sans-serif;font-size:.875rem;color:var(--muted);line-height:1.5}.meta{font-family:system-ui,sans-serif;font-size:.8rem;color:var(--muted)}.status{font-family:system-ui,sans-serif;font-size:.75rem;font-weight:600;padding:3px 12px;border-radius:100px;white-space:nowrap}.status-green{background:rgba(31,111,91,.1);color:var(--accent)}.status-yellow{background:rgba(216,169,77,.15);color:#8a7500}.status-red{background:rgba(160,77,77,.12);color:#a04d4d}.review{margin-top:14px;color:var(--accent)}.notice{margin-top:2rem;padding:1.5rem;background:rgba(31,111,91,.06);border-radius:12px;color:var(--muted);font:.9rem/1.5 system-ui,sans-serif}.empty{color:var(--muted);font:.85rem system-ui,sans-serif}@media(max-width:560px){.stats{grid-template-columns:1fr}.control-page{padding:0 15px}}
 </style>

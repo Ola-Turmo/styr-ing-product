@@ -1,77 +1,20 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import { demoComplianceEvents } from '../lib/db';
-
-const events = demoComplianceEvents;
-const completed = events.filter(e => e.status === 'completed').length;
-const total = events.length;
-const completionRate = total > 0 ? Math.round((completed / total) * 100) : 0;
 ---
 <Layout title="Compliance-kalender" activeNav="compliance">
-  <div class="container" style="max-width: 960px; margin: 2rem auto; padding: 0 20px;">
-    <h1 style="font-size: 2rem; margin-bottom: 0.5rem;">Compliance-kalender</h1>
-    <p style="font-family: system-ui, sans-serif; color: var(--muted); margin: 0 0 2rem 0;">
-      Demo av en samlet fristoversikt. Datakilder, ansvar og eventuell varsling må avtales og verifiseres separat.
-    </p>
-
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 2rem;">
-      <div class="stat-card">
-        <div class="stat-num">{total}</div>
-        <div class="stat-label">Hendelser</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-num">{completed}</div>
-        <div class="stat-label">Fullført</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-num">{completionRate}%</div>
-        <div class="stat-label">Grad</div>
-      </div>
-    </div>
-
-    <div style="overflow-x: auto;">
-      <table style="width: 100%; border-collapse: collapse; font-family: system-ui, sans-serif;">
-        <thead>
-          <tr style="text-align: left; border-bottom: 2px solid rgba(16,36,31,0.08);">
-            <th style="padding: 12px 16px; font-size: 0.8rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em;">Frist</th>
-            <th style="padding: 12px 16px; font-size: 0.8rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em;">Hendelse</th>
-            <th style="padding: 12px 16px; font-size: 0.8rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em;">Myndighet</th>
-            <th style="padding: 12px 16px; font-size: 0.8rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em;">Status</th>
-          </tr>
-        </thead>
-        <tbody>
-          {events.map(event => (
-            <tr style="border-bottom: 1px solid rgba(16,36,31,0.05);">
-              <td style="padding: 14px 16px; font-weight: 600; font-size: 0.9rem;">{event.deadline}</td>
-              <td style="padding: 14px 16px; font-size: 0.9rem;">{event.title}</td>
-              <td style="padding: 14px 16px; font-size: 0.85rem; color: var(--muted);">{event.authority}</td>
-              <td style="padding: 14px 16px;">
-                <span style="display: inline-block; background: {event.status === 'completed' ? 'rgba(31,111,91,0.10)' : event.status === 'in_progress' ? 'rgba(216,169,77,0.15)' : 'rgba(150,150,150,0.12)'}; color: {event.status === 'completed' ? 'var(--accent)' : event.status === 'in_progress' ? '#8a7500' : 'var(--muted)'}; font-size: 0.75rem; font-weight: 600; padding: 4px 12px; border-radius: 100px;">
-                  {event.status === 'completed' ? 'Fullført' : event.status === 'in_progress' ? 'Pågår' : 'Venter'}
-                </span>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-
-    <div style="text-align: center; margin-top: 2rem; padding: 1.5rem; background: rgba(31,111,91,0.06); border-radius: 12px;">
-      <p style="font-family: system-ui, sans-serif; font-size: 0.9rem; color: var(--muted); margin: 0;">
-        Illustrasjonsdata. Denne offentlige siden lagrer ikke hendelser eller sender varsler. <a href="/workspace" style="color: var(--accent); font-weight: 600;">Åpne Styr.ing-arbeidsflaten</a>.
-      </p>
-    </div>
+  <div class="container compliance-page">
+    <h1>Compliance-kalender</h1>
+    <p class="intro">Samlet fristoversikt med ansvar, status og tydelig neste steg. Varsling og regulatorisk innsending krever separat aktivering.</p>
+    <div class="stats"><div class="stat-card"><div id="event-total" class="stat-num">—</div><div class="stat-label">Hendelser</div></div><div class="stat-card"><div id="event-done" class="stat-num">—</div><div class="stat-label">Fullført</div></div><div class="stat-card"><div id="event-rate" class="stat-num">—</div><div class="stat-label">Grad</div></div></div>
+    <div class="table-wrap"><table><thead><tr><th>Frist</th><th>Hendelse</th><th>Myndighet</th><th>Status</th></tr></thead><tbody id="event-rows"><tr><td colspan="4">Henter frister…</td></tr></tbody></table></div>
+    <div class="notice">SaaS-arbeidsflate med D1-kilde. Ekstern varsling og innsending sendes ikke fra denne offentlige flaten.</div>
   </div>
 </Layout>
-
+<script is:inline>
+  const esc = (v) => String(v ?? '').replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const labels = { pending: 'Venter', in_progress: 'Pågår', done: 'Fullført', waived: 'Fritatt' };
+  const load = async () => { try { const [a, b] = await Promise.all([fetch('/api/compliance?boardId=board-1&view=summary'), fetch('/api/compliance?boardId=board-1&view=events')]); const summary = (await a.json()).data || {}; const events = (await b.json()).data || []; const total = Number(summary.total?.count || 0); const done = Number(summary.done?.count || 0); document.getElementById('event-total').textContent = total; document.getElementById('event-done').textContent = done; document.getElementById('event-rate').textContent = `${total ? Math.round(done / total * 100) : 0}%`; document.getElementById('event-rows').innerHTML = events.length ? events.map((e) => `<tr><td>${esc(e.deadline)}</td><td>${esc(e.title)}</td><td>${esc(e.authority)}</td><td><span class="status status-${esc(e.status)}">${esc(labels[e.status] || e.status)}</span></td></tr>`).join('') : '<tr><td colspan="4">Ingen registrerte frister.</td></tr>'; } catch { document.getElementById('event-rows').innerHTML = '<tr><td colspan="4">Fristdata er midlertidig utilgjengelig.</td></tr>'; } }; load();
+</script>
 <style>
-  .stat-card {
-    background: white;
-    border: 1px solid rgba(16,36,31,0.08);
-    border-radius: 12px;
-    padding: 16px;
-    text-align: center;
-  }
-  .stat-num { font-size: 1.75rem; font-weight: 700; color: var(--accent); }
-  .stat-label { font-family: system-ui, sans-serif; font-size: 0.8rem; color: var(--muted); margin-top: 2px; }
+  .compliance-page{max-width:960px;margin:2rem auto;padding:0 20px}.compliance-page h1{font-size:2rem;margin-bottom:.5rem}.intro{font-family:system-ui,sans-serif;color:var(--muted);margin:0 0 2rem}.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:2rem}.stat-card{background:#fff;border:1px solid rgba(16,36,31,.08);border-radius:12px;padding:16px;text-align:center}.stat-num{font-size:1.75rem;font-weight:700;color:var(--accent)}.stat-label{font-family:system-ui,sans-serif;font-size:.8rem;color:var(--muted);margin-top:2px}.table-wrap{overflow-x:auto}table{width:100%;border-collapse:collapse;font-family:system-ui,sans-serif}th{text-align:left;border-bottom:2px solid rgba(16,36,31,.08);padding:12px 16px;font-size:.8rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}td{padding:14px 16px;border-bottom:1px solid rgba(16,36,31,.05);font-size:.9rem}.status{display:inline-block;font-size:.75rem;font-weight:600;padding:4px 12px;border-radius:100px;background:rgba(150,150,150,.12);color:var(--muted)}.status-done,.status-waived{background:rgba(31,111,91,.1);color:var(--accent)}.status-in_progress{background:rgba(216,169,77,.15);color:#8a7500}.notice{margin-top:2rem;padding:1.5rem;background:rgba(31,111,91,.06);border-radius:12px;color:var(--muted);font: .9rem/1.5 system-ui,sans-serif}@media(max-width:560px){.stats{grid-template-columns:1fr}.compliance-page{padding:0 15px}}
 </style>
