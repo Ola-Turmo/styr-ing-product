@@ -15,6 +15,9 @@ const checks = [
   ['operations cockpit', '/api/operations?boardId=board-1', 200],
   ['audit trail', '/api/audit?boardId=board-1', 200], ['SAF-T export', '/api/finance?boardId=board-1&view=saf-t', 200],
   ['accounting periods', '/api/finance?boardId=board-1&view=periods', 200], ['chart of accounts', '/api/finance?boardId=board-1&view=accounts', 200],
+  ['treasury summary', '/api/treasury?boardId=board-1&view=summary', 200], ['treasury payroll', '/api/treasury?boardId=board-1&view=payroll', 200],
+  ['treasury submissions', '/api/treasury?boardId=board-1&view=submissions', 200], ['treasury liquidity', '/api/treasury?boardId=board-1&view=liquidity', 200],
+  ['treasury collections', '/api/treasury?boardId=board-1&view=collections', 200],
   ['private board guard', '/api/events?boardId=board-2&view=summary', 403],
 ];
 const failures = [];
