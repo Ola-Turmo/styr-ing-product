@@ -52,9 +52,9 @@ The public preview is safe to explore with fictional data. The deployed backend 
 - `POST /api/assistant` — protected, rules-based evidence draft with citations; always `requiresHumanApproval: true` and `executed: false`
 - `GET|POST|DELETE /api/reviews` — auditable review state (`boardId`, `entityType`, `entityId`)
 - `POST /api/events` — append-only event intake contract for future event mesh adapters
-- `GET /api/finance?boardId=...&view=summary|accounts|periods|vouchers` — tenant-scoped accounting workspace data
+- `GET /api/finance?boardId=...&view=summary|accounts|periods|vouchers|intercompany|notes` — tenant-scoped accounting, intercompany and statutory-note preparation data
 - `GET /api/finance?boardId=...&view=saf-t&from=YYYY-MM&to=YYYY-MM` — SAF‑T Financial 1.3 XML export contract
-- `POST /api/finance` (API key) — balanced voucher posting or period locking (`action: create_voucher|lock_period`)
+- `POST /api/finance` (API key) — balanced voucher posting, period locking, intercompany mirror preparation/approval and statutory-note approval (`action: create_voucher|lock_period|prepare_intercompany|approve_intercompany|approve_note`)
 - `GET /api/assets?boardId=...&view=summary|assets|depreciation` — tenant-scoped fixed-asset register with separate financial and tax depreciation tracks
 - `POST /api/assets` (API key) — approve depreciation entries; ledger posting remains separately controlled
 - `GET /api/treasury?boardId=...&view=summary|payroll|submissions|liquidity|collections` — tenant-scoped payroll, statutory-submission preparation, liquidity and collections data

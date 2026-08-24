@@ -62,6 +62,10 @@ INSERT OR IGNORE INTO equity_grants (id,board_id,holder_id,grant_name,instrument
 ('grant-1','board-1','person-2','Demo opsjonsprogram 2026','option',50000,1250,'NOK','2026-01-15','2026-01-15',48,6250,'active','review','board-resolution-2026-02');
 INSERT OR IGNORE INTO contract_redlines (id,board_id,contract_id,clause_ref,original_text,proposed_text,risk_level,recommendation,status) VALUES
 ('redline-1','board-1','contract-1','§ 8 Automatisk fornyelse','Avtalen fornyes automatisk.','Fornyelse krever skriftlig bekreftelse 90 dager før utløp.','high','Krev eksplisitt fornyelsesbeslutning og fristvakt.','review');
+INSERT OR IGNORE INTO intercompany_postings (id,board_id,source_entity,target_entity,reference,amount_minor,currency,period,status,elimination_required) VALUES
+('ic-1','board-1','Styr.ing Holding AS','Styr.ing Drift AS','Management fee Q2',1250000,'NOK','2026-06','review',1);
+INSERT OR IGNORE INTO statutory_notes (id,board_id,note_type,period,status,payload,evidence_refs) VALUES
+('note-1','board-1','remuneration','2026','review','{"fte":12,"board_remuneration_minor":350000,"related_party_loans_minor":0}','["payroll-1","equity-1"]');
 INSERT OR IGNORE INTO sustainability_items (id,board_id,item_type,title,status,severity,scope,due_date) VALUES
 ('sustain-1','board-1','hms_incident','Nestenulykke — illustrasjon','open','medium','Kontor','2026-09-05'),
 ('sustain-2','board-1','vendor_due_diligence','Åpenhetsloven leverandørgjennomgang','in_progress','high','Leverandørkjede','2026-09-30');

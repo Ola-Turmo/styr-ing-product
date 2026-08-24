@@ -387,6 +387,19 @@ CREATE TABLE IF NOT EXISTS voucher_lines (
   description TEXT, debit_minor INTEGER NOT NULL DEFAULT 0, credit_minor INTEGER NOT NULL DEFAULT 0, vat_code TEXT, created_at TEXT NOT NULL DEFAULT (datetime('now')),
   CHECK(debit_minor >= 0 AND credit_minor >= 0), CHECK(NOT (debit_minor > 0 AND credit_minor > 0))
 );
+CREATE TABLE IF NOT EXISTS intercompany_postings (
+  id TEXT PRIMARY KEY, board_id TEXT NOT NULL REFERENCES boards(id) ON DELETE CASCADE,
+  source_entity TEXT NOT NULL, target_entity TEXT NOT NULL, reference TEXT NOT NULL, amount_minor INTEGER NOT NULL DEFAULT 0,
+  currency TEXT NOT NULL DEFAULT 'NOK', period TEXT NOT NULL, status TEXT NOT NULL DEFAULT 'prepared' CHECK(status IN ('prepared','review','mirrored','rejected')),
+  source_voucher_id TEXT, target_voucher_id TEXT, elimination_required INTEGER NOT NULL DEFAULT 1, created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+CREATE TABLE IF NOT EXISTS statutory_notes (
+  id TEXT PRIMARY KEY, board_id TEXT NOT NULL REFERENCES boards(id) ON DELETE CASCADE, note_type TEXT NOT NULL,
+  period TEXT NOT NULL, status TEXT NOT NULL DEFAULT 'draft' CHECK(status IN ('draft','review','approved','filed')),
+  payload TEXT NOT NULL DEFAULT '{}', evidence_refs TEXT NOT NULL DEFAULT '[]', approved_by TEXT, approved_at TEXT, created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+CREATE INDEX IF NOT EXISTS idx_intercompany_board ON intercompany_postings(board_id,period,status);
+CREATE INDEX IF NOT EXISTS idx_statutory_notes_board ON statutory_notes(board_id,period,status);
 CREATE TABLE IF NOT EXISTS saf_t_exports (
   id TEXT PRIMARY KEY, board_id TEXT NOT NULL REFERENCES boards(id) ON DELETE CASCADE, period_from TEXT NOT NULL, period_to TEXT NOT NULL,
   status TEXT NOT NULL DEFAULT 'prepared', row_count INTEGER NOT NULL DEFAULT 0, checksum TEXT, created_by TEXT, created_at TEXT NOT NULL DEFAULT (datetime('now'))
