@@ -52,7 +52,7 @@ Styr.ing consolidates three governance domains into one platform:
 
 | Route | Page | Description |
 |-------|------|-------------|
-| `/` | Landing | Offer-boundary page with concept overview and handoff to Samsvarlig |
+| `/` | Landing | Styr.ing SaaS overview and public preview |
 | `/board` | Board Portal | List of demo boards with status indicators |
 | `/board/[id]` | Board Detail | Single board with members, meetings, stats |
 | `/compliance` | Compliance Calendar | Regulatory deadline table with status tracking |
@@ -65,8 +65,8 @@ Styr.ing consolidates three governance domains into one platform:
 
 - **Separate Styr.ing offer**: Not active
 - **Public price or checkout**: None
-- **Current front door**: Samsvarlig carries the frozen active control-cycle offer
-- **Later activation**: Any Styr.ing scope, onboarding, functionality, data processing and price require a separate documented order or customer agreement
+- **Current front door**: Styr.ing public SaaS preview
+- **Later activation**: Production scope, onboarding, functionality, data processing and price require a documented order and approved subscription workflow
 
 ## Competitive Landscape
 

@@ -3,8 +3,8 @@
 Norwegian governance concept demo — board portal, deadline tracking, and internal-control workflows for SMB and mid-market boards.
 
 **Stack:** Astro 4 static frontend + Cloudflare Pages Functions + Cloudflare D1 (EEUR)
-**Offer status:** No separate active Styr.ing offer, public price, self-service account, or checkout. Samsvarlig is the active front door for the frozen control-cycle offer.
-**Commercial policy:** Any later Styr.ing scope, onboarding, functionality, data processing, and price require a separate documented order or customer agreement.
+**Offer status:** Styr.ing is SaaS-only. Production activation, billing, subscription terms, and customer onboarding are not enabled on this public preview.
+**Commercial policy:** Any production Styr.ing subscription requires a documented order, approved data-processing terms, and an activated billing/account workflow.
 
 ## Development
 

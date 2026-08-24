@@ -19,8 +19,8 @@ Built to help Norwegian businesses structure board work, deadlines, controls and
 
 1. Visitors may explore the public board, deadline and internal-control concept pages without creating an account
 2. The public Styr.ing site does not provide a separate activation, purchase or lead-capture flow
-3. Samsvarlig is the active front door for the current control-cycle offer
-4. Any later Styr.ing scope, onboarding and commercial terms require a separately documented decision and agreement
+3. Styr.ing is SaaS-only; production activation and billing require an approved subscription workflow
+4. Production scope, onboarding and commercial terms require a documented customer agreement
 
 ## Key Features
 
@@ -35,8 +35,8 @@ Built to help Norwegian businesses structure board work, deadlines, controls and
 
 - No separate active Styr.ing offer or public price
 - No self-service account creation, checkout, subscription, or billing on the public site
-- Samsvarlig is the active front door for the frozen control-cycle offer
-- Any later Styr.ing scope, onboarding, functionality, and pricing require a separate documented order or customer agreement
+- Styr.ing is SaaS-only; no public checkout or self-service activation is enabled on the preview
+- Production scope, onboarding, functionality, pricing, and processing terms require documented customer agreement
 
 ## Key URLs
 
@@ -46,7 +46,7 @@ Built to help Norwegian businesses structure board work, deadlines, controls and
 - Internal Control: https://styr.ing/internkontroll
 - Access boundary: https://styr.ing/login
 - Static access boundary: https://styr.ing/signup
-- Active control-cycle offer: https://samsvarlig.no/
+- SaaS preview: https://styr.ing/
 
 ## Contact
 
