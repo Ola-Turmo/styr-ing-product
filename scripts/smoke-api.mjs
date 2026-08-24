@@ -35,6 +35,7 @@ for (const [label, path, payload] of [
   ['risk write guard', '/api/risk', { boardId: 'board-1', action: 'update_risk', riskId: 'fixture-not-used', status: 'monitoring' }],
   ['HCM write guard', '/api/hcm', { boardId: 'board-1', action: 'update_goal', goalId: 'fixture-not-used', progress: 50, status: 'on_track' }],
   ['board governance write guard', '/api/board_governance', { boardId: 'board-1', action: 'record_attendance', attendanceId: 'fixture-not-used', attendanceStatus: 'present' }],
+  ['finance period write guard', '/api/finance', { boardId: 'board-1', action: 'lock_period', period: '2026-99' }],
   ['billing checkout guard', '/api/billing-checkout', { boardId: 'board-1', plan: 'paid' }],
   ['privacy request guard', '/api/privacy', { boardId: 'board-1', requestType: 'access' }],
   ['invite guard', '/api/auth', { action: 'invite_user', boardId: 'board-1', email: 'invite@example.invalid', name: 'Invite User' }],

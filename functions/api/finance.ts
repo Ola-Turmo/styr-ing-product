@@ -1,4 +1,4 @@
-import { authorizeBoardRead, authorizeWrite, body, id, json, requireDb, type Env } from './_lib';
+import { authorizeBoardRead, authorizeBoardWrite, body, id, json, recordAudit, requireDb, type Env } from './_lib';
 
 const periodPattern = /^\d{4}-(0[1-9]|1[0-2])$/;
 const datePattern = /^\d{4}-\d{2}-\d{2}$/;
@@ -43,17 +43,20 @@ export const onRequestGet: PagesFunction<Env> = async ({ env, request }) => {
 };
 
 export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
-  if (!authorizeWrite(request, env)) return json({ error: 'write_not_authorized' }, { status: 401 });
   try {
     const value = await body(request); const boardId = String(value?.boardId || '').trim(); const action = String(value?.action || 'create_voucher');
     if (!boardId) return json({ error: 'boardId_required' }, { status: 400 });
+    const authorization = await authorizeBoardWrite(request, env, boardId);
+    if (!authorization.allowed) return json({ error: 'write_not_authorized' }, { status: 401 });
     const db = requireDb(env);
     if (action === 'lock_period') {
       const period = String(value?.period || ''); if (!periodPattern.test(period)) return json({ error: 'period_invalid' }, { status: 400 });
       const existing = await db.prepare('SELECT status FROM accounting_periods WHERE board_id=? AND period=?').bind(boardId, period).first<Record<string, unknown>>();
       if (existing?.status === 'locked') return json({ error: 'period_already_locked' }, { status: 409 });
-      await db.prepare("INSERT INTO accounting_periods (id,board_id,period,status,locked_by,locked_at) VALUES (?,?,?,?,?,datetime('now')) ON CONFLICT(board_id,period) DO UPDATE SET status='locked',locked_by=excluded.locked_by,locked_at=datetime('now')").bind(id('period'), boardId, period, 'locked', String(value?.lockedBy || 'api')).run();
-      return json({ ok: true, action, boardId, period, status: 'locked' });
+      const lockedBy = authorization.userId || String(value?.lockedBy || 'service');
+      await db.prepare("INSERT INTO accounting_periods (id,board_id,period,status,locked_by,locked_at) VALUES (?,?,?,?,?,datetime('now')) ON CONFLICT(board_id,period) DO UPDATE SET status='locked',locked_by=excluded.locked_by,locked_at=datetime('now')").bind(id('period'), boardId, period, 'locked', lockedBy).run();
+      await recordAudit(db, { boardId, action: 'accounting_period_locked', entityType: 'accounting_period', entityId: period, userId: authorization.userId || undefined, details: { period } });
+      return json({ ok: true, action, boardId, period, status: 'locked', requiresHumanReview: true });
     }
     if (action === 'prepare_intercompany') {
       const sourceEntity=String(value?.sourceEntity||'').trim(), targetEntity=String(value?.targetEntity||'').trim(), reference=String(value?.reference||'').trim(), period=String(value?.period||'');
