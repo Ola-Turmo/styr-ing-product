@@ -84,6 +84,8 @@ The public preview is safe to explore with fictional data. The deployed backend 
 - `GET /api/field?boardId=...&view=rates` — project rate hierarchy with explicit cost basis and calculated dekningsgrad; WIP includes billable value, cost and margin
 - `POST /api/field` (API key) — prepare/approve invoice drafts, classify trips, approve time and complete maintenance records; GPS, tax and invoicing adapters remain unconfigured
 - `GET /api/operations?boardId=...` — live D1-backed cockpit metrics across people, IT, finance, commercial, field and platform; read-only and tenant-scoped
+- `GET /api/risk?boardId=...&view=summary|risks|actions` — tenant-scoped live risk register, overdue indicators, and action queue
+- `POST /api/risk` (API key) — create/update risks and complete action items; review remains human-controlled
 
 Initialize or update the remote database with `wrangler d1 execute styr-ing-db --remote --file=d1/schema.sql`, then seed the illustrative board with `wrangler d1 execute styr-ing-db --remote --file=d1/seed.sql`.
 
