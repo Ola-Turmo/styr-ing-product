@@ -135,3 +135,16 @@ INSERT OR IGNORE INTO project_rates (id,board_id,project_id,role,hourly_minor,cu
 INSERT OR IGNORE INTO time_entries (id,board_id,project_id,person_id,work_date,minutes,description,billable,status,rate_minor) VALUES
 ('time-1','board-1','project-1','person-1','2026-08-22',150,'Workshop kontrollkart',1,'submitted',145000),
 ('time-2','board-1','project-1','person-2','2026-08-23',90,'Økonomisk kontrollspor',1,'approved',145000);
+INSERT OR IGNORE INTO payroll_runs (id,board_id,period,status,gross_minor,tax_withheld_minor,employer_cost_minor,holiday_pay_minor,otp_minor,employee_count,calculated_at) VALUES
+('payrun-1','board-1','2026-08','review',12500000,3100000,15000000,1275000,250000,3,'2026-08-24 08:00:00');
+INSERT OR IGNORE INTO payroll_items (id,board_id,payroll_run_id,person_id,gross_minor,tax_minor,holiday_pay_minor,otp_minor,status) VALUES
+('payitem-1','board-1','payrun-1','person-1',4200000,1050000,428400,84000,'reviewed'),
+('payitem-2','board-1','payrun-1','person-2',4800000,1200000,489600,96000,'calculated'),
+('payitem-3','board-1','payrun-1','person-3',3500000,850000,357000,70000,'calculated');
+INSERT OR IGNORE INTO compliance_submissions (id,board_id,submission_type,period,status,payload_hash,notes) VALUES
+('submit-1','board-1','a_melding','2026-08','prepared','demo-a-melding-hash','Klar for kontroll; Altinn/MOTP-adapter ikke konfigurert.'),
+('submit-2','board-1','mva','2026-07','review','demo-mva-hash','SAF-T-grunnlag klart; innsending krever autorisasjon.');
+INSERT OR IGNORE INTO liquidity_snapshots (id,board_id,as_of_date,cash_minor,receivables_minor,payables_minor,payroll_due_minor,runway_months,source,status) VALUES
+('liq-1','board-1','2026-08-24',125000000,45000000,22000000,15000000,7.8,'illustration','reviewed');
+INSERT OR IGNORE INTO collection_cases (id,board_id,account_id,reference,amount_minor,due_date,status,next_action) VALUES
+('collect-1','board-1','crm-1','INV-DEMO-001',1250000,'2026-09-01','open','Forbered vennlig påminnelse');

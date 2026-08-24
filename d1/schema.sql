@@ -555,3 +555,38 @@ CREATE INDEX IF NOT EXISTS idx_facility_tasks_board ON facility_tasks(board_id,d
 CREATE INDEX IF NOT EXISTS idx_projects_board ON projects(board_id,status);
 CREATE INDEX IF NOT EXISTS idx_project_rates_project ON project_rates(project_id);
 CREATE INDEX IF NOT EXISTS idx_time_entries_board ON time_entries(board_id,work_date,status);
+
+-- Payroll, statutory submission preparation, liquidity and collections.
+CREATE TABLE IF NOT EXISTS payroll_runs (
+  id TEXT PRIMARY KEY, board_id TEXT NOT NULL REFERENCES boards(id) ON DELETE CASCADE,
+  period TEXT NOT NULL, status TEXT NOT NULL DEFAULT 'draft' CHECK(status IN ('draft','calculated','review','approved','submitted','closed')),
+  gross_minor INTEGER NOT NULL DEFAULT 0, tax_withheld_minor INTEGER NOT NULL DEFAULT 0, employer_cost_minor INTEGER NOT NULL DEFAULT 0,
+  holiday_pay_minor INTEGER NOT NULL DEFAULT 0, otp_minor INTEGER NOT NULL DEFAULT 0, employee_count INTEGER NOT NULL DEFAULT 0,
+  calculated_at TEXT, approved_by TEXT, approved_at TEXT, submitted_at TEXT, created_at TEXT NOT NULL DEFAULT (datetime('now')), UNIQUE(board_id,period)
+);
+CREATE TABLE IF NOT EXISTS payroll_items (
+  id TEXT PRIMARY KEY, board_id TEXT NOT NULL REFERENCES boards(id) ON DELETE CASCADE, payroll_run_id TEXT NOT NULL REFERENCES payroll_runs(id) ON DELETE CASCADE,
+  person_id TEXT NOT NULL REFERENCES people(id) ON DELETE CASCADE, gross_minor INTEGER NOT NULL DEFAULT 0, tax_minor INTEGER NOT NULL DEFAULT 0,
+  holiday_pay_minor INTEGER NOT NULL DEFAULT 0, otp_minor INTEGER NOT NULL DEFAULT 0, status TEXT NOT NULL DEFAULT 'calculated' CHECK(status IN ('calculated','reviewed','excluded')),
+  created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+CREATE TABLE IF NOT EXISTS compliance_submissions (
+  id TEXT PRIMARY KEY, board_id TEXT NOT NULL REFERENCES boards(id) ON DELETE CASCADE, submission_type TEXT NOT NULL CHECK(submission_type IN ('a_melding','tax_return','mva','nav_income','annual_accounts')),
+  period TEXT NOT NULL, status TEXT NOT NULL DEFAULT 'prepared' CHECK(status IN ('prepared','review','approved','submitted','rejected')), payload_hash TEXT, external_reference TEXT,
+  approved_by TEXT, approved_at TEXT, submitted_at TEXT, notes TEXT, created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+CREATE TABLE IF NOT EXISTS liquidity_snapshots (
+  id TEXT PRIMARY KEY, board_id TEXT NOT NULL REFERENCES boards(id) ON DELETE CASCADE, as_of_date TEXT NOT NULL, cash_minor INTEGER NOT NULL DEFAULT 0,
+  receivables_minor INTEGER NOT NULL DEFAULT 0, payables_minor INTEGER NOT NULL DEFAULT 0, payroll_due_minor INTEGER NOT NULL DEFAULT 0, runway_months REAL,
+  source TEXT NOT NULL DEFAULT 'manual', status TEXT NOT NULL DEFAULT 'draft' CHECK(status IN ('draft','reviewed','approved')), created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+CREATE TABLE IF NOT EXISTS collection_cases (
+  id TEXT PRIMARY KEY, board_id TEXT NOT NULL REFERENCES boards(id) ON DELETE CASCADE, account_id TEXT REFERENCES crm_accounts(id) ON DELETE SET NULL,
+  reference TEXT NOT NULL, amount_minor INTEGER NOT NULL DEFAULT 0, due_date TEXT, status TEXT NOT NULL DEFAULT 'open' CHECK(status IN ('open','reminder_prepared','reminder_sent','paid','escalated','closed')),
+  next_action TEXT, human_approved INTEGER NOT NULL DEFAULT 0, approved_by TEXT, approved_at TEXT, created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+CREATE INDEX IF NOT EXISTS idx_payroll_runs_board ON payroll_runs(board_id,period,status);
+CREATE INDEX IF NOT EXISTS idx_payroll_items_run ON payroll_items(payroll_run_id);
+CREATE INDEX IF NOT EXISTS idx_compliance_submissions_board ON compliance_submissions(board_id,period,status);
+CREATE INDEX IF NOT EXISTS idx_liquidity_snapshots_board ON liquidity_snapshots(board_id,as_of_date);
+CREATE INDEX IF NOT EXISTS idx_collection_cases_board ON collection_cases(board_id,status,due_date);
