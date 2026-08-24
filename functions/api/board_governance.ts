@@ -14,7 +14,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ env, request }) => {
     const queries: Record<string, string> = {
       meetings: `SELECT m.*, COALESCE(SUM(CASE WHEN a.attendance_status='present' THEN 1 ELSE 0 END),0) AS present_count, COUNT(a.id) AS invited_count FROM meetings m LEFT JOIN meeting_attendance a ON a.meeting_id=m.id WHERE m.board_id=? GROUP BY m.id ORDER BY m.date DESC`,
       attendance: `SELECT a.*, m.title AS meeting_title, m.date, p.name AS member_name, p.role FROM meeting_attendance a JOIN meetings m ON m.id=a.meeting_id JOIN board_members p ON p.id=a.member_id WHERE a.board_id=? ORDER BY m.date DESC, p.name`,
-      ballots: `SELECT b.*, r.number, r.title, m.name AS member_name, m.role FROM resolution_ballots b JOIN resolutions r ON r.id=b.resolution_id JOIN board_members m ON m.id=b.member_id WHERE b.board_id=? ORDER BY b.cast_at DESC`,
+      ballots: `SELECT COALESCE(b.id, r.id || '-' || m.id) AS id, r.id AS resolution_id, m.id AS member_id, b.vote, b.note, b.cast_at, r.number, r.title, m.name AS member_name, m.role FROM resolutions r JOIN board_members m ON m.board_id=r.board_id LEFT JOIN resolution_ballots b ON b.resolution_id=r.id AND b.member_id=m.id WHERE r.board_id=? ORDER BY r.created_at DESC, m.name`,
     };
     if (view !== 'summary') return json({ boardId, view, data: (await db.prepare(queries[view]).bind(boardId).all()).results });
     const [meetings, upcoming, present, ballots] = await Promise.all([
@@ -85,8 +85,11 @@ export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
       const vote = String(value?.vote || '').trim();
       if (!resolutionId || !memberId) return json({ error: 'resolutionId_and_memberId_required' }, { status: 400 });
       if (!['for', 'against', 'abstain', 'recused'].includes(vote)) return json({ error: 'invalid_vote' }, { status: 400 });
+      const validVoter = await db.prepare('SELECT 1 AS allowed FROM resolutions r JOIN board_members m ON m.board_id=r.board_id WHERE r.id=? AND m.id=? AND r.board_id=?').bind(resolutionId, memberId, boardId).first();
+      if (!validVoter) return json({ error: 'resolution_or_member_not_found' }, { status: 404 });
       const ballotId = String(value?.ballotId || `${resolutionId}-${memberId}`);
       await db.prepare("INSERT INTO resolution_ballots (id,board_id,resolution_id,member_id,vote,note) VALUES (?,?,?,?,?,?) ON CONFLICT(resolution_id,member_id) DO UPDATE SET vote=excluded.vote,note=excluded.note,cast_at=datetime('now')").bind(ballotId, boardId, resolutionId, memberId, vote, value?.note || null).run();
+      await db.prepare("UPDATE resolutions SET votes_for=(SELECT COUNT(*) FROM resolution_ballots WHERE resolution_id=? AND vote='for'), votes_against=(SELECT COUNT(*) FROM resolution_ballots WHERE resolution_id=? AND vote='against'), votes_abstain=(SELECT COUNT(*) FROM resolution_ballots WHERE resolution_id=? AND vote='abstain'), updated_at=datetime('now') WHERE id=? AND board_id=?").bind(resolutionId, resolutionId, resolutionId, resolutionId, boardId).run();
       await recordAudit(db, { boardId, action: 'resolution_ballot_recorded', entityType: 'resolution_ballot', entityId: ballotId, userId: authorization.userId || undefined, details: { resolutionId, memberId, vote } });
       return json({ ok: true, action, ballotId, vote, signature: 'not_configured', requiresHumanReview: true });
     }
