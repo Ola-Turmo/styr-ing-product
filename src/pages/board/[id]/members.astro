@@ -67,6 +67,12 @@ const members = [
 </div>
 </Layout>
 
+<script is:inline>
+  const boardId = '${id}';
+  const live = document.createElement('div'); live.id = 'live-members'; document.querySelector('.container')?.prepend(live);
+  fetch(`/api/members?boardId=${encodeURIComponent(boardId)}`).then(async (response) => { if (!response.ok) return; const data = await response.json(); live.innerHTML = `<div class="live-panel"><strong>Live tenant-tilgang</strong><span>${data.members.length} innloggede medlemmer · administrasjon vises kun for autoriserte brukere</span></div>`; }).catch(() => {});
+</script>
+
 <style>
 .container { max-width: 800px; margin: 1.5rem auto; padding: 0 20px; }
 .back-link { font-family: system-ui, sans-serif; font-size: 0.85rem; color: var(--muted); text-decoration: none; }
