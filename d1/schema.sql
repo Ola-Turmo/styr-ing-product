@@ -638,3 +638,22 @@ CREATE TABLE IF NOT EXISTS card_transactions (
 );
 CREATE INDEX IF NOT EXISTS idx_corporate_cards_board ON corporate_cards(board_id,status);
 CREATE INDEX IF NOT EXISTS idx_card_transactions_board ON card_transactions(board_id,status,transaction_date);
+
+-- Fixed assets with separate financial and tax depreciation tracks.
+CREATE TABLE IF NOT EXISTS fixed_assets (
+  id TEXT PRIMARY KEY, board_id TEXT NOT NULL REFERENCES boards(id) ON DELETE CASCADE,
+  asset_number TEXT NOT NULL, name TEXT NOT NULL, category TEXT NOT NULL, acquisition_date TEXT NOT NULL,
+  acquisition_cost_minor INTEGER NOT NULL DEFAULT 0, residual_value_minor INTEGER NOT NULL DEFAULT 0, currency TEXT NOT NULL DEFAULT 'NOK',
+  financial_method TEXT NOT NULL DEFAULT 'linear' CHECK(financial_method IN ('linear','declining_balance','none')),
+  useful_life_months INTEGER, tax_group TEXT, tax_rate_percent REAL, status TEXT NOT NULL DEFAULT 'active' CHECK(status IN ('active','disposed','written_off')),
+  created_at TEXT NOT NULL DEFAULT (datetime('now')), UNIQUE(board_id,asset_number)
+);
+CREATE TABLE IF NOT EXISTS depreciation_entries (
+  id TEXT PRIMARY KEY, board_id TEXT NOT NULL REFERENCES boards(id) ON DELETE CASCADE, asset_id TEXT NOT NULL REFERENCES fixed_assets(id) ON DELETE CASCADE,
+  period TEXT NOT NULL, ledger_type TEXT NOT NULL CHECK(ledger_type IN ('financial','tax')), amount_minor INTEGER NOT NULL DEFAULT 0,
+  accumulated_minor INTEGER NOT NULL DEFAULT 0, book_value_minor INTEGER NOT NULL DEFAULT 0,
+  status TEXT NOT NULL DEFAULT 'calculated' CHECK(status IN ('calculated','review','approved','posted')),
+  approved_by TEXT, approved_at TEXT, created_at TEXT NOT NULL DEFAULT (datetime('now')), UNIQUE(asset_id,period,ledger_type)
+);
+CREATE INDEX IF NOT EXISTS idx_fixed_assets_board ON fixed_assets(board_id,status,asset_number);
+CREATE INDEX IF NOT EXISTS idx_depreciation_entries_board ON depreciation_entries(board_id,period,status);

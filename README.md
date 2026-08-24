@@ -55,6 +55,8 @@ The public preview is safe to explore with fictional data. The deployed backend 
 - `GET /api/finance?boardId=...&view=summary|accounts|periods|vouchers` — tenant-scoped accounting workspace data
 - `GET /api/finance?boardId=...&view=saf-t&from=YYYY-MM&to=YYYY-MM` — SAF‑T Financial 1.3 XML export contract
 - `POST /api/finance` (API key) — balanced voucher posting or period locking (`action: create_voucher|lock_period`)
+- `GET /api/assets?boardId=...&view=summary|assets|depreciation` — tenant-scoped fixed-asset register with separate financial and tax depreciation tracks
+- `POST /api/assets` (API key) — approve depreciation entries; ledger posting remains separately controlled
 - `GET /api/treasury?boardId=...&view=summary|payroll|submissions|liquidity|collections` — tenant-scoped payroll, statutory-submission preparation, liquidity and collections data
 - `POST /api/treasury` (API key) — approve payroll/submission preparation, prepare collection reminders, or create liquidity snapshots; external senders remain unconfigured
 - `GET /api/cards?boardId=...&view=summary|cards|transactions` — tenant-scoped corporate-card, receipt and expense control data

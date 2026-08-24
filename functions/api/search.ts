@@ -36,6 +36,7 @@ const specs: SearchSpec[] = [
   { table: 'saas_subscriptions', type: 'SaaS', title: 'name', snippet: "coalesce(vendor,'') || ' · Fornyes: ' || coalesce(renewal_date,'') || ' · Utnyttelse: ' || coalesce(utilization_percent,'') || '%'", source: 'SaaS-forbruk' },
   { table: 'access_reviews', type: 'Tilgang', title: "system_name || ' · ' || access_level", snippet: "coalesce(decision,'') || ' · ' || coalesce(reason,'')", source: 'Tilgangsrevisjon' },
   { table: 'finance_records', type: 'Økonomi', title: "reference || ' · ' || coalesce(counterparty,'')", snippet: "coalesce(record_type,'') || ' · ' || coalesce(status,'') || ' · ' || coalesce(currency,'NOK')", source: 'Økonomi' },
+  { table: 'fixed_assets', type: 'Anleggsmiddel', title: "asset_number || ' · ' || name", snippet: "coalesce(category,'') || ' · ' || coalesce(status,'') || ' · Skattegruppe ' || coalesce(tax_group,'')", source: 'Anleggsregister' },
   { table: 'payroll_runs', type: 'Lønnskjøring', title: "period || ' · Lønn'", snippet: "coalesce(status,'') || ' · Brutto: ' || coalesce(gross_minor,'')", source: 'Lønn' },
   { table: 'compliance_submissions', type: 'Innsending', title: "submission_type || ' · ' || period", snippet: "coalesce(status,'') || ' · ' || coalesce(notes,'')", source: 'Innsendinger' },
   { table: 'liquidity_snapshots', type: 'Likviditet', title: "as_of_date || ' · Likviditetsbilde'", snippet: "coalesce(status,'') || ' · Runway: ' || coalesce(runway_months,'') || ' måneder'", source: 'Likviditet' },

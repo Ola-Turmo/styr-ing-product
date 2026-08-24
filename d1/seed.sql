@@ -161,3 +161,11 @@ INSERT OR IGNORE INTO corporate_cards (id,board_id,card_name,last_four,holder_id
 INSERT OR IGNORE INTO card_transactions (id,board_id,card_id,transaction_date,merchant,amount_minor,currency,category,status,receipt_ref) VALUES
 ('cardtx-1','board-1','card-1','2026-08-23','Nordic kontorrekvisita',125000,'NOK','Kontor','needs_receipt',NULL),
 ('cardtx-2','board-1','card-1','2026-08-21','Cloud hosting demo',89000,'NOK','Programvare','ready_for_review','receipt-demo-2');
+INSERT OR IGNORE INTO fixed_assets (id,board_id,asset_number,name,category,acquisition_date,acquisition_cost_minor,residual_value_minor,currency,financial_method,useful_life_months,tax_group,tax_rate_percent,status) VALUES
+('fixed-1','board-1','AM-2026-001','Toyota Proace Electric','Kjøretøy','2026-01-01',62000000,5000000,'NOK','linear',60,'d',20,'active'),
+('fixed-2','board-1','AM-2026-002','Kontorinnredning','Inventar','2026-03-01',2400000,0,'NOK','linear',60,'d',20,'active');
+INSERT OR IGNORE INTO depreciation_entries (id,board_id,asset_id,period,ledger_type,amount_minor,accumulated_minor,book_value_minor,status) VALUES
+('dep-1','board-1','fixed-1','2026-08','financial',950000,7600000,54400000,'review'),
+('dep-2','board-1','fixed-1','2026-08','tax',1033333,8266664,53733336,'review'),
+('dep-3','board-1','fixed-2','2026-08','financial',40000,240000,2160000,'calculated'),
+('dep-4','board-1','fixed-2','2026-08','tax',40000,240000,2160000,'calculated');
