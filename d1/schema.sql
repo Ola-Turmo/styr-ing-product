@@ -336,7 +336,7 @@ CREATE TABLE IF NOT EXISTS mandates (
 );
 CREATE TABLE IF NOT EXISTS equity_holders (
   id TEXT PRIMARY KEY, board_id TEXT NOT NULL REFERENCES boards(id) ON DELETE CASCADE,
-  holder_name TEXT NOT NULL, holder_type TEXT NOT NULL DEFAULT 'person' CHECK(holder_type IN ('person','company','option_pool')), shares INTEGER NOT NULL DEFAULT 0, share_class TEXT NOT NULL DEFAULT 'A', ownership_percent REAL NOT NULL DEFAULT 0, vesting_status TEXT, updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+  holder_name TEXT NOT NULL, holder_type TEXT NOT NULL DEFAULT 'person' CHECK(holder_type IN ('person','company','option_pool')), shares INTEGER NOT NULL DEFAULT 0, share_class TEXT NOT NULL DEFAULT 'A', ownership_percent REAL NOT NULL DEFAULT 0, vesting_status TEXT, created_at TEXT NOT NULL DEFAULT (datetime('now')), updated_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 CREATE INDEX IF NOT EXISTS idx_contract_reviews_board ON contract_reviews(board_id,status,due_date);
 CREATE INDEX IF NOT EXISTS idx_mandates_board ON mandates(board_id,status,valid_until);
