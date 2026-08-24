@@ -65,8 +65,8 @@ const statusLabels = { draft:'Kladd', scheduled:'Planlagt', in_progress:'Pågår
     <h1>Protokoll</h1>
     <div class="top-actions" aria-label="Ikke-aktive demokontroller">
       {!isApproved && <span class="btn-primary demo-control">Godkjenning · demo</span>}
+      <button class="btn-outline" id="export-minutes" type="button">Tekstutdrag ↗</button>
       <span class="btn-outline demo-control">PDF · demo</span>
-      <span class="btn-outline demo-control">Word · demo</span>
     </div>
   </div>
 
@@ -113,6 +113,8 @@ const statusLabels = { draft:'Kladd', scheduled:'Planlagt', in_progress:'Pågår
             <strong>{item.title}</strong>
             <span class="sec-type">{item.typeLabel}</span>
           </div>
+
+          <button class="minute-review" type="button" data-review-minute={item.number} aria-pressed="false">Marker gjennomgått</button>
 
           {item.status === 'completed' ? (
             <div class="section-body">
@@ -174,6 +176,16 @@ const statusLabels = { draft:'Kladd', scheduled:'Planlagt', in_progress:'Pågår
 </div>
 </Layout>
 
+<script>
+  const key = 'styring-demo-reviewed-minutes';
+  const reviewed = new Set(JSON.parse(localStorage.getItem(key) || '[]'));
+  const buttons = [...document.querySelectorAll('[data-review-minute]')];
+  const sync = () => buttons.forEach((button) => { const id = button.getAttribute('data-review-minute') || ''; const active = reviewed.has(id); button.setAttribute('aria-pressed', String(active)); button.textContent = active ? 'Gjennomgått ✓' : 'Marker gjennomgått'; button.classList.toggle('is-reviewed', active); });
+  buttons.forEach((button) => button.addEventListener('click', () => { const id = button.getAttribute('data-review-minute'); if (!id) return; reviewed.has(id) ? reviewed.delete(id) : reviewed.add(id); localStorage.setItem(key, JSON.stringify([...reviewed])); sync(); }));
+  document.getElementById('export-minutes')?.addEventListener('click', () => { const lines = [...document.querySelectorAll('.minute-section')].map((section) => section.innerText.trim()).join('\n\n'); const blob = new Blob([`Styr.ing — protokollutdrag (demo)\n${lines}`], {type:'text/plain;charset=utf-8'}); const link = document.createElement('a'); link.href = URL.createObjectURL(blob); link.download = 'styring-demo-protokoll.txt'; link.click(); URL.revokeObjectURL(link.href); });
+  sync();
+</script>
+
 <style>
 .minutes-page { max-width: 780px; margin: 2rem auto; padding: 0 20px; }
 .back-link { font-family: system-ui, sans-serif; font-size: 0.85rem; color: var(--muted); text-decoration: none; }
@@ -183,6 +195,8 @@ const statusLabels = { draft:'Kladd', scheduled:'Planlagt', in_progress:'Pågår
 .top-actions { display: flex; gap: 8px; }
 .btn-primary { background: var(--accent); color: white; border: none; padding: 8px 18px; border-radius: 8px; font-family: system-ui, sans-serif; font-size: 0.85rem; font-weight: 600; cursor: pointer; }
 .btn-outline { background: transparent; border: 1.5px solid rgba(16,36,31,0.2); color: var(--ink); padding: 8px 18px; border-radius: 8px; font-family: system-ui, sans-serif; font-size: 0.85rem; cursor: pointer; }
+.minute-review { float:right; margin-top:-2px; border:1px solid rgba(16,36,31,0.14); background:#fff; color:var(--ink); border-radius:8px; padding:5px 9px; font:600 0.68rem system-ui,sans-serif; cursor:pointer; }
+.minute-review.is-reviewed { background:rgba(31,111,91,0.1); color:var(--accent); border-color:rgba(31,111,91,0.25); }
 .demo-control { display: inline-block; opacity: 0.72; cursor: default; }
 
 .meta-bar { display: flex; gap: 8px; align-items: center; font-family: system-ui, sans-serif; font-size: 0.85rem; color: var(--muted); margin-bottom: 1.5rem; }
