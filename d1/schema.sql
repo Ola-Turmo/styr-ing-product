@@ -446,3 +446,46 @@ CREATE INDEX IF NOT EXISTS idx_asset_assignments_board ON asset_assignments(boar
 CREATE INDEX IF NOT EXISTS idx_saas_board ON saas_subscriptions(board_id, status, renewal_date);
 CREATE INDEX IF NOT EXISTS idx_access_reviews_board ON access_reviews(board_id, decision);
 CREATE INDEX IF NOT EXISTS idx_lifecycle_tasks_board ON it_lifecycle_tasks(board_id, status);
+
+-- CRM, CPQ, sales rooms, subscriptions and customer service workflows.
+CREATE TABLE IF NOT EXISTS quotes (
+  id TEXT PRIMARY KEY, board_id TEXT NOT NULL REFERENCES boards(id) ON DELETE CASCADE,
+  account_id TEXT REFERENCES crm_accounts(id) ON DELETE SET NULL, quote_number INTEGER NOT NULL,
+  title TEXT NOT NULL, status TEXT NOT NULL DEFAULT 'draft' CHECK(status IN ('draft','pending_approval','approved','sent','accepted','rejected','expired')),
+  currency TEXT NOT NULL DEFAULT 'NOK', subtotal_minor INTEGER NOT NULL DEFAULT 0, discount_minor INTEGER NOT NULL DEFAULT 0,
+  total_minor INTEGER NOT NULL DEFAULT 0, valid_until TEXT, owner_id TEXT REFERENCES people(id) ON DELETE SET NULL,
+  approval_required INTEGER NOT NULL DEFAULT 1, approved_by TEXT, approved_at TEXT, sent_at TEXT, accepted_at TEXT,
+  created_at TEXT NOT NULL DEFAULT (datetime('now')), updated_at TEXT
+);
+CREATE TABLE IF NOT EXISTS quote_lines (
+  id TEXT PRIMARY KEY, quote_id TEXT NOT NULL REFERENCES quotes(id) ON DELETE CASCADE,
+  description TEXT NOT NULL, quantity INTEGER NOT NULL DEFAULT 1, unit_minor INTEGER NOT NULL DEFAULT 0, total_minor INTEGER NOT NULL DEFAULT 0,
+  revenue_type TEXT NOT NULL DEFAULT 'subscription' CHECK(revenue_type IN ('subscription','one_time','service'))
+);
+CREATE TABLE IF NOT EXISTS sales_rooms (
+  id TEXT PRIMARY KEY, board_id TEXT NOT NULL REFERENCES boards(id) ON DELETE CASCADE,
+  account_id TEXT REFERENCES crm_accounts(id) ON DELETE SET NULL, quote_id TEXT REFERENCES quotes(id) ON DELETE SET NULL,
+  name TEXT NOT NULL, status TEXT NOT NULL DEFAULT 'draft' CHECK(status IN ('draft','active','won','lost','archived')),
+  mutual_action_plan TEXT NOT NULL DEFAULT '[]', buyer_contact TEXT, expires_at TEXT, created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+CREATE TABLE IF NOT EXISTS customer_subscriptions (
+  id TEXT PRIMARY KEY, board_id TEXT NOT NULL REFERENCES boards(id) ON DELETE CASCADE,
+  account_id TEXT NOT NULL REFERENCES crm_accounts(id) ON DELETE CASCADE, quote_id TEXT REFERENCES quotes(id) ON DELETE SET NULL,
+  plan_name TEXT NOT NULL, status TEXT NOT NULL DEFAULT 'trial' CHECK(status IN ('trial','active','past_due','paused','cancelled')),
+  recurring_minor INTEGER NOT NULL DEFAULT 0, currency TEXT NOT NULL DEFAULT 'NOK', interval TEXT NOT NULL DEFAULT 'month',
+  start_date TEXT, renewal_date TEXT, cancelled_at TEXT, created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+CREATE TABLE IF NOT EXISTS customer_cases (
+  id TEXT PRIMARY KEY, board_id TEXT NOT NULL REFERENCES boards(id) ON DELETE CASCADE,
+  account_id TEXT REFERENCES crm_accounts(id) ON DELETE SET NULL, case_number INTEGER NOT NULL,
+  title TEXT NOT NULL, description TEXT, channel TEXT NOT NULL DEFAULT 'portal' CHECK(channel IN ('portal','email','phone','internal')),
+  priority TEXT NOT NULL DEFAULT 'medium' CHECK(priority IN ('critical','high','medium','low')),
+  status TEXT NOT NULL DEFAULT 'open' CHECK(status IN ('open','in_progress','waiting_customer','resolved','closed')),
+  assignee_id TEXT REFERENCES people(id) ON DELETE SET NULL, first_response_due TEXT, resolution_due TEXT, first_responded_at TEXT, resolved_at TEXT,
+  created_at TEXT NOT NULL DEFAULT (datetime('now')), updated_at TEXT
+);
+CREATE INDEX IF NOT EXISTS idx_quotes_board ON quotes(board_id, status, created_at);
+CREATE INDEX IF NOT EXISTS idx_quote_lines_quote ON quote_lines(quote_id);
+CREATE INDEX IF NOT EXISTS idx_sales_rooms_board ON sales_rooms(board_id, status);
+CREATE INDEX IF NOT EXISTS idx_customer_subscriptions_board ON customer_subscriptions(board_id, status, renewal_date);
+CREATE INDEX IF NOT EXISTS idx_customer_cases_board ON customer_cases(board_id, status, priority);

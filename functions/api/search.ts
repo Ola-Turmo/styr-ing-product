@@ -38,6 +38,10 @@ const specs: SearchSpec[] = [
   { table: 'finance_records', type: 'Økonomi', title: "reference || ' · ' || coalesce(counterparty,'')", snippet: "coalesce(record_type,'') || ' · ' || coalesce(status,'') || ' · ' || coalesce(currency,'NOK')", source: 'Økonomi' },
   { table: 'crm_accounts', type: 'Kunde', title: 'company_name', snippet: "coalesce(stage,'') || ' · Neste steg: ' || coalesce(next_action,'')", source: 'Kundeoppfølging' },
   { table: 'contracts', type: 'Avtale', title: 'title', snippet: "coalesce(counterparty,'') || ' · ' || coalesce(status,'') || ' · Fornyelse: ' || coalesce(renewal_notice_date,'')", source: 'Avtaler' },
+  { table: 'quotes', type: 'Tilbud', title: 'title', snippet: "coalesce(status,'') || ' · ' || coalesce(currency,'NOK') || ' · ' || coalesce(total_minor,'')", source: 'Tilbud' },
+  { table: 'sales_rooms', type: 'Salgsrom', title: 'name', snippet: "coalesce(status,'') || ' · ' || coalesce(buyer_contact,'')", source: 'Salgsrom' },
+  { table: 'customer_subscriptions', type: 'Abonnement', title: 'plan_name', snippet: "coalesce(status,'') || ' · Fornyelse: ' || coalesce(renewal_date,'')", source: 'Abonnement' },
+  { table: 'customer_cases', type: 'Kundesak', title: 'title', snippet: "coalesce(priority,'') || ' · ' || coalesce(status,'')", source: 'Kundeservice' },
   { table: 'sustainability_items', type: 'HMS/ESG', title: 'title', snippet: "coalesce(item_type,'') || ' · ' || coalesce(status,'') || ' · ' || coalesce(severity,'')", source: 'HMS og ESG' },
 ];
 

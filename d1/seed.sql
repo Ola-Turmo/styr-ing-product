@@ -94,3 +94,15 @@ INSERT OR IGNORE INTO it_lifecycle_tasks (id,board_id,offboarding_case_id,task_t
 ('life-1','board-1','offboard-1','access','Foreslå tilgangsrevisjon for Demo IT-sjef','proposed',1,'2026-12-31'),
 ('life-2','board-1','offboard-1','asset','Foreslå retur av tildelte eiendeler','proposed',1,'2026-12-31'),
 ('life-3','board-1','offboard-1','payroll','Foreslå lønns- og feriepengesjekk','proposed',1,'2026-12-31');
+
+INSERT OR IGNORE INTO quotes (id,board_id,account_id,quote_number,title,status,currency,subtotal_minor,discount_minor,total_minor,valid_until,owner_id,approval_required) VALUES
+('quote-1','board-1','crm-1',2001,'Styr.ing kontrollplattform — pilot','pending_approval','NOK',35000000,0,35000000,'2026-09-30','person-2',1);
+INSERT OR IGNORE INTO quote_lines (id,quote_id,description,quantity,unit_minor,total_minor,revenue_type) VALUES
+('quote-line-1','quote-1','SaaS-plattform · 12 måneder',1,24000000,24000000,'subscription'),
+('quote-line-2','quote-1','Onboarding og kontrollkart',1,11000000,11000000,'service');
+INSERT OR IGNORE INTO sales_rooms (id,board_id,account_id,quote_id,name,status,mutual_action_plan,buyer_contact,expires_at) VALUES
+('room-1','board-1','crm-1','quote-1','Nordic Demo AS · pilotrom','active','[{"step":"Sikkerhetskrav","owner":"Kunde","status":"open"},{"step":"Godkjenn tilbud","owner":"Kunde","status":"waiting"}]','kontakt@example.invalid','2026-09-30');
+INSERT OR IGNORE INTO customer_subscriptions (id,board_id,account_id,quote_id,plan_name,status,recurring_minor,currency,interval,start_date,renewal_date) VALUES
+('sub-1','board-1','crm-1','quote-1','Pilot · Styr.ing','trial',2400000,'NOK','month','2026-09-01','2026-10-01');
+INSERT OR IGNORE INTO customer_cases (id,board_id,account_id,case_number,title,description,channel,priority,status,assignee_id,first_response_due,resolution_due) VALUES
+('case-1','board-1','crm-1',3001,'Avklare sikkerhetskrav','Kunden trenger oversikt over tenant-isolasjon og databehandleravtale.','portal','high','open','person-2','2026-08-25 12:00','2026-08-29 17:00');

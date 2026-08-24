@@ -59,6 +59,8 @@ The public preview is safe to explore with fictional data. The deployed backend 
 - `POST /api/hcm` (API key) — controlled candidate, handbook, training and offboarding actions; sensitive actions remain approval-gated
 - `GET /api/it?boardId=...&view=summary|assets|tickets|saas|access|lifecycle` — tenant-scoped IT operations data
 - `POST /api/it` (API key) — prepare offboarding IT tasks, review access and approve lifecycle proposals; no automatic revocation
+- `GET /api/commercial?boardId=...&view=summary|pipeline|quotes|rooms|subscriptions|cases` — tenant-scoped CRM, CPQ, sales-room, recurring-revenue and customer-service data
+- `POST /api/commercial` (API key) — approve/send quote records and create/resolve customer cases; external delivery, e-signing and payment remain unconfigured
 
 Initialize or update the remote database with `wrangler d1 execute styr-ing-db --remote --file=d1/schema.sql`, then seed the illustrative board with `wrangler d1 execute styr-ing-db --remote --file=d1/seed.sql`.
 
