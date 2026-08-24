@@ -10,6 +10,7 @@ const checks = [
   ['HCM goals', '/api/hcm?boardId=board-1&view=goals', 200],
   ['board governance summary', '/api/board_governance?boardId=board-1&view=summary', 200],
   ['audit trail', '/api/audit?boardId=board-1', 200], ['SAF-T export', '/api/finance?boardId=board-1&view=saf-t', 200],
+  ['accounting periods', '/api/finance?boardId=board-1&view=periods', 200], ['chart of accounts', '/api/finance?boardId=board-1&view=accounts', 200],
   ['private board guard', '/api/events?boardId=board-2&view=summary', 403],
 ];
 const failures = [];
