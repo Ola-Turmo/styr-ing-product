@@ -28,9 +28,11 @@ const pending = controls.filter(c => c.status === 'pending').length;
       </div>
     </div>
 
-    <div style="display: grid; gap: 16px;">
-      {controls.map(control => (
-        <div class="control-card">
+    <div class="control-toolbar" role="toolbar" aria-label="Filtrer kontroller"><span>Vis</span><button class="control-filter active" data-filter="all">Alle</button><button class="control-filter" data-filter="approved">Godkjent</button><button class="control-filter" data-filter="pending">Til vurdering</button><button class="control-filter" data-filter="draft">Utkast</button><button id="export-controls" class="export-button" type="button">Eksporter demo-utdrag ↗</button></div>
+
+    <div id="control-list" style="display: grid; gap: 16px;">
+      {controls.map((control, index) => (
+        <div class="control-card" data-status={control.status} data-control-id={`control-${index}`}>
           <div style="display: flex; justify-content: space-between; align-items: start; gap: 16px; margin-bottom: 8px;">
             <h3 style="font-size: 1.05rem; margin: 0;">{control.title}</h3>
             <span class="control-badge badge-{control.status}">
@@ -40,11 +42,12 @@ const pending = controls.filter(c => c.status === 'pending').length;
           <p style="font-family: system-ui, sans-serif; font-size: 0.875rem; color: var(--muted); margin: 0 0 12px 0; line-height: 1.5;">
             {control.description || ''}
           </p>
-          <div style="display: flex; gap: 16px; font-family: system-ui, sans-serif; font-size: 0.8rem; color: var(--muted);">
+          <div style="display: flex; gap: 16px; flex-wrap: wrap; font-family: system-ui, sans-serif; font-size: 0.8rem; color: var(--muted);">
             <span>🔍 {control.frequency || 'Årlig'} gjennomgang</span>
             <span>📋 Ansvar: {control.responsible || 'Styreleder'}</span>
             {control.last_review && <span>📅 Sist vurdert: {control.last_review}</span>}
           </div>
+          <button class="review-button" type="button" aria-pressed="false">Marker gjennomgått</button>
         </div>
       ))}
     </div>
@@ -56,6 +59,18 @@ const pending = controls.filter(c => c.status === 'pending').length;
     </div>
   </div>
 </Layout>
+
+<script is:inline>
+  const reviewKey = 'styring-demo-reviewed-controls';
+  let reviewed = new Set();
+  try { reviewed = new Set(JSON.parse(localStorage.getItem(reviewKey) || '[]')); } catch { reviewed = new Set(); }
+  const paint = () => document.querySelectorAll('.control-card').forEach(card => { const id = card.dataset.controlId; const done = reviewed.has(id); card.classList.toggle('reviewed', done); const button = card.querySelector('.review-button'); if (button) { button.textContent = done ? '✓ Gjennomgått' : 'Marker gjennomgått'; button.setAttribute('aria-pressed', String(done)); } });
+  const save = () => { try { localStorage.setItem(reviewKey, JSON.stringify([...reviewed])); } catch {} };
+  document.querySelectorAll('.control-filter').forEach(filter => filter.addEventListener('click', () => { document.querySelectorAll('.control-filter').forEach(item => item.classList.remove('active')); filter.classList.add('active'); const value = filter.dataset.filter; document.querySelectorAll('.control-card').forEach(card => { card.hidden = value !== 'all' && card.dataset.status !== value; }); }));
+  document.querySelectorAll('.review-button').forEach(button => button.addEventListener('click', () => { const id = button.closest('.control-card')?.dataset.controlId; if (!id) return; reviewed.has(id) ? reviewed.delete(id) : reviewed.add(id); save(); paint(); }));
+  document.querySelector('#export-controls')?.addEventListener('click', () => { const rows = [...document.querySelectorAll('.control-card:not([hidden])')].map(card => card.querySelector('h3')?.textContent?.trim()).filter(Boolean); const blob = new Blob([`Styr.ing demo-utdrag\n\n${rows.join('\n')}`], { type: 'text/plain;charset=utf-8' }); const url = URL.createObjectURL(blob); const link = document.createElement('a'); link.href = url; link.download = 'styring-demo-kontroller.txt'; link.click(); URL.revokeObjectURL(url); });
+  paint();
+</script>
 
 <style>
   .stat-card {
@@ -76,6 +91,7 @@ const pending = controls.filter(c => c.status === 'pending').length;
     transition: box-shadow 0.2s;
   }
   .control-card:hover { box-shadow: 0 4px 16px rgba(16,36,31,0.06); }
+  .control-card.reviewed { border-color: rgba(31,111,91,.34); background: linear-gradient(90deg,#fff,#f5fbf4); }.control-card[hidden] { display:none; }.control-toolbar { display:flex; align-items:center; flex-wrap:wrap; gap:7px; margin:0 0 18px; color:var(--muted); font:600 .7rem/1 system-ui,sans-serif; }.control-filter,.export-button,.review-button { border:1px solid rgba(16,36,31,.12); border-radius:999px; background:#fff; color:var(--muted); cursor:pointer; font:600 .68rem/1 system-ui,sans-serif; }.control-filter { padding:7px 10px; }.control-filter.active,.control-filter:hover { color:#fff; background:var(--night); border-color:var(--night); }.export-button { margin-left:auto; padding:8px 11px; color:var(--accent); }.review-button { margin-top:14px; padding:7px 10px; color:var(--accent); }.review-button:hover,.review-button[aria-pressed="true"] { color:#fff; background:var(--accent); border-color:var(--accent); }
   
   .control-badge {
     font-family: system-ui, sans-serif; font-size: 0.75rem; font-weight: 600;
