@@ -1,4 +1,4 @@
-import { authorizeBoardRead, authorizeWrite, body, json, requireDb, type Env } from './_lib';
+import { authorizeBoardRead, authorizeBoardWrite, body, json, recordAudit, requireDb, type Env } from './_lib';
 
 const views = new Set(['summary', 'meetings', 'attendance', 'ballots']);
 
@@ -30,13 +30,14 @@ export const onRequestGet: PagesFunction<Env> = async ({ env, request }) => {
 };
 
 export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
-  if (!authorizeWrite(request, env)) return json({ error: 'write_not_authorized' }, { status: 401 });
   try {
     const value = await body(request);
     const boardId = String(value?.boardId || '').trim();
     const action = String(value?.action || '').trim();
     const db = requireDb(env);
     if (!boardId || !action) return json({ error: 'boardId_and_action_required' }, { status: 400 });
+    const authorization = await authorizeBoardWrite(request, env, boardId);
+    if (!authorization.allowed) return json({ error: 'write_not_authorized' }, { status: 401 });
     if (action === 'record_attendance') {
       const attendanceId = String(value?.attendanceId || '').trim();
       const status = String(value?.attendanceStatus || 'present');
@@ -44,6 +45,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
       if (!['invited', 'present', 'absent', 'excused'].includes(status)) return json({ error: 'invalid_attendance_status' }, { status: 400 });
       const result = await db.prepare("UPDATE meeting_attendance SET attendance_status=?, conflict_flag=?, conflict_note=?, recorded_at=datetime('now') WHERE id=? AND board_id=?").bind(status, value?.conflictFlag ? 1 : 0, value?.conflictNote || null, attendanceId, boardId).run();
       if (!result.meta?.changes) return json({ error: 'attendance_not_found' }, { status: 404 });
+      await recordAudit(db, { boardId, action: 'meeting_attendance_recorded', entityType: 'meeting_attendance', entityId: attendanceId, userId: authorization.userId || undefined, details: { status, conflictFlag: Boolean(value?.conflictFlag) } });
       return json({ ok: true, action, attendanceId, status, requiresHumanReview: Boolean(value?.conflictFlag) });
     }
     if (action === 'cast_ballot') {
@@ -54,6 +56,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
       if (!['for', 'against', 'abstain', 'recused'].includes(vote)) return json({ error: 'invalid_vote' }, { status: 400 });
       const ballotId = String(value?.ballotId || `${resolutionId}-${memberId}`);
       await db.prepare("INSERT INTO resolution_ballots (id,board_id,resolution_id,member_id,vote,note) VALUES (?,?,?,?,?,?) ON CONFLICT(resolution_id,member_id) DO UPDATE SET vote=excluded.vote,note=excluded.note,cast_at=datetime('now')").bind(ballotId, boardId, resolutionId, memberId, vote, value?.note || null).run();
+      await recordAudit(db, { boardId, action: 'resolution_ballot_recorded', entityType: 'resolution_ballot', entityId: ballotId, userId: authorization.userId || undefined, details: { resolutionId, memberId, vote } });
       return json({ ok: true, action, ballotId, vote, signature: 'not_configured', requiresHumanReview: true });
     }
     return json({ error: 'unknown_action', allowed: ['record_attendance', 'cast_ballot'] }, { status: 400 });
