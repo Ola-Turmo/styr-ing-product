@@ -72,9 +72,11 @@ const typeLabels: Record<string, string> = {
       </div>
       <span class="progress-label">{progress}% gjennomført</span>
 
+      <div class="meeting-toolbar" role="toolbar" aria-label="Filtrer agenda"><span>Vis</span><button type="button" class="agenda-filter active" data-filter="all">Alle</button><button type="button" class="agenda-filter" data-filter="decision">Beslutninger</button><button type="button" class="agenda-filter" data-filter="pending">Åpne punkter</button><button type="button" id="reset-agenda" class="agenda-reset">Nullstill demo</button></div>
+
       <div class="agenda-list">
         {meeting.agenda_items.map(item => (
-          <div class={`agenda-item agenda-${item.status}`}>
+          <div class={`agenda-item agenda-${item.status}`} data-item-id={`agenda-${item.number}`} data-item-type={item.type} data-item-status={item.status}>
             <div class="agenda-number">{item.number}</div>
             <div class="agenda-content">
               <div class="agenda-title-row">
@@ -94,6 +96,7 @@ const typeLabels: Record<string, string> = {
             <span class={`agenda-status agenda-${item.status}`}>
               {item.status === 'completed' ? '✓' : item.status === 'in_progress' ? '◷' : '○'}
             </span>
+            <button type="button" class="agenda-review" aria-pressed="false">Marker gjennomgått</button>
           </div>
         ))}
       </div>
@@ -146,6 +149,18 @@ const typeLabels: Record<string, string> = {
 </div>
 </Layout>
 
+<script is:inline>
+  const agendaKey = 'styring-demo-reviewed-agenda';
+  let reviewedAgenda = new Set();
+  try { reviewedAgenda = new Set(JSON.parse(localStorage.getItem(agendaKey) || '[]')); } catch { reviewedAgenda = new Set(); }
+  const paintAgenda = () => document.querySelectorAll('.agenda-item').forEach(item => { const id = item.dataset.itemId; const done = reviewedAgenda.has(id); item.classList.toggle('reviewed', done); const button = item.querySelector('.agenda-review'); if (button) { button.textContent = done ? '✓ Gjennomgått' : 'Marker gjennomgått'; button.setAttribute('aria-pressed', String(done)); } });
+  const saveAgenda = () => { try { localStorage.setItem(agendaKey, JSON.stringify([...reviewedAgenda])); } catch {} };
+  document.querySelectorAll('.agenda-filter').forEach(filter => filter.addEventListener('click', () => { document.querySelectorAll('.agenda-filter').forEach(item => item.classList.remove('active')); filter.classList.add('active'); const value = filter.dataset.filter; document.querySelectorAll('.agenda-item').forEach(item => { const typeMatch = value === 'all' || value === item.dataset.itemType; const statusMatch = value !== 'pending' || item.dataset.itemStatus !== 'completed'; item.hidden = !(typeMatch && statusMatch); }); }));
+  document.querySelectorAll('.agenda-review').forEach(button => button.addEventListener('click', () => { const id = button.closest('.agenda-item')?.dataset.itemId; if (!id) return; reviewedAgenda.has(id) ? reviewedAgenda.delete(id) : reviewedAgenda.add(id); saveAgenda(); paintAgenda(); }));
+  document.querySelector('#reset-agenda')?.addEventListener('click', () => { reviewedAgenda.clear(); saveAgenda(); paintAgenda(); });
+  paintAgenda();
+</script>
+
 <style>
 .meeting-detail { max-width: 1100px; margin: 1.5rem auto; padding: 0 20px; }
 .breadcrumb { margin-bottom: 1.5rem; }
@@ -174,6 +189,7 @@ const typeLabels: Record<string, string> = {
 .progress-bar { height: 6px; background: #eee; border-radius: 3px; margin-bottom: 4px; }
 .progress-fill { height: 100%; background: var(--accent); border-radius: 3px; transition: width 0.3s; }
 .progress-label { font-family: system-ui, sans-serif; font-size: 0.7rem; color: var(--muted); display: block; margin-bottom: 16px; }
+.meeting-toolbar { display:flex; align-items:center; flex-wrap:wrap; gap:7px; margin-bottom:13px; color:var(--muted); font:600 .68rem/1 system-ui,sans-serif; }.agenda-filter,.agenda-reset,.agenda-review { border:1px solid rgba(16,36,31,.12); border-radius:999px; background:#fff; color:var(--muted); cursor:pointer; font:600 .66rem/1 system-ui,sans-serif; }.agenda-filter { padding:7px 10px; }.agenda-filter.active,.agenda-filter:hover { background:var(--night); border-color:var(--night); color:#fff; }.agenda-reset { margin-left:auto; padding:7px 10px; color:var(--accent); }.agenda-review { align-self:flex-start; padding:6px 9px; color:var(--accent); }.agenda-review:hover,.agenda-review[aria-pressed="true"] { background:var(--accent); border-color:var(--accent); color:#fff; }.agenda-item[hidden] { display:none; }.agenda-item.reviewed { border-color:rgba(31,111,91,.32); background:linear-gradient(90deg,#fff,#f4fbf5); }
 
 .agenda-list { display: flex; flex-direction: column; gap: 6px; }
 .agenda-item {
@@ -214,6 +230,13 @@ const typeLabels: Record<string, string> = {
 @media (max-width: 800px) {
   .meeting-grid { grid-template-columns: 1fr; }
   .meeting-header { flex-direction: column; }
+}
+@media (max-width: 560px) {
+  .agenda-item { flex-wrap:wrap; }
+  .agenda-content { min-width:calc(100% - 46px); }
+  .agenda-status { margin-left:42px; }
+  .agenda-review { margin-left:auto; }
+  .agenda-reset { margin-left:0; }
 }
 .demo-notice { text-align: center; padding: 1.5rem; margin-top: 2rem; background: rgba(31,111,91,0.06); border-radius: 12px; font-family: system-ui, sans-serif; font-size: 0.85rem; color: var(--muted); }
 </style>
