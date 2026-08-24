@@ -21,7 +21,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
   if (action === 'invite_user') {
     const boardId = String(value?.boardId || '').trim();
     const boardAuthorization = await authorizeBoardWrite(request, env, boardId);
-    if (!authorizeWrite(request, env) && !boardAuthorization.allowed) return json({ error: 'owner_or_editor_required' }, { status: 403 });
+    if (!authorizeWrite(request, env) && !boardAuthorization.allowed) return json({ error: 'owner_or_editor_required' }, { status: boardAuthorization.userId ? 403 : 401 });
     const email = String(value?.email || '').trim().toLowerCase();
     const name = String(value?.name || '').trim().slice(0, 160);
     if (!/^\S+@\S+\.\S+$/.test(email) || name.length < 2 || !boardId) return json({ error: 'valid_email_name_and_boardId_required' }, { status: 400 });
@@ -40,9 +40,14 @@ export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
     try {
       const db = requireDb(env); const invite = await db.prepare("SELECT id,board_id,email,name,role FROM invite_tokens WHERE token_hash=? AND used_at IS NULL AND expires_at>datetime('now')").bind(await sha256(token)).first<{ id:string; board_id:string; email:string; name:string; role:string }>();
       if (!invite) return json({ error: 'invite_invalid_or_expired' }, { status: 410 });
-      const existing = await db.prepare('SELECT id FROM users WHERE lower(email)=?').bind(invite.email).first<{ id:string }>(); const userId = existing?.id || `usr-${crypto.randomUUID()}`;
-      if (existing) await db.prepare('UPDATE users SET name=?,password_hash=? WHERE id=?').bind(invite.name, await hashPassword(password), userId).run(); else await db.prepare('INSERT INTO users (id,email,name,password_hash) VALUES (?,?,?,?)').bind(userId,invite.email,invite.name,await hashPassword(password)).run();
-      await db.prepare('INSERT OR REPLACE INTO user_boards (user_id,board_id,role) VALUES (?,?,?)').bind(userId,invite.board_id,invite.role).run(); await db.prepare("UPDATE invite_tokens SET used_at=datetime('now') WHERE id=?").bind(invite.id).run();
+      const existing = await db.prepare('SELECT id FROM users WHERE lower(email)=?').bind(invite.email).first<{ id:string }>();
+      if (existing) return json({ error: 'existing_account_must_sign_in' }, { status: 409 });
+      const userId = `usr-${crypto.randomUUID()}`; const passwordHash = await hashPassword(password);
+      await db.batch([
+        db.prepare('INSERT INTO users (id,email,name,password_hash) VALUES (?,?,?,?)').bind(userId,invite.email,invite.name,passwordHash),
+        db.prepare('INSERT INTO user_boards (user_id,board_id,role) VALUES (?,?,?)').bind(userId,invite.board_id,invite.role),
+        db.prepare("UPDATE invite_tokens SET used_at=datetime('now') WHERE id=? AND used_at IS NULL AND expires_at>datetime('now')").bind(invite.id),
+      ]);
       const session = await createSession(env,userId,request); return json({ authenticated:true, boardId:invite.board_id }, { headers:{ 'set-cookie': sessionCookie(session) } });
     } catch (error) { return json({ error: 'invite_activation_failed', detail: error instanceof Error ? error.message : 'unknown' }, { status: 503 }); }
   }
