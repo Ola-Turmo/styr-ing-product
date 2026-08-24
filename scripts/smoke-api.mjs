@@ -4,6 +4,7 @@ const checks = [
   ['auth session', '/api/auth', 200],
   ['legal status', '/api/legal?boardId=board-1', 200],
   ['billing status', '/api/billing?boardId=board-1', 200],
+  ['billing checkout guard', '/api/billing-checkout', 400],
   ['boards', '/api/boards', 200],
   ['event mesh summary', '/api/events?boardId=board-1&view=summary', 200],
   ['compliance summary', '/api/compliance?boardId=board-1&view=summary', 200],
@@ -31,6 +32,8 @@ for (const [label, path, payload] of [
 }
 const invalidLogin = await fetch(`${baseUrl}/api/auth`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ action: 'login', email: 'nobody@example.invalid', password: 'not-a-real-password' }) });
 if (invalidLogin.status !== 401) failures.push(`invalid login guard: expected 401, got ${invalidLogin.status}`);
+const webhookUnconfigured = await fetch(`${baseUrl}/api/billing-webhook`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: '{}' });
+if (![400, 503].includes(webhookUnconfigured.status)) failures.push(`billing webhook guard: expected 400 or 503, got ${webhookUnconfigured.status}`);
 if (failures.length) {
   console.error(`LIVE API SMOKE: FAIL (${failures.length})`);
   failures.forEach((failure) => console.error(`- ${failure}`));

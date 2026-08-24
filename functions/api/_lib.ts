@@ -1,4 +1,11 @@
-export interface Env { DB?: D1Database; API_WRITE_KEY?: string; }
+export interface Env {
+  DB?: D1Database;
+  API_WRITE_KEY?: string;
+  STRIPE_RESTRICTED_KEY?: string;
+  STRIPE_WEBHOOK_SECRET?: string;
+  STRIPE_PRICE_PAID?: string;
+  STRIPE_PRICE_ENTERPRISE?: string;
+}
 
 export interface SessionUser { userId: string; email: string; name: string; role: string; }
 
