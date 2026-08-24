@@ -23,12 +23,24 @@ const sigColors: Record<string,string> = {not_required:'#95a5a6',pending:'#e67e2
     <span class="count">{resolutions.length} vedtak</span>
   </div>
 
+  <div class="toolbar" aria-label="Filtrer vedtak">
+    <div class="filters" role="group" aria-label="Vedtakstype">
+      <button class="filter is-active" type="button" data-filter="all">Alle</button>
+      <button class="filter" type="button" data-filter="pending">Krever oppfølging</button>
+      <button class="filter" type="button" data-filter="signed">Signert</button>
+    </div>
+    <div class="toolbar-actions">
+      <button class="outline-button" type="button" id="export-resolutions">Eksporter demo-utdrag ↗</button>
+      <button class="outline-button" type="button" id="reset-resolutions">Nullstill demo</button>
+    </div>
+  </div>
+
   {resolutions.length === 0 ? (
     <p class="empty">Ingen vedtak registrert.</p>
   ) : (
     <div class="res-list">
       {resolutions.map(r => (
-        <div class="res-card">
+        <div class="res-card" data-resolution data-status={r.status} data-signature={r.signature_status} data-resolution-id={r.id}>
           <div class="res-number">{r.number}</div>
           <div class="res-body">
             <div class="res-header">
@@ -71,6 +83,10 @@ const sigColors: Record<string,string> = {not_required:'#95a5a6',pending:'#e67e2
                 </div>
               </div>
             )}
+            <div class="review-row">
+              <span class="review-note">Lokal gjennomgang av beslutningsgrunnlag</span>
+              <button class="review-button" type="button" data-review-resolution={r.id} aria-pressed="false">Marker gjennomgått</button>
+            </div>
           </div>
         </div>
       ))}
@@ -81,12 +97,68 @@ const sigColors: Record<string,string> = {not_required:'#95a5a6',pending:'#e67e2
 </div>
 </Layout>
 
+<script>
+  const key = 'styring-demo-reviewed-resolutions';
+  const cards = [...document.querySelectorAll('[data-resolution]')];
+  const reviewed = new Set(JSON.parse(localStorage.getItem(key) || '[]'));
+  const buttons = [...document.querySelectorAll('[data-review-resolution]')];
+  const sync = () => buttons.forEach((button) => {
+    const id = button.getAttribute('data-review-resolution');
+    const isReviewed = id ? reviewed.has(id) : false;
+    button.setAttribute('aria-pressed', String(isReviewed));
+    button.textContent = isReviewed ? 'Gjennomgått ✓' : 'Marker gjennomgått';
+    button.classList.toggle('is-reviewed', isReviewed);
+  });
+  buttons.forEach((button) => button.addEventListener('click', () => {
+    const id = button.getAttribute('data-review-resolution');
+    if (!id) return;
+    reviewed.has(id) ? reviewed.delete(id) : reviewed.add(id);
+    localStorage.setItem(key, JSON.stringify([...reviewed]));
+    sync();
+  }));
+  document.querySelectorAll('[data-filter]').forEach((filter) => filter.addEventListener('click', () => {
+    document.querySelectorAll('[data-filter]').forEach((item) => item.classList.toggle('is-active', item === filter));
+    const mode = filter.getAttribute('data-filter');
+    cards.forEach((card) => {
+      const status = card.getAttribute('data-status');
+      const signature = card.getAttribute('data-signature');
+      const show = mode === 'all' || (mode === 'pending' && ['proposed', 'pending'].includes(status) || ['pending', 'partial'].includes(signature)) || (mode === 'signed' && ['signed', 'complete'].includes(signature));
+      card.toggleAttribute('hidden', !show);
+    });
+  }));
+  document.getElementById('reset-resolutions')?.addEventListener('click', () => {
+    reviewed.clear();
+    localStorage.removeItem(key);
+    sync();
+  });
+  document.getElementById('export-resolutions')?.addEventListener('click', () => {
+    const lines = cards.map((card) => {
+      const id = card.getAttribute('data-resolution-id');
+      const title = card.querySelector('strong')?.textContent?.trim() || 'Uten tittel';
+      return `${reviewed.has(id || '') ? '[x]' : '[ ]'} ${title}`;
+    });
+    const blob = new Blob([`Styr.ing — vedtaksregister (demo)\n\n${lines.join('\n')}`], { type: 'text/plain;charset=utf-8' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = 'styring-demo-vedtak.txt';
+    link.click();
+    URL.revokeObjectURL(link.href);
+  });
+  sync();
+</script>
+
 <style>
 .container { max-width: 800px; margin: 1.5rem auto; padding: 0 20px; }
 .back-link { font-family: system-ui, sans-serif; font-size: 0.85rem; color: var(--muted); text-decoration: none; }
 .header { display: flex; justify-content: space-between; align-items: center; margin: 1rem 0 2rem; }
 .header h1 { font-size: 1.6rem; margin: 0; }
 .count { font-family: system-ui, sans-serif; font-size: 0.85rem; color: var(--muted); }
+.toolbar { display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap; margin:0 0 1rem; }
+.filters, .toolbar-actions { display:flex; gap:6px; flex-wrap:wrap; }
+.filter, .outline-button, .review-button { border:1px solid rgba(16,36,31,0.14); background:#fff; color:var(--ink); border-radius:9px; padding:7px 11px; font:600 0.74rem system-ui,sans-serif; cursor:pointer; }
+.filter.is-active { background:var(--ink); color:#fff; border-color:var(--ink); }
+.outline-button:hover, .filter:hover { border-color:var(--accent); }
+.res-card[hidden] { display:none; }
 .res-list { display: flex; flex-direction: column; gap: 12px; }
 .res-card { display: flex; gap: 14px; padding: 20px; background: white; border: 1px solid rgba(16,36,31,0.08); border-radius: 14px; }
 .res-card:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
@@ -116,7 +188,11 @@ const sigColors: Record<string,string> = {not_required:'#95a5a6',pending:'#e67e2
 .sig-pending { background: rgba(243,156,18,0.08); color: #8a7500; }
 .sig-declined { background: rgba(192,57,43,0.08); color: #c0392b; }
 .sig-date { opacity: 0.6; font-size: 0.7rem; }
+.review-row { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-top:12px; padding-top:10px; border-top:1px solid rgba(0,0,0,0.06); }
+.review-note { font:0.72rem system-ui,sans-serif; color:var(--muted); }
+.review-button.is-reviewed { background:rgba(31,111,91,0.1); color:var(--accent); border-color:rgba(31,111,91,0.25); }
 .empty { text-align: center; padding: 3rem; color: var(--muted); font-family: system-ui, sans-serif; }
 .demo-notice { text-align: center; padding: 1.5rem; margin-top: 2rem; background: rgba(31,111,91,0.06); border-radius: 12px; font-family: system-ui, sans-serif; font-size: 0.85rem; color: var(--muted); }
 .demo-notice a { color: var(--accent); font-weight: 600; }
+@media (max-width: 620px) { .res-card { flex-direction:column; } .res-header { flex-direction:column; } .review-row { align-items:flex-start; flex-direction:column; } }
 </style>
