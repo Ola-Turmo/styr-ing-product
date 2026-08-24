@@ -4,7 +4,6 @@ const checks = [
   ['auth session', '/api/auth', 200],
   ['legal status', '/api/legal?boardId=board-1', 200],
   ['billing status', '/api/billing?boardId=board-1', 200],
-  ['billing checkout guard', '/api/billing-checkout', 401],
   ['boards', '/api/boards', 200],
   ['event mesh summary', '/api/events?boardId=board-1&view=summary', 200],
   ['compliance summary', '/api/compliance?boardId=board-1&view=summary', 200],
@@ -26,6 +25,7 @@ for (const [label, path, payload] of [
   ['assistant write guard', '/api/assistant', {}],
   ['compliance write guard', '/api/compliance', { boardId: 'board-1', eventId: 'fixture-not-used', status: 'pending' }],
   ['controls write guard', '/api/controls', { boardId: 'board-1', controlId: 'fixture-not-used', status: 'green' }],
+  ['billing checkout guard', '/api/billing-checkout', { boardId: 'board-1', plan: 'paid' }],
 ]) {
   const response = await fetch(`${baseUrl}${path}`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(payload) });
   if (response.status !== 401) failures.push(`${label}: expected 401, got ${response.status}`);
