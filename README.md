@@ -59,6 +59,7 @@ The public preview is safe to explore with fictional data. The deployed backend 
 - `GET /api/assets?boardId=...&view=summary|assets|depreciation` — tenant-scoped fixed-asset register with separate financial and tax depreciation tracks
 - `POST /api/assets` (API key) — approve depreciation entries; ledger posting remains separately controlled
 - `GET /api/treasury?boardId=...&view=summary|payroll|submissions|liquidity|collections` — tenant-scoped payroll, statutory-submission preparation, liquidity and collections data
+- `GET /api/forecast?boardId=...` — transparent 12-month liquidity scenarios from the latest manual/approved snapshot; planning-only and human-reviewed
 - `POST /api/treasury` (API key) — approve payroll/submission preparation, prepare collection reminders, or create liquidity snapshots; external senders remain unconfigured
 - `GET|POST /api/payroll` — calculate and approve holiday-pay/OTP compliance checks from a payroll run; Altinn/NAV submission remains unconfigured
 - `GET /api/cards?boardId=...&view=summary|cards|transactions` — tenant-scoped corporate-card, receipt and expense control data
