@@ -1,4 +1,4 @@
-import { authorizeBoardRead, authorizeWrite, body, id, json, requireDb, type Env } from './_lib';
+import { authorizeBoardRead, authorizeBoardWrite, body, id, json, recordAudit, requireDb, type Env } from './_lib';
 
 const views = new Set(['summary', 'contracts', 'redlines', 'mandates', 'equity', 'grants']);
 
@@ -26,38 +26,44 @@ export const onRequestGet: PagesFunction<Env> = async ({ env, request }) => {
 };
 
 export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
-  if (!authorizeWrite(request, env)) return json({ error: 'write_not_authorized' }, { status: 401 });
   try {
     const value = await body(request); const boardId = String(value?.boardId || '').trim(); const action = String(value?.action || '').trim();
     if (!boardId || !action) return json({ error: 'boardId_and_action_required' }, { status: 400 });
+    const authorization = await authorizeBoardWrite(request, env, boardId);
+    if (!authorization.allowed) return json({ error: 'write_not_authorized' }, { status: 401 });
     const db = requireDb(env);
     if (action === 'review_contract') {
       const reviewId = String(value?.reviewId || '').trim(); if (!reviewId) return json({ error: 'reviewId_required' }, { status: 400 });
       const result = await db.prepare("UPDATE contract_reviews SET status='approved',decision=?,reviewed_at=datetime('now') WHERE id=? AND board_id=? AND status IN ('open','in_review')").bind(String(value?.decision || 'approved'), reviewId, boardId).run();
       if (!result.meta?.changes) return json({ error: 'review_not_open_or_found' }, { status: 409 });
+      await recordAudit(db, { boardId, action: 'contract_review_approved', entityType: 'contract_review', entityId: reviewId, userId: authorization.userId || undefined, details: { decision: String(value?.decision || 'approved') } });
       return json({ ok: true, action, reviewId, status: 'approved', requiresHumanApproval: false });
     }
     if (action === 'activate_mandate') {
       const mandateId = String(value?.mandateId || '').trim(); if (!mandateId) return json({ error: 'mandateId_required' }, { status: 400 });
       const result = await db.prepare("UPDATE mandates SET status='active' WHERE id=? AND board_id=? AND status='draft'").bind(mandateId, boardId).run();
       if (!result.meta?.changes) return json({ error: 'mandate_not_draft_or_found' }, { status: 409 });
+      await recordAudit(db, { boardId, action: 'mandate_activated', entityType: 'mandate', entityId: mandateId, userId: authorization.userId || undefined, details: { requiresEvidence: true } });
       return json({ ok: true, action, mandateId, status: 'active', requiresEvidence: true });
     }
     if (action === 'create_contract_review') {
       const contractId = String(value?.contractId || '').trim(); if (!contractId) return json({ error: 'contractId_required' }, { status: 400 });
       const reviewId = id('review'); await db.prepare("INSERT INTO contract_reviews (id,board_id,contract_id,review_type,status,owner_id,findings,due_date) VALUES (?,?,?,?,?,?,?,?)").bind(reviewId, boardId, contractId, String(value?.reviewType || 'risk'), 'open', value?.ownerId || null, '[]', value?.dueDate || null).run();
+      await recordAudit(db, { boardId, action: 'contract_review_created', entityType: 'contract_review', entityId: reviewId, userId: authorization.userId || undefined, details: { contractId } });
       return json({ ok: true, action, id: reviewId, status: 'open' }, { status: 201 });
     }
     if (action === 'accept_redline') {
       const redlineId = String(value?.redlineId || '').trim(); if (!redlineId) return json({ error: 'redlineId_required' }, { status: 400 });
       const result = await db.prepare("UPDATE contract_redlines SET status='accepted',reviewed_by=?,reviewed_at=datetime('now') WHERE id=? AND board_id=? AND status IN ('draft','review')").bind(value?.reviewedBy || 'api', redlineId, boardId).run();
       if (!result.meta?.changes) return json({ error: 'redline_not_open_or_found' }, { status: 409 });
+      await recordAudit(db, { boardId, action: 'contract_redline_accepted', entityType: 'contract_redline', entityId: redlineId, userId: authorization.userId || undefined, details: { requiresHumanApproval: false } });
       return json({ ok: true, action, redlineId, status: 'accepted', requiresHumanApproval: false });
     }
     if (action === 'approve_grant') {
       const grantId = String(value?.grantId || '').trim(); if (!grantId) return json({ error: 'grantId_required' }, { status: 400 });
       const result = await db.prepare("UPDATE equity_grants SET status='approved',tax_review_status='review',updated_at=datetime('now') WHERE id=? AND board_id=? AND status='draft'").bind(grantId, boardId).run();
       if (!result.meta?.changes) return json({ error: 'grant_not_draft_or_found' }, { status: 409 });
+      await recordAudit(db, { boardId, action: 'equity_grant_approved', entityType: 'equity_grant', entityId: grantId, userId: authorization.userId || undefined, details: { taxReview: 'required', externalFiling: 'not_configured' } });
       return json({ ok: true, action, grantId, status: 'approved', taxReview: 'required', externalFiling: 'not_configured' });
     }
     return json({ error: 'unknown_action', allowed: ['review_contract', 'activate_mandate', 'create_contract_review', 'accept_redline', 'approve_grant'] }, { status: 400 });
