@@ -52,7 +52,7 @@ export async function searchBoard(db: D1Database, boardId: string, query: string
   const needle = `%${query.trim().slice(0, 100)}%`;
   const rows = await Promise.all(specs.map(async (spec) => {
     const statement = db.prepare(
-      `SELECT id, ${spec.title} AS title, ${spec.snippet} AS snippet FROM ${spec.table} WHERE board_id = ? AND (${spec.title} LIKE ? OR ${spec.snippet} LIKE ?) ORDER BY created_at DESC LIMIT 8`,
+      `SELECT id, ${spec.title} AS title, ${spec.snippet} AS snippet FROM ${spec.table} WHERE board_id = ? AND (${spec.title} LIKE ? OR ${spec.snippet} LIKE ?) ORDER BY rowid DESC LIMIT 8`,
     ).bind(boardId, needle, needle);
     const result = await statement.all<Record<string, unknown>>();
     return result.results.map((row) => ({
