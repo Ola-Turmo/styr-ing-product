@@ -52,6 +52,9 @@ The public preview is safe to explore with fictional data. The deployed backend 
 - `POST /api/assistant` — protected, rules-based evidence draft with citations; always `requiresHumanApproval: true` and `executed: false`
 - `GET|POST|DELETE /api/reviews` — auditable review state (`boardId`, `entityType`, `entityId`)
 - `POST /api/events` — append-only event intake contract for future event mesh adapters
+- `GET /api/finance?boardId=...&view=summary|accounts|periods|vouchers` — tenant-scoped accounting workspace data
+- `GET /api/finance?boardId=...&view=saf-t&from=YYYY-MM&to=YYYY-MM` — SAF‑T Financial 1.3 XML export contract
+- `POST /api/finance` (API key) — balanced voucher posting or period locking (`action: create_voucher|lock_period`)
 
 Initialize or update the remote database with `wrangler d1 execute styr-ing-db --remote --file=d1/schema.sql`, then seed the illustrative board with `wrangler d1 execute styr-ing-db --remote --file=d1/seed.sql`.
 
