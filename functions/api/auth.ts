@@ -43,6 +43,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
     if (!user || !(await verifyPassword(password, user.password_hash))) return json({ error: 'invalid_credentials' }, { status: 401 });
     const token = await createSession(env, user.id, request);
     await db.prepare("UPDATE users SET last_login=datetime('now') WHERE id=?").bind(user.id).run();
-    return json({ authenticated: true, user: publicUser(user) }, { headers: { 'set-cookie': sessionCookie(token) } });
+    const boards = (await db.prepare('SELECT b.id,b.name,ub.role FROM user_boards ub JOIN boards b ON b.id=ub.board_id WHERE ub.user_id=? AND b.status=? ORDER BY b.name').bind(user.id, 'active').all()).results;
+    return json({ authenticated: true, user: publicUser(user), boards }, { headers: { 'set-cookie': sessionCookie(token) } });
   } catch (error) { return json({ error: 'authentication_unavailable', detail: error instanceof Error ? error.message : 'unknown' }, { status: 503 }); }
 };

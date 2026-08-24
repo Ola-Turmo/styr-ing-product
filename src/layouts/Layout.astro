@@ -185,7 +185,7 @@ const faqSchema = {
       <li><a href="/sustainability" class={activeNav === 'sustainability' ? 'active' : ''}>HMS og ESG</a></li>
       <li><a href="/field" class={activeNav === 'field' ? 'active' : ''}>Felt og prosjekt</a></li>
       <li><a href="/trust" class={activeNav === 'trust' ? 'active' : ''}>Tillit</a></li>
-      <li><a href="/login" class={activeNav === 'login' ? 'active' : ''}>Logg inn</a></li>
+      <li><a id="auth-link" href="/login" class={activeNav === 'login' ? 'active' : ''}>Logg inn</a></li>
       <li><a href="/workspace#ai" class="nav-cta">Åpne demoen <span aria-hidden="true">↗</span></a></li>
     </ul>
   </nav>
@@ -214,5 +214,16 @@ const faqSchema = {
     const open = nav?.classList.toggle('open') ?? false;
     toggle.setAttribute('aria-expanded', String(open));
   });
+  const authLink = document.querySelector('#auth-link');
+  fetch('/api/auth').then((response) => response.json()).then((data) => {
+    if (!authLink || !data.authenticated) return;
+    authLink.textContent = `${data.user?.name || 'Konto'} · Logg ut`;
+    authLink.href = '#logout';
+    authLink.addEventListener('click', async (event) => {
+      event.preventDefault();
+      await fetch('/api/auth', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ action: 'logout' }) });
+      window.location.href = '/';
+    });
+  }).catch(() => {});
 </script>
 </html>
