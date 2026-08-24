@@ -30,6 +30,19 @@ const sourceLabels: Record<string,string> = {meeting:'Møte',resolution:'Vedtak'
     </div>
   </div>
 
+  <div class="toolbar" aria-label="Filtrer aksjoner">
+    <div class="filters" role="group" aria-label="Aksjonsstatus">
+      <button class="filter is-active" type="button" data-filter="all">Alle</button>
+      <button class="filter" type="button" data-filter="open">Åpne</button>
+      <button class="filter" type="button" data-filter="blocked">Blokkert</button>
+      <button class="filter" type="button" data-filter="completed">Fullførte</button>
+    </div>
+    <div class="toolbar-actions">
+      <button class="outline-button" type="button" id="export-actions">Eksporter demo-utdrag ↗</button>
+      <button class="outline-button" type="button" id="reset-actions">Nullstill demo</button>
+    </div>
+  </div>
+
   {open.length > 0 && (
     <div class="section">
       <h2>Åpne aksjoner</h2>
@@ -37,7 +50,7 @@ const sourceLabels: Record<string,string> = {meeting:'Møte',resolution:'Vedtak'
         const items = open.filter(a => a.priority === pri);
         if (items.length === 0) return null;
         return items.map(a => (
-          <div class="action-card">
+          <div class="action-card" data-action data-action-status={a.status} data-action-id={a.id}>
             <div class="ac-priority" style={`background:${priorityColors[pri]}`}></div>
             <div class="ac-body">
               <div class="ac-header">
@@ -51,6 +64,7 @@ const sourceLabels: Record<string,string> = {meeting:'Møte',resolution:'Vedtak'
                 <span>📋 Kilde: {sourceLabels[a.source]}</span>
                 <span class="ac-priority-label" style={`color:${priorityColors[pri]}`}>{priorityLabels[pri]}</span>
               </div>
+              <div class="review-row"><span class="review-note">Lokal oppfølgingsstatus</span><button class="review-button" type="button" data-review-action={a.id} aria-pressed="false">Marker gjennomgått</button></div>
             </div>
           </div>
         ));
@@ -62,7 +76,7 @@ const sourceLabels: Record<string,string> = {meeting:'Møte',resolution:'Vedtak'
     <div class="section">
       <h2>Fullførte aksjoner</h2>
       {completed.map(a => (
-        <div class="action-card completed">
+        <div class="action-card completed" data-action data-action-status={a.status} data-action-id={a.id}>
           <div class="ac-priority" style="background:#27ae60"></div>
           <div class="ac-body">
             <div class="ac-header">
@@ -73,6 +87,7 @@ const sourceLabels: Record<string,string> = {meeting:'Møte',resolution:'Vedtak'
               <span>👤 {a.assigned_to_name}</span>
               <span>{a.completed_at || a.due_date}</span>
             </div>
+            <div class="review-row"><span class="review-note">Lokal oppfølgingsstatus</span><button class="review-button" type="button" data-review-action={a.id} aria-pressed="false">Marker gjennomgått</button></div>
           </div>
         </div>
       ))}
@@ -84,6 +99,48 @@ const sourceLabels: Record<string,string> = {meeting:'Møte',resolution:'Vedtak'
 </div>
 </Layout>
 
+<script>
+  const key = 'styring-demo-reviewed-actions';
+  const cards = [...document.querySelectorAll('[data-action]')];
+  const reviewed = new Set(JSON.parse(localStorage.getItem(key) || '[]'));
+  const buttons = [...document.querySelectorAll('[data-review-action]')];
+  const sync = () => buttons.forEach((button) => {
+    const id = button.getAttribute('data-review-action');
+    const active = id ? reviewed.has(id) : false;
+    button.setAttribute('aria-pressed', String(active));
+    button.textContent = active ? 'Gjennomgått ✓' : 'Marker gjennomgått';
+    button.classList.toggle('is-reviewed', active);
+  });
+  buttons.forEach((button) => button.addEventListener('click', () => {
+    const id = button.getAttribute('data-review-action');
+    if (!id) return;
+    reviewed.has(id) ? reviewed.delete(id) : reviewed.add(id);
+    localStorage.setItem(key, JSON.stringify([...reviewed]));
+    sync();
+  }));
+  document.querySelectorAll('[data-filter]').forEach((filter) => filter.addEventListener('click', () => {
+    document.querySelectorAll('[data-filter]').forEach((item) => item.classList.toggle('is-active', item === filter));
+    const mode = filter.getAttribute('data-filter');
+    cards.forEach((card) => {
+      const status = card.getAttribute('data-action-status');
+      const visible = mode === 'all' || (mode === 'open' && status !== 'completed') || status === mode;
+      card.toggleAttribute('hidden', !visible);
+    });
+  }));
+  document.getElementById('reset-actions')?.addEventListener('click', () => { reviewed.clear(); localStorage.removeItem(key); sync(); });
+  document.getElementById('export-actions')?.addEventListener('click', () => {
+    const lines = cards.map((card) => {
+      const id = card.getAttribute('data-action-id');
+      const title = card.querySelector('strong')?.textContent?.trim() || 'Uten tittel';
+      const status = card.getAttribute('data-action-status') || 'ukjent';
+      return `${reviewed.has(id || '') ? '[x]' : '[ ]'} ${title} — ${status}`;
+    });
+    const blob = new Blob([`Styr.ing — aksjonsoppfølging (demo)\n\n${lines.join('\n')}`], { type: 'text/plain;charset=utf-8' });
+    const link = document.createElement('a'); link.href = URL.createObjectURL(blob); link.download = 'styring-demo-aksjoner.txt'; link.click(); URL.revokeObjectURL(link.href);
+  });
+  sync();
+</script>
+
 <style>
 .container { max-width: 800px; margin: 1.5rem auto; padding: 0 20px; }
 .back-link { font-family: system-ui, sans-serif; font-size: 0.85rem; color: var(--muted); text-decoration: none; }
@@ -91,6 +148,12 @@ const sourceLabels: Record<string,string> = {meeting:'Møte',resolution:'Vedtak'
 .header { display: flex; justify-content: space-between; align-items: center; margin: 1rem 0 2rem; }
 .header h1 { font-size: 1.6rem; margin: 0; }
 .header-stats { display: flex; gap: 8px; }
+.toolbar { display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap; margin:0 0 1rem; }
+.filters, .toolbar-actions { display:flex; gap:6px; flex-wrap:wrap; }
+.filter, .outline-button, .review-button { border:1px solid rgba(16,36,31,0.14); background:#fff; color:var(--ink); border-radius:9px; padding:7px 11px; font:600 0.74rem system-ui,sans-serif; cursor:pointer; }
+.filter.is-active { background:var(--ink); color:#fff; border-color:var(--ink); }
+.filter:hover, .outline-button:hover { border-color:var(--accent); }
+.action-card[hidden] { display:none; }
 .stat-chip { font-family: system-ui, sans-serif; font-size: 0.78rem; font-weight: 700; padding: 4px 12px; border-radius: 100px; }
 .stat-chip.open { background: rgba(243,156,18,0.12); color: #8a7500; }
 .stat-chip.done { background: rgba(39,174,96,0.12); color: #27ae60; }
@@ -114,7 +177,11 @@ const sourceLabels: Record<string,string> = {meeting:'Møte',resolution:'Vedtak'
 .ac-desc { font-family: system-ui, sans-serif; font-size: 0.82rem; color: var(--muted); margin: 0 0 8px 0; line-height: 1.4; }
 .ac-meta { display: flex; gap: 14px; flex-wrap: wrap; font-family: system-ui, sans-serif; font-size: 0.75rem; color: var(--muted); }
 .ac-priority-label { font-weight: 700; }
+.review-row { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-top:12px; padding-top:10px; border-top:1px solid rgba(0,0,0,0.06); }
+.review-note { font:0.72rem system-ui,sans-serif; color:var(--muted); }
+.review-button.is-reviewed { background:rgba(31,111,91,0.1); color:var(--accent); border-color:rgba(31,111,91,0.25); }
 .empty { text-align: center; padding: 3rem; color: var(--muted); font-family: system-ui, sans-serif; }
 .demo-notice { text-align: center; padding: 1.5rem; margin-top: 2rem; background: rgba(31,111,91,0.06); border-radius: 12px; font-family: system-ui, sans-serif; font-size: 0.85rem; color: var(--muted); }
 .demo-notice a { color: var(--accent); font-weight: 600; }
+@media (max-width: 620px) { .header { align-items:flex-start; flex-direction:column; gap:10px; } .ac-header { flex-direction:column; } .review-row { align-items:flex-start; flex-direction:column; } }
 </style>
