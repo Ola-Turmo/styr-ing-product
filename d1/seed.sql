@@ -115,3 +115,23 @@ INSERT OR IGNORE INTO customer_subscriptions (id,board_id,account_id,quote_id,pl
 ('sub-1','board-1','crm-1','quote-1','Pilot · Styr.ing','trial',2400000,'NOK','month','2026-09-01','2026-10-01');
 INSERT OR IGNORE INTO customer_cases (id,board_id,account_id,case_number,title,description,channel,priority,status,assignee_id,first_response_due,resolution_due) VALUES
 ('case-1','board-1','crm-1',3001,'Avklare sikkerhetskrav','Kunden trenger oversikt over tenant-isolasjon og databehandleravtale.','portal','high','open','person-2','2026-08-25 12:00','2026-08-29 17:00');
+INSERT OR IGNORE INTO fleet_vehicles (id,board_id,registration,make_model,vehicle_type,status,odometer_km,next_inspection_date,insurance_renewal_date,owner_id) VALUES
+('vehicle-1','board-1','SV 12345','Toyota Proace Electric','van','active',48210,'2026-09-19','2026-11-01','person-3');
+INSERT OR IGNORE INTO trip_logs (id,board_id,vehicle_id,driver_id,trip_date,start_location,end_location,distance_km,trip_type,purpose,status,tax_basis) VALUES
+('trip-1','board-1','vehicle-1','person-3','2026-08-22','Oslo','Drammen',86.4,'business','Kundemøte Nordic Demo AS','classified','Kilometergodtgjørelse må kvalitetssikres');
+INSERT OR IGNORE INTO trip_logs (id,board_id,vehicle_id,driver_id,trip_date,start_location,end_location,distance_km,trip_type,purpose,status) VALUES
+('trip-2','board-1','vehicle-1','person-3','2026-08-23','Oslo','Hjemmeadresse',18.2,'unknown','Mangler klassifisering','draft');
+INSERT OR IGNORE INTO fleet_maintenance (id,board_id,vehicle_id,maintenance_type,title,due_date,status,vendor,cost_minor) VALUES
+('maint-1','board-1','vehicle-1','inspection','EU-kontroll','2026-09-19','scheduled','Demo Verksted',125000);
+INSERT OR IGNORE INTO facilities (id,board_id,name,address,property_type,status,owner_id) VALUES
+('facility-1','board-1','Pilotselskap kontor','Karl Johans gate 1, Oslo','office','active','person-3');
+INSERT OR IGNORE INTO facility_tasks (id,board_id,facility_id,task_type,title,due_date,status,assignee_id,evidence_ref) VALUES
+('facility-task-1','board-1','facility-1','fire_safety','Brannrunde — kontrollpunkt B-04','2026-09-25','open','person-3',NULL);
+INSERT OR IGNORE INTO projects (id,board_id,code,name,customer_account_id,status,billing_model,budget_minor,currency) VALUES
+('project-1','board-1','NORDIC-PILOT','Nordic Demo AS · kontrollkart','crm-1','active','hourly',18000000,'NOK');
+INSERT OR IGNORE INTO project_rates (id,board_id,project_id,role,hourly_minor,currency,valid_from) VALUES
+('rate-1','board-1','project-1','Prosjektleder',145000,'NOK','2026-08-01'),
+('rate-2','board-1','project-1','Konsulent',125000,'NOK','2026-08-01');
+INSERT OR IGNORE INTO time_entries (id,board_id,project_id,person_id,work_date,minutes,description,billable,status,rate_minor) VALUES
+('time-1','board-1','project-1','person-1','2026-08-22',150,'Workshop kontrollkart',1,'submitted',145000),
+('time-2','board-1','project-1','person-2','2026-08-23',90,'Økonomisk kontrollspor',1,'approved',145000);

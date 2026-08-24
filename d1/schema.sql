@@ -509,3 +509,49 @@ CREATE INDEX IF NOT EXISTS idx_quote_lines_quote ON quote_lines(quote_id);
 CREATE INDEX IF NOT EXISTS idx_sales_rooms_board ON sales_rooms(board_id, status);
 CREATE INDEX IF NOT EXISTS idx_customer_subscriptions_board ON customer_subscriptions(board_id, status, renewal_date);
 CREATE INDEX IF NOT EXISTS idx_customer_cases_board ON customer_cases(board_id, status, priority);
+
+-- Field operations, fleet, facilities and project accounting workflows.
+CREATE TABLE IF NOT EXISTS fleet_vehicles (
+  id TEXT PRIMARY KEY, board_id TEXT NOT NULL REFERENCES boards(id) ON DELETE CASCADE,
+  registration TEXT NOT NULL, make_model TEXT NOT NULL, vehicle_type TEXT NOT NULL DEFAULT 'company_car',
+  status TEXT NOT NULL DEFAULT 'active' CHECK(status IN ('active','repair','retired')), odometer_km INTEGER NOT NULL DEFAULT 0,
+  next_inspection_date TEXT, insurance_renewal_date TEXT, owner_id TEXT REFERENCES people(id) ON DELETE SET NULL, created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+CREATE TABLE IF NOT EXISTS trip_logs (
+  id TEXT PRIMARY KEY, board_id TEXT NOT NULL REFERENCES boards(id) ON DELETE CASCADE,
+  vehicle_id TEXT NOT NULL REFERENCES fleet_vehicles(id) ON DELETE CASCADE, driver_id TEXT REFERENCES people(id) ON DELETE SET NULL,
+  trip_date TEXT NOT NULL, start_location TEXT, end_location TEXT, distance_km REAL NOT NULL DEFAULT 0,
+  trip_type TEXT NOT NULL DEFAULT 'business' CHECK(trip_type IN ('business','private','commute','unknown')), purpose TEXT, status TEXT NOT NULL DEFAULT 'draft' CHECK(status IN ('draft','classified','approved','rejected')),
+  tax_basis TEXT, approved_by TEXT, approved_at TEXT, created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+CREATE TABLE IF NOT EXISTS fleet_maintenance (
+  id TEXT PRIMARY KEY, board_id TEXT NOT NULL REFERENCES boards(id) ON DELETE CASCADE, vehicle_id TEXT NOT NULL REFERENCES fleet_vehicles(id) ON DELETE CASCADE,
+  maintenance_type TEXT NOT NULL CHECK(maintenance_type IN ('inspection','service','insurance','repair')), title TEXT NOT NULL, due_date TEXT NOT NULL,
+  status TEXT NOT NULL DEFAULT 'scheduled' CHECK(status IN ('scheduled','booked','complete','overdue')), vendor TEXT, cost_minor INTEGER, currency TEXT NOT NULL DEFAULT 'NOK', created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+CREATE TABLE IF NOT EXISTS facilities (
+  id TEXT PRIMARY KEY, board_id TEXT NOT NULL REFERENCES boards(id) ON DELETE CASCADE, name TEXT NOT NULL, address TEXT, property_type TEXT NOT NULL DEFAULT 'office', status TEXT NOT NULL DEFAULT 'active' CHECK(status IN ('active','inactive')), owner_id TEXT REFERENCES people(id) ON DELETE SET NULL, created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+CREATE TABLE IF NOT EXISTS facility_tasks (
+  id TEXT PRIMARY KEY, board_id TEXT NOT NULL REFERENCES boards(id) ON DELETE CASCADE, facility_id TEXT NOT NULL REFERENCES facilities(id) ON DELETE CASCADE,
+  task_type TEXT NOT NULL CHECK(task_type IN ('fire_safety','hvac','inspection','maintenance','document')), title TEXT NOT NULL, due_date TEXT, status TEXT NOT NULL DEFAULT 'open' CHECK(status IN ('open','scheduled','complete','overdue')), assignee_id TEXT REFERENCES people(id) ON DELETE SET NULL, evidence_ref TEXT, created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+CREATE TABLE IF NOT EXISTS projects (
+  id TEXT PRIMARY KEY, board_id TEXT NOT NULL REFERENCES boards(id) ON DELETE CASCADE, code TEXT NOT NULL, name TEXT NOT NULL, customer_account_id TEXT REFERENCES crm_accounts(id) ON DELETE SET NULL,
+  status TEXT NOT NULL DEFAULT 'active' CHECK(status IN ('draft','active','on_hold','complete','cancelled')), billing_model TEXT NOT NULL DEFAULT 'hourly' CHECK(billing_model IN ('hourly','fixed','subscription')), budget_minor INTEGER, currency TEXT NOT NULL DEFAULT 'NOK', created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+CREATE TABLE IF NOT EXISTS project_rates (
+  id TEXT PRIMARY KEY, board_id TEXT NOT NULL REFERENCES boards(id) ON DELETE CASCADE, project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE, role TEXT NOT NULL, hourly_minor INTEGER NOT NULL DEFAULT 0, currency TEXT NOT NULL DEFAULT 'NOK', valid_from TEXT, valid_until TEXT, created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+CREATE TABLE IF NOT EXISTS time_entries (
+  id TEXT PRIMARY KEY, board_id TEXT NOT NULL REFERENCES boards(id) ON DELETE CASCADE, project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE, person_id TEXT NOT NULL REFERENCES people(id) ON DELETE CASCADE,
+  work_date TEXT NOT NULL, minutes INTEGER NOT NULL DEFAULT 0, description TEXT, billable INTEGER NOT NULL DEFAULT 1, status TEXT NOT NULL DEFAULT 'draft' CHECK(status IN ('draft','submitted','approved','rejected','invoiced')), rate_minor INTEGER, approved_by TEXT, approved_at TEXT, created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+CREATE INDEX IF NOT EXISTS idx_fleet_vehicles_board ON fleet_vehicles(board_id,status);
+CREATE INDEX IF NOT EXISTS idx_trip_logs_board ON trip_logs(board_id,trip_date,status);
+CREATE INDEX IF NOT EXISTS idx_fleet_maintenance_board ON fleet_maintenance(board_id,due_date,status);
+CREATE INDEX IF NOT EXISTS idx_facilities_board ON facilities(board_id,status);
+CREATE INDEX IF NOT EXISTS idx_facility_tasks_board ON facility_tasks(board_id,due_date,status);
+CREATE INDEX IF NOT EXISTS idx_projects_board ON projects(board_id,status);
+CREATE INDEX IF NOT EXISTS idx_project_rates_project ON project_rates(project_id);
+CREATE INDEX IF NOT EXISTS idx_time_entries_board ON time_entries(board_id,work_date,status);
