@@ -48,7 +48,7 @@ import Layout from '../layouts/Layout.astro';
       quotes: (r) => `<article><div><strong>${esc(r.title)}</strong><p>#${esc(r.quote_number)} · ${esc(r.company_name || 'Uten kunde')} · ${esc(r.owner_name || 'Uten eier')}</p></div>${pill(r.status)}<b>${money(r.total_minor, r.currency)}</b><small>Gyldig til ${esc(r.valid_until || '—')}</small></article>`,
       rooms: (r) => `<article><div><strong>${esc(r.name)}</strong><p>${esc(r.company_name || 'Uten kunde')} · ${esc(r.buyer_contact || 'Kontakt ikke satt')}</p></div>${pill(r.status)}<small>Utløper ${esc(r.expires_at || '—')}</small></article>`,
       subscriptions: (r) => `<article><div><strong>${esc(r.plan_name)}</strong><p>${esc(r.company_name)} · ${esc(r.interval || 'month')}</p></div>${pill(r.status)}<b>${money(r.recurring_minor, r.currency)}/mnd</b><small>Fornyes ${esc(r.renewal_date || '—')}</small></article>`,
-      cases: (r) => `<article><div><strong>#${esc(r.case_number)} · ${esc(r.title)}</strong><p>${esc(r.company_name || 'Uten kunde')} · ${esc(r.assignee_name || 'Ikke tildelt')}</p></div>${pill(r.priority)}${pill(r.status)}<small>Svar ${esc(r.first_response_due || '—')}</small></article>`,
+      cases: (r) => `<article><div><strong>#${esc(r.case_number)} · ${esc(r.title)}</strong><p>${esc(r.company_name || 'Uten kunde')} · ${esc(r.assignee_name || 'Ikke tildelt')}</p></div>${pill(r.priority)}${pill(r.status)}<small>SLA: ${esc(({within_sla:'Innen frist',awaiting_first_response:'Venter første svar',first_response_breached:'Førstesvar brutt',resolution_breached:'Løsningsfrist brutt',closed:'Lukket'})[r.sla_state] || r.sla_state || 'Ikke beregnet')}</small></article>`,
     };
     list.innerHTML = rows.map(templates[view]).join('');
   };
