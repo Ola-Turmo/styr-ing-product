@@ -125,6 +125,51 @@ CREATE TABLE IF NOT EXISTS sessions (
 CREATE INDEX IF NOT EXISTS idx_sessions_user ON sessions(user_id);
 CREATE INDEX IF NOT EXISTS idx_sessions_expiry ON sessions(expires_at);
 
+-- Versioned legal documents and per-tenant acceptance records.
+CREATE TABLE IF NOT EXISTS legal_documents (
+  id TEXT PRIMARY KEY,
+  document_type TEXT NOT NULL CHECK(document_type IN ('privacy','terms','subscription','refund','sla','dpa')),
+  version TEXT NOT NULL,
+  title TEXT NOT NULL,
+  status TEXT NOT NULL DEFAULT 'draft' CHECK(status IN ('draft','published','retired')),
+  effective_at TEXT,
+  content_hash TEXT,
+  created_at TEXT NOT NULL DEFAULT (datetime('now')),
+  UNIQUE(document_type, version)
+);
+
+CREATE TABLE IF NOT EXISTS legal_acceptances (
+  id TEXT PRIMARY KEY,
+  user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  board_id TEXT NOT NULL REFERENCES boards(id) ON DELETE CASCADE,
+  document_type TEXT NOT NULL,
+  document_version TEXT NOT NULL,
+  accepted_at TEXT NOT NULL DEFAULT (datetime('now')),
+  ip_address TEXT,
+  user_agent TEXT,
+  UNIQUE(user_id, board_id, document_type, document_version)
+);
+
+CREATE INDEX IF NOT EXISTS idx_legal_documents_published ON legal_documents(document_type, status, effective_at);
+CREATE INDEX IF NOT EXISTS idx_legal_acceptances_board ON legal_acceptances(board_id, user_id, accepted_at);
+
+-- Billing state is synchronized by a verified provider webhook or service adapter.
+CREATE TABLE IF NOT EXISTS billing_accounts (
+  board_id TEXT PRIMARY KEY REFERENCES boards(id) ON DELETE CASCADE,
+  provider TEXT NOT NULL DEFAULT 'stripe',
+  customer_id TEXT,
+  subscription_id TEXT,
+  status TEXT NOT NULL DEFAULT 'not_configured' CHECK(status IN ('not_configured','trialing','active','past_due','canceled','incomplete','paused')),
+  plan TEXT NOT NULL DEFAULT 'pilot' CHECK(plan IN ('pilot','paid','enterprise')),
+  current_period_end TEXT,
+  cancel_at_period_end INTEGER NOT NULL DEFAULT 0,
+  last_event_id TEXT,
+  last_event_at TEXT,
+  updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+CREATE INDEX IF NOT EXISTS idx_billing_accounts_status ON billing_accounts(status, plan);
+
 -- Board-user memberships
 CREATE TABLE IF NOT EXISTS user_boards (
   user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
