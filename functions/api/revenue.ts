@@ -1,4 +1,4 @@
-import { authorizeBoardRead, authorizeWrite, body, json, requireDb, type Env } from './_lib';
+import { authorizeBoardRead, authorizeBoardWrite, body, json, recordAudit, requireDb, type Env } from './_lib';
 
 const views = new Set(['summary', 'contracts', 'obligations', 'schedule']);
 
@@ -31,19 +31,19 @@ export const onRequestGet: PagesFunction<Env> = async ({ env, request }) => {
 };
 
 export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
-  if (!authorizeWrite(request, env)) return json({ error: 'write_not_authorized' }, { status: 401 });
   try {
     const value = await body(request);
     const boardId = String(value?.boardId || '').trim();
     const action = String(value?.action || '').trim();
     if (!boardId || !action) return json({ error: 'boardId_and_action_required' }, { status: 400 });
+    const authorization = await authorizeBoardWrite(request, env, boardId); if (!authorization.allowed) return json({ error: 'write_not_authorized' }, { status: 401 });
     const db = requireDb(env);
     if (action === 'approve_schedule_entry') {
       const entryId = String(value?.entryId || '').trim();
       if (!entryId) return json({ error: 'entryId_required' }, { status: 400 });
       const result = await db.prepare("UPDATE revenue_schedule_entries SET status = 'approved', approved_by = ?, approved_at = datetime('now') WHERE id = ? AND board_id = ? AND status IN ('planned','review')").bind(String(value?.approvedBy || 'api'), entryId, boardId).run();
       if (!result.meta?.changes) return json({ error: 'entry_not_pending_or_found' }, { status: 409 });
-      return json({ ok: true, action, entryId, status: 'approved', ledgerPosting: 'not_configured', requiresHumanReview: true });
+      await recordAudit(db, { boardId, action: 'revenue_schedule_approved', entityType: 'revenue_schedule_entry', entityId: entryId, userId: authorization.userId || undefined, details: { ledgerPosting: 'not_configured' } }); return json({ ok: true, action, entryId, status: 'approved', ledgerPosting: 'not_configured', requiresHumanReview: true });
     }
     if (action === 'prepare_schedule') {
       const contractId = String(value?.contractId || '').trim();
@@ -53,7 +53,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
       const allocation = await db.prepare('SELECT COALESCE(SUM(allocated_minor), 0) allocated_minor FROM performance_obligations WHERE contract_id = ? AND board_id = ?').bind(contractId, boardId).first<{ allocated_minor: number }>();
       if (Number(allocation?.allocated_minor || 0) !== Number(contract.transaction_price_minor || 0)) return json({ error: 'allocations_do_not_equal_transaction_price', transactionPriceMinor: contract.transaction_price_minor, allocatedMinor: allocation?.allocated_minor || 0 }, { status: 422 });
       const result = await db.prepare("UPDATE revenue_schedule_entries SET status = 'review' WHERE contract_id = ? AND board_id = ? AND status = 'planned'").bind(contractId, boardId).run();
-      return json({ ok: true, action, contractId, rowsMovedToReview: result.meta?.changes || 0, requiresHumanReview: true, ledgerPosting: 'not_configured' });
+      await recordAudit(db, { boardId, action: 'revenue_schedule_prepared', entityType: 'revenue_contract', entityId: contractId, userId: authorization.userId || undefined, details: { rowsMovedToReview: result.meta?.changes || 0, ledgerPosting: 'not_configured' } }); return json({ ok: true, action, contractId, rowsMovedToReview: result.meta?.changes || 0, requiresHumanReview: true, ledgerPosting: 'not_configured' });
     }
     return json({ error: 'unknown_action', allowed: ['approve_schedule_entry', 'prepare_schedule'] }, { status: 400 });
   } catch (error) {

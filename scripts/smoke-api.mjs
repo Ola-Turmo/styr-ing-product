@@ -28,6 +28,10 @@ const checks = [
   ['IT summary', '/api/it?boardId=board-1&view=summary', 200], ['IT assets', '/api/it?boardId=board-1&view=assets', 200],
   ['IT tickets', '/api/it?boardId=board-1&view=tickets', 200], ['IT SaaS insights', '/api/it?boardId=board-1&view=saas_insights', 200],
   ['IT access', '/api/it?boardId=board-1&view=access', 200], ['IT lifecycle', '/api/it?boardId=board-1&view=lifecycle', 200],
+  ['fixed assets summary', '/api/assets?boardId=board-1&view=summary', 200], ['fixed assets rows', '/api/assets?boardId=board-1&view=assets', 200], ['depreciation rows', '/api/assets?boardId=board-1&view=depreciation', 200],
+  ['cards summary', '/api/cards?boardId=board-1&view=summary', 200], ['cards rows', '/api/cards?boardId=board-1&view=cards', 200], ['card transactions', '/api/cards?boardId=board-1&view=transactions', 200],
+  ['revenue summary', '/api/revenue?boardId=board-1&view=summary', 200], ['revenue contracts', '/api/revenue?boardId=board-1&view=contracts', 200], ['revenue obligations', '/api/revenue?boardId=board-1&view=obligations', 200], ['revenue schedule', '/api/revenue?boardId=board-1&view=schedule', 200],
+  ['procurement summary', '/api/procurement?boardId=board-1&view=summary', 200], ['procurement orders', '/api/procurement?boardId=board-1&view=orders', 200], ['procurement receipts', '/api/procurement?boardId=board-1&view=receipts', 200], ['procurement invoices', '/api/procurement?boardId=board-1&view=invoices', 200],
   ['private board guard', '/api/events?boardId=board-2&view=summary', 403],
 ];
 const failures = [];
@@ -55,6 +59,10 @@ for (const [label, path, payload] of [
   ['field write guard', '/api/field', { boardId: 'board-1', action: 'approve_time', entryId: 'fixture-not-used' }],
   ['commercial write guard', '/api/commercial', { boardId: 'board-1', action: 'approve_quote', quoteId: 'fixture-not-used' }],
   ['IT write guard', '/api/it', { boardId: 'board-1', action: 'approve_lifecycle_task', taskId: 'fixture-not-used' }],
+  ['fixed assets write guard', '/api/assets', { boardId: 'board-1', action: 'approve_depreciation', entryId: 'fixture-not-used' }],
+  ['cards write guard', '/api/cards', { boardId: 'board-1', action: 'approve_transaction', transactionId: 'fixture-not-used' }],
+  ['revenue write guard', '/api/revenue', { boardId: 'board-1', action: 'approve_schedule_entry', entryId: 'fixture-not-used' }],
+  ['procurement write guard', '/api/procurement', { boardId: 'board-1', action: 'approve_order', orderId: 'fixture-not-used' }],
   ['billing checkout guard', '/api/billing-checkout', { boardId: 'board-1', plan: 'paid' }],
   ['privacy request guard', '/api/privacy', { boardId: 'board-1', requestType: 'access' }],
   ['invite guard', '/api/auth', { action: 'invite_user', boardId: 'board-1', email: 'invite@example.invalid', name: 'Invite User' }],
