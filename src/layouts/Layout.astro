@@ -119,11 +119,12 @@ const faqSchema = {
       backdrop-filter: blur(12px);
       border-bottom: 1px solid rgba(16,36,31,0.08);
     }
-    .logo { display: inline-flex; align-items: center; gap: 9px; font-size: 1.25rem; font-weight: 700; letter-spacing: -0.02em; color: var(--ink); }
-    .logo > span:last-child { color: var(--ink); }
+    .logo { display: inline-flex; flex: 0 0 auto; align-items: center; gap: 9px; min-width: max-content; white-space: nowrap; font-size: 1.25rem; font-weight: 700; letter-spacing: -0.02em; color: var(--ink); }
+    .logo > span:last-child { color: var(--ink); white-space: nowrap; }
     .logo-mark { width: 30px; height: 30px; border-radius: 10px; display: grid; place-items: center; background: var(--night); color: var(--glow); font: 700 1.05rem/1 Georgia, serif; box-shadow: 0 5px 14px rgba(16,36,31,.15); }
     .logo-dot { color: var(--accent); }
-    .nav-links { display: flex; gap: clamp(12px,2vw,24px); list-style: none; font-family: system-ui, sans-serif; font-size: 0.83rem; align-items: center; justify-content: flex-end; min-width: 0; white-space: nowrap; }
+    .nav-links { display: flex; flex: 0 1 auto; gap: clamp(12px,2vw,24px); list-style: none; font-family: system-ui, sans-serif; font-size: 0.83rem; align-items: center; justify-content: flex-end; min-width: 0; white-space: nowrap; }
+    .nav-links li { flex: 0 0 auto; min-width: max-content; white-space: nowrap; }
     .nav-links a { color: var(--muted); font-weight: 500; }
     .nav-links a:hover { color: var(--accent); }
     .nav-links a.active { color: var(--accent); font-weight: 600; }
@@ -152,11 +153,20 @@ const faqSchema = {
       .nav-links { gap: 13px; font-size: .77rem; }
       .nav-cta { padding-inline: 13px; }
     }
-    @media (max-width: 760px) {
+    @media (max-width: 860px) {
       .site-nav { align-items: center; gap: 12px; flex-wrap: wrap; }
       .mobile-nav-toggle { display: inline-flex; margin-left: auto; }
       .nav-links { display: none; width: 100%; gap: 12px 14px; flex-wrap: wrap; padding-top: 4px; white-space: normal; }
       .nav-links.open { display: flex; }
+      .nav-links li { min-width: 0; white-space: normal; }
+      .nav-cta { margin-left: 0 !important; }
+      .nav-group { width: auto; }
+      .nav-menu { position: static; width: 100%; margin-top: 8px; box-shadow: none; }
+    }
+    @media (max-width: 760px) {
+      .site-nav { align-items: center; gap: 12px; flex-wrap: wrap; }
+      .mobile-nav-toggle { display: inline-flex; margin-left: auto; }
+      .nav-links { gap: 12px 14px; }
       .nav-cta { margin-left: 0 !important; }
       .nav-group { width: auto; }
       .nav-menu { position: static; width: 100%; margin-top: 8px; box-shadow: none; }
