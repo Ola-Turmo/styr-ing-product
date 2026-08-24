@@ -179,11 +179,10 @@ const faqSchema = {
     <ul id="primary-nav" class="nav-links" aria-label="Hovedmeny">
       <li><a href="/capabilities" class={activeNav === 'capabilities' ? 'active' : ''}>Produkt</a></li>
       <li><a href="/board" class={activeNav === 'boards' ? 'active' : ''}>Slik fungerer det</a></li>
-      <li><details class="nav-group"><summary>For virksomheten</summary><div class="nav-menu"><a href="/platform">Plattform</a><a href="/finance">Økonomi</a><a href="/people">Mennesker</a><a href="/commercial">Kunder</a><a href="/it">IT og drift</a></div></details></li>
-      <li><details class="nav-group"><summary>Styring</summary><div class="nav-menu"><a href="/risk">Risiko</a><a href="/internkontroll">Internkontroll</a><a href="/audit">Kontrollspor</a><a href="/board-governance">Møte og avstemning</a></div></details></li>
-      <li><a href="/trust" class={`nav-secondary ${activeNav === 'trust' ? 'active' : ''}`}>Tillit</a></li>
+      <li><a href="/trust" class={activeNav === 'trust' ? 'active' : ''}>Tillit og sikkerhet</a></li>
+      <li><a href="/abonnement" class={activeNav === 'abonnement' ? 'active' : ''}>Abonnement</a></li>
       <li><a id="auth-link" href="/login" class={activeNav === 'login' ? 'active' : ''}>Logg inn</a></li>
-      <li><a href="/workspace#ai" class="nav-cta">Se demoen <span aria-hidden="true">↗</span></a></li>
+      <li><a href="/workspace" class="nav-cta">Se demoen <span aria-hidden="true">↗</span></a></li>
     </ul>
   </nav>
 
