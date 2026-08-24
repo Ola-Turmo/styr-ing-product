@@ -210,3 +210,6 @@ INSERT OR IGNORE INTO revenue_schedule_entries (id,board_id,contract_id,obligati
 ('reventry-1','board-1','revcon-1','ob-1','2026-09',2000000,0,'planned'),
 ('reventry-2','board-1','revcon-1','ob-2','2026-09',11000000,0,'review'),
 ('reventry-3','board-1','revcon-1','ob-1','2026-10',2000000,0,'planned');
+
+INSERT OR IGNORE INTO event_destinations (id,board_id,name,endpoint_url,event_filter,status,secret_ref) VALUES
+('dest-1','board-1','Demo arbeidsflyt','https://example.invalid/styring-events','Invoice.Paid,Contract.Signed','proposed','secret://pending/provider-approval');

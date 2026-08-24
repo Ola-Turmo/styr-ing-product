@@ -254,6 +254,35 @@ CREATE TABLE IF NOT EXISTS api_events (
   created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 
+-- Event-mesh delivery control. Destinations are deliberately dormant until
+-- an authorised operator activates them; this schema never stores a webhook secret.
+CREATE TABLE IF NOT EXISTS event_destinations (
+  id TEXT PRIMARY KEY,
+  board_id TEXT NOT NULL REFERENCES boards(id) ON DELETE CASCADE,
+  name TEXT NOT NULL,
+  endpoint_url TEXT NOT NULL,
+  event_filter TEXT NOT NULL DEFAULT '*',
+  status TEXT NOT NULL DEFAULT 'proposed' CHECK(status IN ('proposed','active','paused','revoked')),
+  secret_ref TEXT,
+  created_at TEXT NOT NULL DEFAULT (datetime('now')),
+  activated_at TEXT,
+  UNIQUE(board_id, name)
+);
+
+CREATE TABLE IF NOT EXISTS event_deliveries (
+  id TEXT PRIMARY KEY,
+  board_id TEXT NOT NULL REFERENCES boards(id) ON DELETE CASCADE,
+  destination_id TEXT NOT NULL REFERENCES event_destinations(id) ON DELETE CASCADE,
+  event_id TEXT NOT NULL REFERENCES api_events(id) ON DELETE CASCADE,
+  status TEXT NOT NULL DEFAULT 'queued' CHECK(status IN ('queued','sent','failed','skipped')),
+  attempts INTEGER NOT NULL DEFAULT 0,
+  response_code INTEGER,
+  last_error TEXT,
+  delivered_at TEXT,
+  created_at TEXT NOT NULL DEFAULT (datetime('now')),
+  UNIQUE(destination_id, event_id)
+);
+
 CREATE TABLE IF NOT EXISTS ai_drafts (
   id TEXT PRIMARY KEY,
   board_id TEXT NOT NULL REFERENCES boards(id) ON DELETE CASCADE,
@@ -273,6 +302,8 @@ CREATE INDEX IF NOT EXISTS idx_resolutions_board ON resolutions(board_id);
 CREATE INDEX IF NOT EXISTS idx_documents_board ON board_documents(board_id);
 CREATE INDEX IF NOT EXISTS idx_review_states_entity ON review_states(board_id, entity_type, entity_id);
 CREATE INDEX IF NOT EXISTS idx_ai_drafts_board ON ai_drafts(board_id, created_at);
+CREATE INDEX IF NOT EXISTS idx_event_destinations_board ON event_destinations(board_id, status);
+CREATE INDEX IF NOT EXISTS idx_event_deliveries_board ON event_deliveries(board_id, status, created_at);
 
 -- Unified operating-system domains from PRD v8.
 CREATE TABLE IF NOT EXISTS people (

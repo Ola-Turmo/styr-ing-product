@@ -52,6 +52,8 @@ The public preview is safe to explore with fictional data. The deployed backend 
 - `POST /api/assistant` — protected, rules-based evidence draft with citations; always `requiresHumanApproval: true` and `executed: false`
 - `GET|POST|DELETE /api/reviews` — auditable review state (`boardId`, `entityType`, `entityId`)
 - `POST /api/events` — append-only event intake contract for future event mesh adapters
+- `GET /api/events?boardId=...&view=summary|destinations|deliveries|events` — event-mesh readiness, registered destinations and delivery queue
+- `POST /api/events` (API key) — ingest an event, register/activate/pause/revoke a destination, or retry a failed delivery; active destinations only create queued deliveries, no external request is sent
 - `POST /api/mcp` (API key) — MCP-compatible JSON-RPC endpoint exposing the read-only `search_board` tool; ReBAC/SSO gateway and external AI provider approval remain required
 - `GET /api/finance?boardId=...&view=summary|accounts|periods|vouchers|intercompany|notes` — tenant-scoped accounting, intercompany and statutory-note preparation data
 - `GET /api/finance?boardId=...&view=saf-t&from=YYYY-MM&to=YYYY-MM` — SAF‑T Financial 1.3 XML export contract
