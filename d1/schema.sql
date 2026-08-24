@@ -259,3 +259,51 @@ CREATE INDEX IF NOT EXISTS idx_actions_board ON action_items(board_id);
 CREATE INDEX IF NOT EXISTS idx_resolutions_board ON resolutions(board_id);
 CREATE INDEX IF NOT EXISTS idx_documents_board ON board_documents(board_id);
 CREATE INDEX IF NOT EXISTS idx_review_states_entity ON review_states(board_id, entity_type, entity_id);
+
+-- Unified operating-system domains from PRD v8.
+CREATE TABLE IF NOT EXISTS people (
+  id TEXT PRIMARY KEY, board_id TEXT NOT NULL REFERENCES boards(id) ON DELETE CASCADE,
+  name TEXT NOT NULL, email TEXT, role TEXT, department TEXT, employment_status TEXT NOT NULL DEFAULT 'active' CHECK(employment_status IN ('active','leave','ended')),
+  start_date TEXT, manager_id TEXT, created_at TEXT NOT NULL DEFAULT (datetime('now')), updated_at TEXT
+);
+CREATE TABLE IF NOT EXISTS goals (
+  id TEXT PRIMARY KEY, board_id TEXT NOT NULL REFERENCES boards(id) ON DELETE CASCADE,
+  owner_id TEXT REFERENCES people(id) ON DELETE SET NULL, title TEXT NOT NULL, period TEXT, status TEXT NOT NULL DEFAULT 'on_track' CHECK(status IN ('on_track','at_risk','complete','draft')), progress INTEGER NOT NULL DEFAULT 0 CHECK(progress BETWEEN 0 AND 100), created_at TEXT NOT NULL DEFAULT (datetime('now')), updated_at TEXT
+);
+CREATE TABLE IF NOT EXISTS it_assets (
+  id TEXT PRIMARY KEY, board_id TEXT NOT NULL REFERENCES boards(id) ON DELETE CASCADE,
+  asset_tag TEXT NOT NULL, name TEXT NOT NULL, asset_type TEXT NOT NULL, owner_id TEXT REFERENCES people(id) ON DELETE SET NULL, status TEXT NOT NULL DEFAULT 'active' CHECK(status IN ('active','repair','retired')), vendor TEXT, renewal_date TEXT, created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+CREATE TABLE IF NOT EXISTS service_tickets (
+  id TEXT PRIMARY KEY, board_id TEXT NOT NULL REFERENCES boards(id) ON DELETE CASCADE,
+  title TEXT NOT NULL, description TEXT, category TEXT NOT NULL DEFAULT 'general', priority TEXT NOT NULL DEFAULT 'medium' CHECK(priority IN ('critical','high','medium','low')), status TEXT NOT NULL DEFAULT 'open' CHECK(status IN ('open','in_progress','waiting','resolved','closed')), assignee_id TEXT REFERENCES people(id) ON DELETE SET NULL, due_date TEXT, created_at TEXT NOT NULL DEFAULT (datetime('now')), updated_at TEXT
+);
+CREATE TABLE IF NOT EXISTS finance_records (
+  id TEXT PRIMARY KEY, board_id TEXT NOT NULL REFERENCES boards(id) ON DELETE CASCADE,
+  record_type TEXT NOT NULL CHECK(record_type IN ('invoice','voucher','bank_transaction','payroll','tax','asset','project')), reference TEXT NOT NULL, counterparty TEXT, amount_minor INTEGER, currency TEXT NOT NULL DEFAULT 'NOK', status TEXT NOT NULL DEFAULT 'draft', due_date TEXT, source TEXT, created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+CREATE TABLE IF NOT EXISTS crm_accounts (
+  id TEXT PRIMARY KEY, board_id TEXT NOT NULL REFERENCES boards(id) ON DELETE CASCADE,
+  company_name TEXT NOT NULL, org_number TEXT, stage TEXT NOT NULL DEFAULT 'prospect' CHECK(stage IN ('prospect','qualified','proposal','won','lost')), owner_id TEXT REFERENCES people(id) ON DELETE SET NULL, next_action TEXT, estimated_value_minor INTEGER, currency TEXT NOT NULL DEFAULT 'NOK', created_at TEXT NOT NULL DEFAULT (datetime('now')), updated_at TEXT
+);
+CREATE TABLE IF NOT EXISTS contracts (
+  id TEXT PRIMARY KEY, board_id TEXT NOT NULL REFERENCES boards(id) ON DELETE CASCADE,
+  title TEXT NOT NULL, counterparty TEXT, contract_type TEXT NOT NULL DEFAULT 'supplier', status TEXT NOT NULL DEFAULT 'draft' CHECK(status IN ('draft','review','active','expired','terminated')), start_date TEXT, end_date TEXT, owner_id TEXT REFERENCES people(id) ON DELETE SET NULL, renewal_notice_date TEXT, created_at TEXT NOT NULL DEFAULT (datetime('now')), updated_at TEXT
+);
+CREATE TABLE IF NOT EXISTS sustainability_items (
+  id TEXT PRIMARY KEY, board_id TEXT NOT NULL REFERENCES boards(id) ON DELETE CASCADE,
+  item_type TEXT NOT NULL CHECK(item_type IN ('hms_incident','carbon_measurement','vendor_due_diligence','sja','safety_round')), title TEXT NOT NULL, status TEXT NOT NULL DEFAULT 'open' CHECK(status IN ('open','in_progress','complete','closed')), severity TEXT, scope TEXT, value_numeric REAL, value_unit TEXT, due_date TEXT, created_at TEXT NOT NULL DEFAULT (datetime('now')), updated_at TEXT
+);
+CREATE TABLE IF NOT EXISTS integration_registry (
+  id TEXT PRIMARY KEY, board_id TEXT REFERENCES boards(id) ON DELETE CASCADE,
+  key TEXT NOT NULL, display_name TEXT NOT NULL, domain TEXT NOT NULL, status TEXT NOT NULL DEFAULT 'planned' CHECK(status IN ('planned','configuration','connected','paused','error')), residency TEXT, last_sync_at TEXT, notes TEXT, created_at TEXT NOT NULL DEFAULT (datetime('now')), UNIQUE(board_id,key)
+);
+CREATE INDEX IF NOT EXISTS idx_people_board ON people(board_id);
+CREATE INDEX IF NOT EXISTS idx_goals_board ON goals(board_id);
+CREATE INDEX IF NOT EXISTS idx_assets_board ON it_assets(board_id);
+CREATE INDEX IF NOT EXISTS idx_tickets_board ON service_tickets(board_id);
+CREATE INDEX IF NOT EXISTS idx_finance_board ON finance_records(board_id);
+CREATE INDEX IF NOT EXISTS idx_crm_board ON crm_accounts(board_id);
+CREATE INDEX IF NOT EXISTS idx_contracts_board ON contracts(board_id);
+CREATE INDEX IF NOT EXISTS idx_sustainability_board ON sustainability_items(board_id);
+CREATE INDEX IF NOT EXISTS idx_integrations_board ON integration_registry(board_id);
