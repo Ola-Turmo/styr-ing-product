@@ -25,9 +25,19 @@ const typeLabels: Record<string,string> = {minutes:'Protokoll',financial:'Regnsk
     </div>
   </div>
 
+  <div class="toolbar" aria-label="Søk og filtrer dokumenter">
+    <label class="search-wrap"><span class="sr-only">Søk i dokumenter</span><input id="doc-search" type="search" placeholder="Søk i dokumenter…" /></label>
+    <div class="filters" role="group" aria-label="Dokumentstatus">
+      <button class="filter is-active" type="button" data-filter="all">Alle</button>
+      <button class="filter" type="button" data-filter="final">Endelige</button>
+      <button class="filter" type="button" data-filter="draft">Utkast</button>
+      <button class="outline-button" type="button" id="export-docs">Eksporter demo-utdrag ↗</button>
+    </div>
+  </div>
+
   <div class="doc-grid">
     {docs.map(d => (
-      <div class="doc-card">
+      <div class="doc-card" data-doc data-doc-status={d.status} data-doc-id={d.id} data-doc-search={`${d.title} ${d.category} ${d.tags.join(' ')}`}>
         <div class="doc-type-badge" title={typeLabels[d.type]}>{typeIcons[d.type]}</div>
         <strong class="doc-title">{d.title}</strong>
         <span class="doc-category">{d.category}</span>
@@ -50,6 +60,7 @@ const typeLabels: Record<string,string> = {minutes:'Protokoll',financial:'Regnsk
             <a href={`/board/${id}/meeting/${d.meeting_id}`}>Tilhører møte →</a>
           </div>
         )}
+        <button class="review-button" type="button" data-review-doc={d.id} aria-pressed="false">Marker gjennomgått</button>
       </div>
     ))}
   </div>
@@ -59,12 +70,62 @@ const typeLabels: Record<string,string> = {minutes:'Protokoll',financial:'Regnsk
 </div>
 </Layout>
 
+<script>
+  const key = 'styring-demo-reviewed-documents';
+  const cards = [...document.querySelectorAll('[data-doc]')];
+  const reviewed = new Set(JSON.parse(localStorage.getItem(key) || '[]'));
+  const buttons = [...document.querySelectorAll('[data-review-doc]')];
+  const search = document.getElementById('doc-search');
+  let mode = 'all';
+  const render = () => {
+    const query = search?.value.toLowerCase().trim() || '';
+    cards.forEach((card) => {
+      const status = card.getAttribute('data-doc-status');
+      const haystack = (card.getAttribute('data-doc-search') || '').toLowerCase();
+      card.toggleAttribute('hidden', !((mode === 'all' || status === mode) && (!query || haystack.includes(query))));
+    });
+    buttons.forEach((button) => {
+      const id = button.getAttribute('data-review-doc');
+      const active = id ? reviewed.has(id) : false;
+      button.setAttribute('aria-pressed', String(active));
+      button.textContent = active ? 'Gjennomgått ✓' : 'Marker gjennomgått';
+      button.classList.toggle('is-reviewed', active);
+    });
+  };
+  search?.addEventListener('input', render);
+  buttons.forEach((button) => button.addEventListener('click', () => {
+    const id = button.getAttribute('data-review-doc'); if (!id) return;
+    reviewed.has(id) ? reviewed.delete(id) : reviewed.add(id);
+    localStorage.setItem(key, JSON.stringify([...reviewed])); render();
+  }));
+  document.querySelectorAll('[data-filter]').forEach((filter) => filter.addEventListener('click', () => {
+    mode = filter.getAttribute('data-filter') || 'all';
+    document.querySelectorAll('[data-filter]').forEach((item) => item.classList.toggle('is-active', item === filter)); render();
+  }));
+  document.getElementById('export-docs')?.addEventListener('click', () => {
+    const lines = cards.map((card) => `${reviewed.has(card.getAttribute('data-doc-id') || '') ? '[x]' : '[ ]'} ${card.querySelector('.doc-title')?.textContent?.trim() || 'Uten tittel'}`);
+    const blob = new Blob([`Styr.ing — dokumentarkiv (demo)\n\n${lines.join('\n')}`], { type: 'text/plain;charset=utf-8' });
+    const link = document.createElement('a'); link.href = URL.createObjectURL(blob); link.download = 'styring-demo-dokumenter.txt'; link.click(); URL.revokeObjectURL(link.href);
+  });
+  render();
+</script>
+
 <style>
 .container { max-width: 960px; margin: 1.5rem auto; padding: 0 20px; }
 .back-link { font-family: system-ui, sans-serif; font-size: 0.85rem; color: var(--muted); text-decoration: none; }
 .header { display: flex; justify-content: space-between; align-items: center; margin: 1rem 0 2rem; }
 .header h1 { font-size: 1.6rem; margin: 0; }
 .count { font-family: system-ui, sans-serif; font-size: 0.85rem; color: var(--muted); }
+.toolbar { display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap; margin:0 0 1rem; }
+.filters { display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+.search-wrap input { width:min(320px, 100%); border:1px solid rgba(16,36,31,0.14); border-radius:9px; padding:9px 11px; font:0.8rem system-ui,sans-serif; }
+.filter, .outline-button, .review-button { border:1px solid rgba(16,36,31,0.14); background:#fff; color:var(--ink); border-radius:9px; padding:7px 11px; font:600 0.74rem system-ui,sans-serif; cursor:pointer; }
+.filter.is-active { background:var(--ink); color:#fff; border-color:var(--ink); }
+.filter:hover, .outline-button:hover { border-color:var(--accent); }
+.doc-card[hidden] { display:none; }
+.review-button { margin-top:10px; align-self:flex-start; }
+.review-button.is-reviewed { background:rgba(31,111,91,0.1); color:var(--accent); border-color:rgba(31,111,91,0.25); }
+.sr-only { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
 .doc-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
 .doc-card {
   background: white; border: 1px solid rgba(16,36,31,0.08); border-radius: 12px;
@@ -89,4 +150,5 @@ const typeLabels: Record<string,string> = {minutes:'Protokoll',financial:'Regnsk
 .empty { text-align: center; padding: 3rem; color: var(--muted); font-family: system-ui, sans-serif; }
 .demo-notice { text-align: center; padding: 1.5rem; margin-top: 2rem; background: rgba(31,111,91,0.06); border-radius: 12px; font-family: system-ui, sans-serif; font-size: 0.85rem; color: var(--muted); }
 .demo-notice a { color: var(--accent); font-weight: 600; }
+@media (max-width: 620px) { .search-wrap { width:100%; } .search-wrap input { width:100%; } }
 </style>
