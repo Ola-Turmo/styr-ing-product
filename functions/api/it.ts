@@ -1,4 +1,4 @@
-import { authorizeBoardRead, authorizeWrite, body, id, json, requireDb, type Env } from './_lib';
+import { authorizeBoardRead, authorizeBoardWrite, body, id, json, recordAudit, requireDb, type Env } from './_lib';
 
 const views = new Set(['summary', 'assets', 'tickets', 'saas', 'saas_insights', 'access', 'lifecycle']);
 
@@ -34,17 +34,18 @@ export const onRequestGet: PagesFunction<Env> = async ({ env, request }) => {
 };
 
 export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
-  if (!authorizeWrite(request, env)) return json({ error: 'write_not_authorized' }, { status: 401 });
   try {
     const value = await body(request); const boardId = String(value?.boardId || '').trim(); const action = String(value?.action || '').trim();
     if (!boardId || !action) return json({ error: 'boardId_and_action_required' }, { status: 400 });
-    const db = requireDb(env);
+    const authorization = await authorizeBoardWrite(request, env, boardId); if (!authorization.allowed) return json({ error: 'write_not_authorized' }, { status: 401 });
+    const db = requireDb(env); const audit = (entityType: string, entityId: string, details: Record<string, unknown> = {}) => recordAudit(db, { boardId, action: `it_${action}`, entityType, entityId, userId: authorization.userId || undefined, details });
     if (action === 'prepare_offboarding') {
       const caseId = String(value?.caseId || '').trim(); if (!caseId) return json({ error: 'caseId_required' }, { status: 400 });
       const person = await db.prepare('SELECT p.name FROM offboarding_cases o JOIN people p ON p.id=o.person_id WHERE o.id=? AND o.board_id=?').bind(caseId, boardId).first<{ name: string }>();
       if (!person) return json({ error: 'offboarding_not_found' }, { status: 404 });
       const tasks = [['access', `Foreslå tilgangsrevisjon for ${person.name}`], ['asset', 'Foreslå retur av tildelte eiendeler'], ['payroll', 'Foreslå lønns- og feriepengesjekk']];
       for (const [type, title] of tasks) await db.prepare("INSERT OR IGNORE INTO it_lifecycle_tasks (id,board_id,offboarding_case_id,task_type,title,status,requires_approval) VALUES (?,?,?,?,?,'proposed',1)").bind(id('life'), boardId, caseId, type, title).run();
+      await audit('offboarding_case', caseId, { status: 'proposed', tasks: tasks.map(task => task[0]), requiresHumanApproval: true });
       return json({ ok: true, action, caseId, status: 'proposed', tasks: tasks.map(task => task[0]), requiresHumanApproval: true });
     }
     if (action === 'review_access') {
@@ -52,12 +53,14 @@ export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
       if (!reviewId || !['retain', 'remove', 'reduce'].includes(decision)) return json({ error: 'reviewId_and_valid_decision_required' }, { status: 400 });
       const result = await db.prepare("UPDATE access_reviews SET decision=?,reviewer_id=?,reviewed_at=datetime('now'),reason=? WHERE id=? AND board_id=? AND decision='pending'").bind(decision, String(value?.reviewerId || 'api'), String(value?.reason || ''), reviewId, boardId).run();
       if (!result.meta?.changes) return json({ error: 'access_review_not_pending_or_found' }, { status: 409 });
+      await audit('access_review', reviewId, { decision, requiresHumanApproval: false });
       return json({ ok: true, action, reviewId, decision, requiresHumanApproval: false });
     }
     if (action === 'approve_lifecycle_task') {
       const taskId = String(value?.taskId || '').trim(); if (!taskId) return json({ error: 'taskId_required' }, { status: 400 });
       const result = await db.prepare("UPDATE it_lifecycle_tasks SET status='approved',assigned_to=? WHERE id=? AND board_id=? AND status='proposed'").bind(String(value?.assignedTo || ''), taskId, boardId).run();
       if (!result.meta?.changes) return json({ error: 'lifecycle_task_not_proposed_or_found' }, { status: 409 });
+      await audit('it_lifecycle_task', taskId, { status: 'approved', requiresHumanApproval: true });
       return json({ ok: true, action, taskId, status: 'approved', requiresHumanApproval: true });
     }
     return json({ error: 'unknown_action', allowed: ['prepare_offboarding', 'review_access', 'approve_lifecycle_task'] }, { status: 400 });

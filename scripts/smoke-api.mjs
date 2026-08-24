@@ -24,6 +24,9 @@ const checks = [
   ['commercial summary', '/api/commercial?boardId=board-1&view=summary', 200], ['commercial pipeline', '/api/commercial?boardId=board-1&view=pipeline', 200],
   ['commercial quotes', '/api/commercial?boardId=board-1&view=quotes', 200], ['commercial rooms', '/api/commercial?boardId=board-1&view=rooms', 200],
   ['commercial subscriptions', '/api/commercial?boardId=board-1&view=subscriptions', 200], ['commercial cases', '/api/commercial?boardId=board-1&view=cases', 200],
+  ['IT summary', '/api/it?boardId=board-1&view=summary', 200], ['IT assets', '/api/it?boardId=board-1&view=assets', 200],
+  ['IT tickets', '/api/it?boardId=board-1&view=tickets', 200], ['IT SaaS insights', '/api/it?boardId=board-1&view=saas_insights', 200],
+  ['IT access', '/api/it?boardId=board-1&view=access', 200], ['IT lifecycle', '/api/it?boardId=board-1&view=lifecycle', 200],
   ['private board guard', '/api/events?boardId=board-2&view=summary', 403],
 ];
 const failures = [];
@@ -49,6 +52,7 @@ for (const [label, path, payload] of [
   ['treasury write guard', '/api/treasury', { boardId: 'board-1', action: 'create_liquidity_snapshot' }],
   ['field write guard', '/api/field', { boardId: 'board-1', action: 'approve_time', entryId: 'fixture-not-used' }],
   ['commercial write guard', '/api/commercial', { boardId: 'board-1', action: 'approve_quote', quoteId: 'fixture-not-used' }],
+  ['IT write guard', '/api/it', { boardId: 'board-1', action: 'approve_lifecycle_task', taskId: 'fixture-not-used' }],
   ['billing checkout guard', '/api/billing-checkout', { boardId: 'board-1', plan: 'paid' }],
   ['privacy request guard', '/api/privacy', { boardId: 'board-1', requestType: 'access' }],
   ['invite guard', '/api/auth', { action: 'invite_user', boardId: 'board-1', email: 'invite@example.invalid', name: 'Invite User' }],
