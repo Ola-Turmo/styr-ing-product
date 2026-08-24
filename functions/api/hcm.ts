@@ -41,6 +41,15 @@ export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
       const name = String(value?.name || '').trim(); const email = String(value?.email || '').trim(); const requisitionId = String(value?.requisitionId || '').trim(); if (!name || !requisitionId) return json({ error: 'candidate_fields_required' }, { status: 400 });
       const candidateId = id('candidate'); await db.prepare("INSERT INTO candidates (id,board_id,requisition_id,name,email,stage,skills,score,consent_status) VALUES (?,?,?,?,?,'new','[]',NULL,'pending')").bind(candidateId, boardId, requisitionId, name, email || null).run(); await recordAudit(db, { boardId, action: 'candidate_created', entityType: 'candidate', entityId: candidateId, userId: authorization.userId || undefined, details: { requisitionId } }); return json({ ok: true, action, id: candidateId, stage: 'new', consentStatus: 'pending' }, { status: 201 });
     }
+    if (action === 'update_candidate') {
+      const candidateId = String(value?.candidateId || '').trim(); const stage = String(value?.stage || '').trim();
+      if (!candidateId || !['new','screening','interview','offer','hired','rejected'].includes(stage)) return json({ error: 'candidate_id_and_valid_stage_required' }, { status: 400 });
+      const candidate = await db.prepare('SELECT id,stage FROM candidates WHERE id=? AND board_id=?').bind(candidateId, boardId).first<{ id: string; stage: string }>();
+      if (!candidate) return json({ error: 'candidate_not_found' }, { status: 404 });
+      await db.prepare("UPDATE candidates SET stage=?,updated_at=datetime('now') WHERE id=? AND board_id=?").bind(stage, candidateId, boardId).run();
+      await recordAudit(db, { boardId, action: 'candidate_stage_changed', entityType: 'candidate', entityId: candidateId, userId: authorization.userId || undefined, details: { from: candidate.stage, to: stage } });
+      return json({ ok: true, action, candidateId, stage, requiresHumanReview: ['hired','rejected'].includes(stage) });
+    }
     if (action === 'acknowledge_handbook') {
       const handbookId = String(value?.handbookId || ''); const personId = String(value?.personId || ''); if (!handbookId || !personId) return json({ error: 'handbookId_and_personId_required' }, { status: 400 });
       await db.prepare('INSERT OR IGNORE INTO handbook_acknowledgements (id,board_id,handbook_id,person_id) VALUES (?,?,?,?)').bind(id('ack'), boardId, handbookId, personId).run(); await recordAudit(db, { boardId, action: 'handbook_acknowledged', entityType: 'handbook', entityId: handbookId, userId: authorization.userId || undefined, details: { personId } }); return json({ ok: true, action, handbookId, personId, status: 'acknowledged' });
@@ -65,6 +74,6 @@ export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
       const caseId = String(value?.caseId || ''); const accessRevoked = value?.accessRevoked ? 1 : 0; const assetsReturned = value?.assetsReturned ? 1 : 0; const payrollReviewed = value?.payrollReviewed ? 1 : 0; if (!caseId) return json({ error: 'caseId_required' }, { status: 400 });
       const complete = accessRevoked && assetsReturned && payrollReviewed; const result = await db.prepare(`UPDATE offboarding_cases SET access_revoked=?,assets_returned=?,payroll_reviewed=?,status=?${complete ? ",completed_at=datetime('now')" : ''} WHERE id=? AND board_id=?`).bind(accessRevoked, assetsReturned, payrollReviewed, complete ? 'complete' : 'in_progress', caseId, boardId).run(); if (!result.meta?.changes) return json({ error: 'offboarding_case_not_found' }, { status: 404 }); await recordAudit(db, { boardId, action: 'offboarding_advanced', entityType: 'offboarding_case', entityId: caseId, userId: authorization.userId || undefined, details: { accessRevoked, assetsReturned, payrollReviewed, status: complete ? 'complete' : 'in_progress' } }); return json({ ok: true, action, caseId, status: complete ? 'complete' : 'in_progress', requiresHumanApproval: true });
     }
-    return json({ error: 'unknown_action', allowed: ['create_candidate','acknowledge_handbook','complete_training','update_goal','create_offboarding','advance_offboarding'] }, { status: 400 });
+    return json({ error: 'unknown_action', allowed: ['create_candidate','update_candidate','acknowledge_handbook','complete_training','update_goal','create_offboarding','advance_offboarding'] }, { status: 400 });
   } catch (error) { return json({ error: 'database_unavailable', detail: error instanceof Error ? error.message : 'unknown' }, { status: 503 }); }
 };

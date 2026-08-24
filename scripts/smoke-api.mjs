@@ -57,6 +57,7 @@ for (const [label, path, payload] of [
   ['HMS and ESG write guard', '/api/sustainability', { boardId: 'board-1', action: 'close_item', itemId: 'fixture-not-used' }],
   ['risk write guard', '/api/risk', { boardId: 'board-1', action: 'update_risk', riskId: 'fixture-not-used', status: 'monitoring' }],
   ['HCM write guard', '/api/hcm', { boardId: 'board-1', action: 'update_goal', goalId: 'fixture-not-used', progress: 50, status: 'on_track' }],
+  ['HCM candidate write guard', '/api/hcm', { boardId: 'board-1', action: 'update_candidate', candidateId: 'fixture-not-used', stage: 'screening' }],
   ['governance write guard', '/api/governance', { boardId: 'board-1', action: 'review_contract', reviewId: 'fixture-not-used', decision: 'approved' }],
   ['board governance write guard', '/api/board_governance', { boardId: 'board-1', action: 'record_attendance', attendanceId: 'fixture-not-used', attendanceStatus: 'present' }],
   ['finance period write guard', '/api/finance', { boardId: 'board-1', action: 'lock_period', period: '2026-99' }],
