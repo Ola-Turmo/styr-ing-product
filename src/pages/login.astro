@@ -34,7 +34,7 @@ import Layout from '../layouts/Layout.astro';
       const data = await response.json();
       if (!response.ok) throw new Error(data.error === 'invalid_credentials' ? 'E-posten eller passordet stemmer ikke.' : 'Innloggingen kunne ikke fullføres akkurat nå.');
       status.textContent = 'Innlogget. Åpner arbeidsflaten…';
-      window.location.href = data.boards?.[0]?.id ? `/board/${encodeURIComponent(data.boards[0].id)}` : '/workspace';
+      window.location.href = data.boards?.[0]?.id ? `/app?boardId=${encodeURIComponent(data.boards[0].id)}` : '/workspace';
     } catch (error) { status.textContent = error instanceof Error ? error.message : 'Noe gikk galt.'; }
   });
 </script>

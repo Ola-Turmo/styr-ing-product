@@ -3,7 +3,7 @@ const checks = [
   ['health', '/api/health', 200], ['auth session', '/api/auth', 200],
   ['legal status', '/api/legal?boardId=board-1', 200], ['billing status', '/api/billing?boardId=board-1', 200],
   ['privacy center', '/api/privacy?boardId=board-1', 200], ['membership guard', '/api/members?boardId=board-1', 401],
-  ['invite activation page', '/activate/', 200], ['boards', '/api/boards', 200],
+  ['invite activation page', '/activate/', 200], ['customer workspace shell', '/app/', 200], ['tenant workspace shell', '/app/arbeidsflate/', 200], ['boards', '/api/boards', 200],
   ['event mesh summary', '/api/events?boardId=board-1&view=summary', 200],
   ['compliance summary', '/api/compliance?boardId=board-1&view=summary', 200],
   ['controls summary', '/api/controls?boardId=board-1&view=summary', 200],
@@ -15,6 +15,10 @@ for (const [label, path, expected] of checks) {
   const response = await fetch(`${baseUrl}${path}`);
   if (response.status !== expected) failures.push(`${label}: expected ${expected}, got ${response.status}`);
   if (label === 'SAF-T export' && !((response.headers.get('content-type') || '').includes('application/xml'))) failures.push(`${label}: expected application/xml content type`);
+  if (label === 'boards') {
+    const payload = await response.json();
+    if (!Array.isArray(payload.data) || payload.data.some((board) => board.id !== 'board-1')) failures.push(`${label}: unauthenticated response must be limited to fictional board-1`);
+  }
 }
 for (const [label, path, payload] of [
   ['event mesh write guard', '/api/events', { boardId: 'board-1' }], ['assistant write guard', '/api/assistant', {}],

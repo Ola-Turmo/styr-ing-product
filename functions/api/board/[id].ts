@@ -6,7 +6,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ env, params, request })
     if (!(await authorizeBoardRead(request, env, id))) return json({ error: 'board_access_denied' }, { status: 403 });
     const board = await db.prepare('SELECT id,name,description,org_number,status,plan,created_at,updated_at FROM boards WHERE id = ?').bind(id).first();
     if (!board) return json({ error: 'not_found' }, { status: 404 });
-    const [members, meetings, actions, resolutions, documents, risks, people, goals, assets, tickets, finance, crm, contracts, sustainability, integrations] = await Promise.all([
+    const [members, meetings, actions, resolutions, documents, risks, people, goals, assets, tickets, finance, crm, contracts, sustainability, integrations, controls] = await Promise.all([
       db.prepare('SELECT id,name,email,role,since,until FROM board_members WHERE board_id = ? ORDER BY created_at').bind(id).all(),
       db.prepare('SELECT id,title,date,time,location,status FROM meetings WHERE board_id = ? ORDER BY date DESC').bind(id).all(),
       db.prepare('SELECT id,title,description,assigned_to,due_date,priority,status FROM action_items WHERE board_id = ? ORDER BY due_date').bind(id).all(),
@@ -22,7 +22,8 @@ export const onRequestGet: PagesFunction<Env> = async ({ env, params, request })
       db.prepare('SELECT id,title,counterparty,contract_type,status,start_date,end_date,owner_id,renewal_notice_date FROM contracts WHERE board_id = ? ORDER BY created_at DESC').bind(id).all(),
       db.prepare('SELECT id,item_type,title,status,severity,scope,value_numeric,value_unit,due_date FROM sustainability_items WHERE board_id = ? ORDER BY created_at DESC').bind(id).all(),
       db.prepare('SELECT id,key,display_name,domain,status,residency,last_sync_at,notes FROM integration_registry WHERE board_id = ? ORDER BY created_at').bind(id).all(),
+      db.prepare('SELECT id,title,owner,frequency,status,last_review,category FROM control_items WHERE board_id = ? ORDER BY created_at').bind(id).all(),
     ]);
-    return json({ data: { board, members: members.results, meetings: meetings.results, actions: actions.results, resolutions: resolutions.results, documents: documents.results, risks: risks.results, people: people.results, goals: goals.results, assets: assets.results, tickets: tickets.results, finance: finance.results, crm: crm.results, contracts: contracts.results, sustainability: sustainability.results, integrations: integrations.results } });
+    return json({ data: { board, members: members.results, meetings: meetings.results, actions: actions.results, resolutions: resolutions.results, documents: documents.results, risks: risks.results, people: people.results, goals: goals.results, assets: assets.results, tickets: tickets.results, finance: finance.results, crm: crm.results, contracts: contracts.results, sustainability: sustainability.results, integrations: integrations.results, controls: controls.results } });
   } catch (error) { return json({ error: 'database_unavailable', detail: error instanceof Error ? error.message : 'unknown' }, { status: 503 }); }
 };

@@ -34,6 +34,8 @@ wrangler pages deploy dist
 - `/board` — Board portal: boards, members, meetings
 - `/compliance` — Compliance calendar and deadlines
 - `/internkontroll` — Internal control register
+- `/app` — authenticated customer workspace; selects only a board the signed-in user belongs to
+- `/app/arbeidsflate` — tenant-aware board, risk, internal-control, finance, and people views
 
 ## Architecture
 - `src/lib/db.ts` — dormant D1 helpers plus the static illustrative data used by the public demo
@@ -45,7 +47,7 @@ The public preview is safe to explore with fictional data. The deployed backend 
 ### Backend API
 
 - `GET /api/health` — binding and service health (no secrets returned)
-- `GET /api/boards` — active boards
+- `GET /api/boards` — active boards visible to the caller (public preview returns only fictional `board-1`; authenticated users receive their memberships)
 - `GET /api/board/:id` — board plus members, meetings, actions, resolutions, documents and risks
 - `GET /api/domains/:domain?boardId=...` — tenant-scoped people, goals, IT, tickets, finance, CRM, contracts, sustainability and integration records
 - `GET /api/search?boardId=...&q=...` — cross-domain, source-labelled universal search
