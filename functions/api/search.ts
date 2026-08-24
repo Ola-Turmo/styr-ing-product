@@ -33,6 +33,8 @@ const specs: SearchSpec[] = [
   { table: 'training_courses', type: 'Kurs', title: 'title', snippet: "coalesce(category,'') || ' · ' || coalesce(status,'') || ' · ' || coalesce(duration_minutes,'') || ' min", source: 'LMS' },
   { table: 'it_assets', type: 'IT-eiendel', title: "asset_tag || ' · ' || name", snippet: "coalesce(asset_type,'') || ' · ' || coalesce(status,'') || ' · ' || coalesce(vendor,'')", source: 'IT og utstyr' },
   { table: 'service_tickets', type: 'Sak', title: 'title', snippet: "coalesce(priority,'') || ' · ' || coalesce(status,'') || ' · ' || coalesce(category,'')", source: 'Service desk' },
+  { table: 'saas_subscriptions', type: 'SaaS', title: 'name', snippet: "coalesce(vendor,'') || ' · Fornyes: ' || coalesce(renewal_date,'') || ' · Utnyttelse: ' || coalesce(utilization_percent,'') || '%'", source: 'SaaS-forbruk' },
+  { table: 'access_reviews', type: 'Tilgang', title: "system_name || ' · ' || access_level", snippet: "coalesce(decision,'') || ' · ' || coalesce(reason,'')", source: 'Tilgangsrevisjon' },
   { table: 'finance_records', type: 'Økonomi', title: "reference || ' · ' || coalesce(counterparty,'')", snippet: "coalesce(record_type,'') || ' · ' || coalesce(status,'') || ' · ' || coalesce(currency,'NOK')", source: 'Økonomi' },
   { table: 'crm_accounts', type: 'Kunde', title: 'company_name', snippet: "coalesce(stage,'') || ' · Neste steg: ' || coalesce(next_action,'')", source: 'Kundeoppfølging' },
   { table: 'contracts', type: 'Avtale', title: 'title', snippet: "coalesce(counterparty,'') || ' · ' || coalesce(status,'') || ' · Fornyelse: ' || coalesce(renewal_notice_date,'')", source: 'Avtaler' },

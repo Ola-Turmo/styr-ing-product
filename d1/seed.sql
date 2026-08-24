@@ -82,3 +82,15 @@ INSERT OR IGNORE INTO performance_reviews (id,board_id,person_id,period,reviewer
 ('review-1','board-1','person-2','2026-H2','person-1','manager_review','Fokus på likviditet og bedre beslutningsgrunnlag.',4,'2026-09-20');
 INSERT OR IGNORE INTO offboarding_cases (id,board_id,person_id,last_day,status,access_revoked,assets_returned,payroll_reviewed,notes) VALUES
 ('offboard-1','board-1','person-3','2026-12-31','planned',0,0,0,'Illustrert sak — krever HR/IT/lønnsgodkjenning.');
+INSERT OR IGNORE INTO asset_assignments (id,board_id,asset_id,person_id,status,assigned_at,notes) VALUES
+('assign-1','board-1','asset-2','person-1','assigned','2026-01-10','Demo-laptop i bruk');
+INSERT OR IGNORE INTO saas_subscriptions (id,board_id,name,vendor,owner_id,seats,monthly_minor,currency,status,renewal_date,utilization_percent,source) VALUES
+('saas-1','board-1','ERP-lisenser','Demo ERP','person-3',25,189000,'NOK','active','2026-12-31',76,'illustration'),
+('saas-2','board-1','Designverktøy','Demo Design','person-2',12,79000,'NOK','active','2026-10-15',42,'illustration');
+INSERT OR IGNORE INTO access_reviews (id,board_id,person_id,system_name,access_level,decision,reviewer_id,reason) VALUES
+('access-1','board-1','person-3','ERP','admin','pending','person-1','Årlig tilgangsrevisjon'),
+('access-2','board-1','person-1','Dokumentarkiv','editor','retain','person-1','Rolle krever redigering');
+INSERT OR IGNORE INTO it_lifecycle_tasks (id,board_id,offboarding_case_id,task_type,title,status,requires_approval,due_date) VALUES
+('life-1','board-1','offboard-1','access','Foreslå tilgangsrevisjon for Demo IT-sjef','proposed',1,'2026-12-31'),
+('life-2','board-1','offboard-1','asset','Foreslå retur av tildelte eiendeler','proposed',1,'2026-12-31'),
+('life-3','board-1','offboard-1','payroll','Foreslå lønns- og feriepengesjekk','proposed',1,'2026-12-31');

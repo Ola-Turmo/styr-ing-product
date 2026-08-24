@@ -413,3 +413,36 @@ CREATE INDEX IF NOT EXISTS idx_courses_board ON training_courses(board_id, statu
 CREATE INDEX IF NOT EXISTS idx_enrollments_board ON training_enrollments(board_id, status);
 CREATE INDEX IF NOT EXISTS idx_reviews_board ON performance_reviews(board_id, period);
 CREATE INDEX IF NOT EXISTS idx_offboarding_board ON offboarding_cases(board_id, status);
+
+-- ITSM, asset custody, SaaS spend and access review workflows.
+CREATE TABLE IF NOT EXISTS asset_assignments (
+  id TEXT PRIMARY KEY, board_id TEXT NOT NULL REFERENCES boards(id) ON DELETE CASCADE,
+  asset_id TEXT NOT NULL REFERENCES it_assets(id) ON DELETE CASCADE, person_id TEXT REFERENCES people(id) ON DELETE SET NULL,
+  status TEXT NOT NULL DEFAULT 'assigned' CHECK(status IN ('assigned','returned','lost','retired')),
+  assigned_at TEXT NOT NULL DEFAULT (datetime('now')), returned_at TEXT, notes TEXT
+);
+CREATE TABLE IF NOT EXISTS saas_subscriptions (
+  id TEXT PRIMARY KEY, board_id TEXT NOT NULL REFERENCES boards(id) ON DELETE CASCADE,
+  name TEXT NOT NULL, vendor TEXT NOT NULL, owner_id TEXT REFERENCES people(id) ON DELETE SET NULL,
+  seats INTEGER NOT NULL DEFAULT 1, monthly_minor INTEGER, currency TEXT NOT NULL DEFAULT 'NOK',
+  status TEXT NOT NULL DEFAULT 'active' CHECK(status IN ('active','trial','cancel_pending','cancelled')),
+  renewal_date TEXT, utilization_percent INTEGER CHECK(utilization_percent BETWEEN 0 AND 100), source TEXT NOT NULL DEFAULT 'manual',
+  created_at TEXT NOT NULL DEFAULT (datetime('now')), updated_at TEXT
+);
+CREATE TABLE IF NOT EXISTS access_reviews (
+  id TEXT PRIMARY KEY, board_id TEXT NOT NULL REFERENCES boards(id) ON DELETE CASCADE,
+  person_id TEXT NOT NULL REFERENCES people(id) ON DELETE CASCADE, system_name TEXT NOT NULL,
+  access_level TEXT, decision TEXT NOT NULL DEFAULT 'pending' CHECK(decision IN ('pending','retain','remove','reduce')),
+  reviewer_id TEXT REFERENCES people(id) ON DELETE SET NULL, reviewed_at TEXT, reason TEXT, created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+CREATE TABLE IF NOT EXISTS it_lifecycle_tasks (
+  id TEXT PRIMARY KEY, board_id TEXT NOT NULL REFERENCES boards(id) ON DELETE CASCADE,
+  offboarding_case_id TEXT REFERENCES offboarding_cases(id) ON DELETE CASCADE, task_type TEXT NOT NULL,
+  title TEXT NOT NULL, status TEXT NOT NULL DEFAULT 'proposed' CHECK(status IN ('proposed','approved','in_progress','complete','rejected')),
+  requires_approval INTEGER NOT NULL DEFAULT 1, assigned_to TEXT, due_date TEXT, completed_at TEXT, created_at TEXT NOT NULL DEFAULT (datetime('now')),
+  UNIQUE(offboarding_case_id, task_type)
+);
+CREATE INDEX IF NOT EXISTS idx_asset_assignments_board ON asset_assignments(board_id, status);
+CREATE INDEX IF NOT EXISTS idx_saas_board ON saas_subscriptions(board_id, status, renewal_date);
+CREATE INDEX IF NOT EXISTS idx_access_reviews_board ON access_reviews(board_id, decision);
+CREATE INDEX IF NOT EXISTS idx_lifecycle_tasks_board ON it_lifecycle_tasks(board_id, status);
