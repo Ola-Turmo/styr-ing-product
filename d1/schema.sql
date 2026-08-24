@@ -578,6 +578,10 @@ CREATE TABLE IF NOT EXISTS projects (
 CREATE TABLE IF NOT EXISTS project_rates (
   id TEXT PRIMARY KEY, board_id TEXT NOT NULL REFERENCES boards(id) ON DELETE CASCADE, project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE, role TEXT NOT NULL, hourly_minor INTEGER NOT NULL DEFAULT 0, currency TEXT NOT NULL DEFAULT 'NOK', valid_from TEXT, valid_until TEXT, created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
+CREATE TABLE IF NOT EXISTS project_rate_costs (
+  id TEXT PRIMARY KEY, board_id TEXT NOT NULL REFERENCES boards(id) ON DELETE CASCADE, rate_id TEXT NOT NULL REFERENCES project_rates(id) ON DELETE CASCADE,
+  cost_hourly_minor INTEGER NOT NULL DEFAULT 0, currency TEXT NOT NULL DEFAULT 'NOK', source TEXT NOT NULL DEFAULT 'manual', created_at TEXT NOT NULL DEFAULT (datetime('now')), UNIQUE(rate_id)
+);
 CREATE TABLE IF NOT EXISTS time_entries (
   id TEXT PRIMARY KEY, board_id TEXT NOT NULL REFERENCES boards(id) ON DELETE CASCADE, project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE, person_id TEXT NOT NULL REFERENCES people(id) ON DELETE CASCADE,
   work_date TEXT NOT NULL, minutes INTEGER NOT NULL DEFAULT 0, description TEXT, billable INTEGER NOT NULL DEFAULT 1, status TEXT NOT NULL DEFAULT 'draft' CHECK(status IN ('draft','submitted','approved','rejected','invoiced')), rate_minor INTEGER, approved_by TEXT, approved_at TEXT, created_at TEXT NOT NULL DEFAULT (datetime('now'))
@@ -589,6 +593,7 @@ CREATE INDEX IF NOT EXISTS idx_facilities_board ON facilities(board_id,status);
 CREATE INDEX IF NOT EXISTS idx_facility_tasks_board ON facility_tasks(board_id,due_date,status);
 CREATE INDEX IF NOT EXISTS idx_projects_board ON projects(board_id,status);
 CREATE INDEX IF NOT EXISTS idx_project_rates_project ON project_rates(project_id);
+CREATE INDEX IF NOT EXISTS idx_project_rate_costs_board ON project_rate_costs(board_id,rate_id);
 CREATE INDEX IF NOT EXISTS idx_time_entries_board ON time_entries(board_id,work_date,status);
 
 -- Payroll, statutory submission preparation, liquidity and collections.

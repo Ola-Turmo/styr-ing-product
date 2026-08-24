@@ -145,6 +145,9 @@ INSERT OR IGNORE INTO projects (id,board_id,code,name,customer_account_id,status
 INSERT OR IGNORE INTO project_rates (id,board_id,project_id,role,hourly_minor,currency,valid_from) VALUES
 ('rate-1','board-1','project-1','Prosjektleder',145000,'NOK','2026-08-01'),
 ('rate-2','board-1','project-1','Konsulent',125000,'NOK','2026-08-01');
+INSERT OR IGNORE INTO project_rate_costs (id,board_id,rate_id,cost_hourly_minor,currency,source) VALUES
+('rate-cost-1','board-1','rate-1',82000,'NOK','illustration'),
+('rate-cost-2','board-1','rate-2',70000,'NOK','illustration');
 INSERT OR IGNORE INTO time_entries (id,board_id,project_id,person_id,work_date,minutes,description,billable,status,rate_minor) VALUES
 ('time-1','board-1','project-1','person-1','2026-08-22',150,'Workshop kontrollkart',1,'submitted',145000),
 ('time-2','board-1','project-1','person-2','2026-08-23',90,'Økonomisk kontrollspor',1,'approved',145000);

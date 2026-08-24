@@ -1,6 +1,6 @@
 import { authorizeBoardRead, authorizeWrite, body, id, json, requireDb, type Env } from './_lib';
 
-const views = new Set(['summary', 'fleet', 'trips', 'maintenance', 'facilities', 'projects', 'time', 'wip', 'invoice_drafts']);
+const views = new Set(['summary', 'fleet', 'trips', 'maintenance', 'facilities', 'projects', 'rates', 'time', 'wip', 'invoice_drafts']);
 
 export const onRequestGet: PagesFunction<Env> = async ({ env, request }) => {
   const url = new URL(request.url);
@@ -17,8 +17,9 @@ export const onRequestGet: PagesFunction<Env> = async ({ env, request }) => {
       maintenance: `SELECT m.*,v.registration FROM fleet_maintenance m JOIN fleet_vehicles v ON v.id=m.vehicle_id WHERE m.board_id=? ORDER BY m.due_date`,
       facilities: `SELECT f.*,p.name owner_name FROM facilities f LEFT JOIN people p ON p.id=f.owner_id WHERE f.board_id=? ORDER BY f.name`,
       projects: `SELECT pr.*,a.company_name FROM projects pr LEFT JOIN crm_accounts a ON a.id=pr.customer_account_id WHERE pr.board_id=? ORDER BY pr.created_at DESC`,
+      rates: `SELECT r.*,p.name AS project_name,COALESCE(c.cost_hourly_minor,0) cost_hourly_minor,c.source AS cost_source FROM project_rates r JOIN projects p ON p.id=r.project_id LEFT JOIN project_rate_costs c ON c.rate_id=r.id WHERE r.board_id=? ORDER BY p.code,r.valid_from DESC,r.role`,
       time: `SELECT t.*,pr.code project_code,pr.name project_name,p.name person_name FROM time_entries t JOIN projects pr ON pr.id=t.project_id JOIN people p ON p.id=t.person_id WHERE t.board_id=? ORDER BY t.work_date DESC`,
-      wip: `SELECT pr.id,pr.code,pr.name,pr.billing_model,pr.budget_minor,pr.currency,a.company_name,COALESCE(SUM(CASE WHEN t.billable=1 AND t.status IN ('submitted','approved') THEN t.minutes ELSE 0 END),0) minutes,COALESCE(SUM(CASE WHEN t.billable=1 AND t.status IN ('submitted','approved') THEN t.minutes*COALESCE(t.rate_minor,0)/60 ELSE 0 END),0) amount_minor,COUNT(CASE WHEN t.billable=1 AND t.status IN ('submitted','approved') THEN t.id END) entry_count FROM projects pr LEFT JOIN crm_accounts a ON a.id=pr.customer_account_id LEFT JOIN time_entries t ON t.project_id=pr.id AND t.board_id=pr.board_id WHERE pr.board_id=? GROUP BY pr.id ORDER BY pr.code`,
+      wip: `SELECT pr.id,pr.code,pr.name,pr.billing_model,pr.budget_minor,pr.currency,a.company_name,COALESCE(SUM(CASE WHEN t.billable=1 AND t.status IN ('submitted','approved') THEN t.minutes ELSE 0 END),0) minutes,COALESCE(SUM(CASE WHEN t.billable=1 AND t.status IN ('submitted','approved') THEN t.minutes*COALESCE(t.rate_minor,0)/60 ELSE 0 END),0) amount_minor,COALESCE(SUM(CASE WHEN t.billable=1 AND t.status IN ('submitted','approved') THEN t.minutes*COALESCE(c.cost_hourly_minor,0)/60 ELSE 0 END),0) cost_minor,COUNT(CASE WHEN t.billable=1 AND t.status IN ('submitted','approved') THEN t.id END) entry_count FROM projects pr LEFT JOIN crm_accounts a ON a.id=pr.customer_account_id LEFT JOIN time_entries t ON t.project_id=pr.id AND t.board_id=pr.board_id LEFT JOIN project_rates r ON r.project_id=pr.id AND r.board_id=pr.board_id AND (r.valid_from IS NULL OR r.valid_from<=t.work_date) AND (r.valid_until IS NULL OR r.valid_until>=t.work_date) LEFT JOIN project_rate_costs c ON c.rate_id=r.id WHERE pr.board_id=? GROUP BY pr.id ORDER BY pr.code`,
       invoice_drafts: `SELECT d.*,pr.code,pr.name,a.company_name FROM project_invoice_drafts d JOIN projects pr ON pr.id=d.project_id LEFT JOIN crm_accounts a ON a.id=pr.customer_account_id WHERE d.board_id=? ORDER BY d.period DESC,d.created_at DESC`,
     };
     if (view !== 'summary') return json({ boardId, view, data: (await db.prepare(queries[view]).bind(boardId).all()).results });
@@ -29,7 +30,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ env, request }) => {
       db.prepare("SELECT COUNT(*) count FROM facility_tasks WHERE board_id=? AND status NOT IN ('complete')").bind(boardId).first(),
       db.prepare("SELECT COUNT(*) count FROM projects WHERE board_id=? AND status='active'").bind(boardId).first(),
       db.prepare("SELECT COUNT(*) count,COALESCE(SUM(minutes),0) minutes FROM time_entries WHERE board_id=? AND status IN ('submitted','approved')").bind(boardId).first(),
-      db.prepare("SELECT COUNT(*) count,COALESCE(SUM(CASE WHEN billable=1 AND status IN ('submitted','approved') THEN minutes*COALESCE(rate_minor,0)/60 ELSE 0 END),0) amount_minor FROM time_entries WHERE board_id=?").bind(boardId).first(),
+      db.prepare("SELECT COUNT(*) count,COALESCE(SUM(CASE WHEN billable=1 AND status IN ('submitted','approved') THEN minutes*COALESCE(rate_minor,0)/60 ELSE 0 END),0) amount_minor,COALESCE(SUM(CASE WHEN billable=1 AND status IN ('submitted','approved') THEN minutes*COALESCE((SELECT cost_hourly_minor FROM project_rate_costs pc JOIN project_rates pr ON pr.id=pc.rate_id WHERE pr.project_id=time_entries.project_id AND pr.board_id=time_entries.board_id ORDER BY pr.valid_from DESC LIMIT 1),0)/60 ELSE 0 END),0) cost_minor FROM time_entries WHERE board_id=?").bind(boardId).first(),
       db.prepare("SELECT COUNT(*) count,COALESCE(SUM(amount_minor),0) amount_minor FROM project_invoice_drafts WHERE board_id=? AND status NOT IN ('sent','cancelled')").bind(boardId).first(),
     ]);
     return json({ boardId, view, data: { fleet, trips, maintenance, facilities, projects, time, wip, drafts } });
