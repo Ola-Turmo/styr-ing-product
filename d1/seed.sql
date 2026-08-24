@@ -169,3 +169,12 @@ INSERT OR IGNORE INTO depreciation_entries (id,board_id,asset_id,period,ledger_t
 ('dep-2','board-1','fixed-1','2026-08','tax',1033333,8266664,53733336,'review'),
 ('dep-3','board-1','fixed-2','2026-08','financial',40000,240000,2160000,'calculated'),
 ('dep-4','board-1','fixed-2','2026-08','tax',40000,240000,2160000,'calculated');
+INSERT OR IGNORE INTO revenue_contracts (id,board_id,account_id,quote_id,contract_number,title,start_date,end_date,transaction_price_minor,currency,status) VALUES
+('revcon-1','board-1','crm-1','quote-1','RC-2026-001','Nordic Demo AS · pilot','2026-09-01','2027-08-31',35000000,'NOK','review');
+INSERT OR IGNORE INTO performance_obligations (id,board_id,contract_id,description,recognition_method,allocated_minor,satisfied_percent) VALUES
+('ob-1','board-1','revcon-1','SaaS-plattform · 12 måneder','over_time',24000000,0),
+('ob-2','board-1','revcon-1','Onboarding og kontrollkart','point_in_time',11000000,0);
+INSERT OR IGNORE INTO revenue_schedule_entries (id,board_id,contract_id,obligation_id,period,planned_minor,recognized_minor,status) VALUES
+('reventry-1','board-1','revcon-1','ob-1','2026-09',2000000,0,'planned'),
+('reventry-2','board-1','revcon-1','ob-2','2026-09',11000000,0,'review'),
+('reventry-3','board-1','revcon-1','ob-1','2026-10',2000000,0,'planned');

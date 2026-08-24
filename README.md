@@ -68,6 +68,8 @@ The public preview is safe to explore with fictional data. The deployed backend 
 - `GET /api/it?boardId=...&view=summary|assets|tickets|saas|access|lifecycle` — tenant-scoped IT operations data
 - `POST /api/it` (API key) — prepare offboarding IT tasks, review access and approve lifecycle proposals; no automatic revocation
 - `GET /api/commercial?boardId=...&view=summary|pipeline|quotes|rooms|subscriptions|cases` — tenant-scoped CRM, CPQ, sales-room, recurring-revenue and customer-service data
+- `GET /api/revenue?boardId=...&view=summary|contracts|obligations|schedule` — tenant-scoped revenue-contract, performance-obligation and periodization preparation data
+- `POST /api/revenue` (API key) — approve schedule entries; billing and ledger posting remain separate controls
 - `POST /api/commercial` (API key) — approve/send quote records and create/resolve customer cases; external delivery, e-signing and payment remain unconfigured
 - `GET /api/governance?boardId=...&view=summary|contracts|mandates|equity` — tenant-scoped contract reviews, powers of attorney and equity register
 - `POST /api/governance` (API key) — create/review contract controls and activate mandate proposals; evidence and legal sign-off remain required

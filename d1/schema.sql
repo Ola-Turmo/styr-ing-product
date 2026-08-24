@@ -657,3 +657,26 @@ CREATE TABLE IF NOT EXISTS depreciation_entries (
 );
 CREATE INDEX IF NOT EXISTS idx_fixed_assets_board ON fixed_assets(board_id,status,asset_number);
 CREATE INDEX IF NOT EXISTS idx_depreciation_entries_board ON depreciation_entries(board_id,period,status);
+
+-- Revenue-recognition preparation. Billing and revenue schedules remain decoupled.
+CREATE TABLE IF NOT EXISTS revenue_contracts (
+  id TEXT PRIMARY KEY, board_id TEXT NOT NULL REFERENCES boards(id) ON DELETE CASCADE,
+  account_id TEXT NOT NULL REFERENCES crm_accounts(id) ON DELETE CASCADE, quote_id TEXT REFERENCES quotes(id) ON DELETE SET NULL,
+  contract_number TEXT NOT NULL, title TEXT NOT NULL, start_date TEXT NOT NULL, end_date TEXT NOT NULL,
+  transaction_price_minor INTEGER NOT NULL DEFAULT 0, currency TEXT NOT NULL DEFAULT 'NOK',
+  status TEXT NOT NULL DEFAULT 'draft' CHECK(status IN ('draft','review','approved','active','complete','cancelled')),
+  approved_by TEXT, approved_at TEXT, created_at TEXT NOT NULL DEFAULT (datetime('now')), UNIQUE(board_id,contract_number)
+);
+CREATE TABLE IF NOT EXISTS performance_obligations (
+  id TEXT PRIMARY KEY, board_id TEXT NOT NULL REFERENCES boards(id) ON DELETE CASCADE, contract_id TEXT NOT NULL REFERENCES revenue_contracts(id) ON DELETE CASCADE,
+  description TEXT NOT NULL, recognition_method TEXT NOT NULL CHECK(recognition_method IN ('point_in_time','over_time')),
+  allocated_minor INTEGER NOT NULL DEFAULT 0, satisfied_percent REAL NOT NULL DEFAULT 0, created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+CREATE TABLE IF NOT EXISTS revenue_schedule_entries (
+  id TEXT PRIMARY KEY, board_id TEXT NOT NULL REFERENCES boards(id) ON DELETE CASCADE, contract_id TEXT NOT NULL REFERENCES revenue_contracts(id) ON DELETE CASCADE,
+  obligation_id TEXT REFERENCES performance_obligations(id) ON DELETE SET NULL, period TEXT NOT NULL, planned_minor INTEGER NOT NULL DEFAULT 0,
+  recognized_minor INTEGER NOT NULL DEFAULT 0, status TEXT NOT NULL DEFAULT 'planned' CHECK(status IN ('planned','review','approved','posted')),
+  approved_by TEXT, approved_at TEXT, created_at TEXT NOT NULL DEFAULT (datetime('now')), UNIQUE(contract_id,obligation_id,period)
+);
+CREATE INDEX IF NOT EXISTS idx_revenue_contracts_board ON revenue_contracts(board_id,status,start_date);
+CREATE INDEX IF NOT EXISTS idx_revenue_schedule_board ON revenue_schedule_entries(board_id,period,status);

@@ -49,6 +49,7 @@ const specs: SearchSpec[] = [
   { table: 'quotes', type: 'Tilbud', title: 'title', snippet: "coalesce(status,'') || ' · ' || coalesce(currency,'NOK') || ' · ' || coalesce(total_minor,'')", source: 'Tilbud' },
   { table: 'sales_rooms', type: 'Salgsrom', title: 'name', snippet: "coalesce(status,'') || ' · ' || coalesce(buyer_contact,'')", source: 'Salgsrom' },
   { table: 'customer_subscriptions', type: 'Abonnement', title: 'plan_name', snippet: "coalesce(status,'') || ' · Fornyelse: ' || coalesce(renewal_date,'')", source: 'Abonnement' },
+  { table: 'revenue_contracts', type: 'Inntektskontrakt', title: "contract_number || ' · ' || title", snippet: "coalesce(status,'') || ' · ' || coalesce(transaction_price_minor,'')", source: 'Inntektsplanlegging' },
   { table: 'customer_cases', type: 'Kundesak', title: 'title', snippet: "coalesce(priority,'') || ' · ' || coalesce(status,'')", source: 'Kundeservice' },
   { table: 'fleet_vehicles', type: 'Kjøretøy', title: "registration || ' · ' || make_model", snippet: "coalesce(status,'') || ' · Neste kontroll: ' || coalesce(next_inspection_date,'')", source: 'Flåte' },
   { table: 'trip_logs', type: 'Kjørebok', title: "start_location || ' → ' || end_location", snippet: "coalesce(trip_type,'') || ' · ' || coalesce(status,'') || ' · ' || coalesce(purpose,'')", source: 'Kjørebok' },
