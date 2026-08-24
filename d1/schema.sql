@@ -611,3 +611,14 @@ CREATE TABLE IF NOT EXISTS supplier_invoices (
 CREATE INDEX IF NOT EXISTS idx_purchase_orders_board ON purchase_orders(board_id,status,created_at);
 CREATE INDEX IF NOT EXISTS idx_goods_receipts_board ON goods_receipts(board_id,received_date);
 CREATE INDEX IF NOT EXISTS idx_supplier_invoices_board ON supplier_invoices(board_id,status,due_date);
+
+-- Project billing preparation. This is a draft boundary; external invoicing stays disabled.
+CREATE TABLE IF NOT EXISTS project_invoice_drafts (
+  id TEXT PRIMARY KEY, board_id TEXT NOT NULL REFERENCES boards(id) ON DELETE CASCADE,
+  project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE, period TEXT NOT NULL,
+  source_minutes INTEGER NOT NULL DEFAULT 0, amount_minor INTEGER NOT NULL DEFAULT 0, currency TEXT NOT NULL DEFAULT 'NOK',
+  status TEXT NOT NULL DEFAULT 'prepared' CHECK(status IN ('prepared','review','approved','sent','cancelled')),
+  created_by TEXT, approved_by TEXT, approved_at TEXT, external_reference TEXT, created_at TEXT NOT NULL DEFAULT (datetime('now')),
+  UNIQUE(board_id,project_id,period)
+);
+CREATE INDEX IF NOT EXISTS idx_project_invoice_drafts_board ON project_invoice_drafts(board_id,status,period);

@@ -154,3 +154,5 @@ INSERT OR IGNORE INTO goods_receipts (id,board_id,purchase_order_id,received_dat
 ('gr-1','board-1','po-1','2026-08-22','Ola Turmo','confirmed','Kontorutstyr mottatt');
 INSERT OR IGNORE INTO supplier_invoices (id,board_id,purchase_order_id,invoice_number,supplier_name,amount_minor,currency,due_date,status,match_status) VALUES
 ('si-1','board-1','po-1','INV-2026-001','Demo Leverandør AS',1250000,'NOK','2026-09-01','matched','matched');
+INSERT OR IGNORE INTO project_invoice_drafts (id,board_id,project_id,period,source_minutes,amount_minor,currency,status,created_by) VALUES
+('invprep-1','board-1','project-1','2026-08',240,560000,'NOK','prepared','CFO');

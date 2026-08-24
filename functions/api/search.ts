@@ -53,6 +53,7 @@ const specs: SearchSpec[] = [
   { table: 'fleet_maintenance', type: 'Vedlikehold', title: 'title', snippet: "coalesce(status,'') || ' · Frist: ' || coalesce(due_date,'')", source: 'Flåte' },
   { table: 'facilities', type: 'FDV-objekt', title: 'name', snippet: "coalesce(address,'') || ' · ' || coalesce(status,'')", source: 'FDV' },
   { table: 'projects', type: 'Prosjekt', title: "code || ' · ' || name", snippet: "coalesce(status,'') || ' · ' || coalesce(billing_model,'')", source: 'Prosjekt' },
+  { table: 'project_invoice_drafts', type: 'Fakturautkast', title: "period || ' · ' || id", snippet: "coalesce(status,'') || ' · Beløp: ' || coalesce(amount_minor,'')", source: 'Prosjektfakturering' },
   { table: 'time_entries', type: 'Timer', title: 'description', snippet: "coalesce(status,'') || ' · ' || coalesce(work_date,'') || ' · ' || coalesce(minutes,'') || ' min'", source: 'Timeføring' },
   { table: 'contract_reviews', type: 'Avtalegjennomgang', title: "coalesce(decision,'Kontraktsgjennomgang')", snippet: "coalesce(status,'') || ' · Frist: ' || coalesce(due_date,'')", source: 'Avtaler' },
   { table: 'mandates', type: 'Fullmakt', title: 'scope', snippet: "coalesce(mandate_type,'') || ' · ' || coalesce(status,'') || ' · Gyldig til: ' || coalesce(valid_until,'')", source: 'Fullmaktsregister' },
