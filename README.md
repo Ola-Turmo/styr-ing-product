@@ -57,6 +57,8 @@ The public preview is safe to explore with fictional data. The deployed backend 
 - `POST /api/finance` (API key) — balanced voucher posting or period locking (`action: create_voucher|lock_period`)
 - `GET /api/treasury?boardId=...&view=summary|payroll|submissions|liquidity|collections` — tenant-scoped payroll, statutory-submission preparation, liquidity and collections data
 - `POST /api/treasury` (API key) — approve payroll/submission preparation, prepare collection reminders, or create liquidity snapshots; external senders remain unconfigured
+- `GET /api/procurement?boardId=...&view=summary|orders|receipts|invoices` — tenant-scoped procure-to-pay control trail and three-way matching data
+- `POST /api/procurement` (API key) — approve purchase orders or match supplier invoices; EHF and bank adapters remain unconfigured
 - `GET /api/hcm?boardId=...&view=summary|people|candidates|handbook|training|reviews|offboarding` — tenant-scoped HCM workspace data
 - `POST /api/hcm` (API key) — controlled candidate, handbook, training and offboarding actions; sensitive actions remain approval-gated
 - `GET /api/it?boardId=...&view=summary|assets|tickets|saas|access|lifecycle` — tenant-scoped IT operations data

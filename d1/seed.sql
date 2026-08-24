@@ -148,3 +148,9 @@ INSERT OR IGNORE INTO liquidity_snapshots (id,board_id,as_of_date,cash_minor,rec
 ('liq-1','board-1','2026-08-24',125000000,45000000,22000000,15000000,7.8,'illustration','reviewed');
 INSERT OR IGNORE INTO collection_cases (id,board_id,account_id,reference,amount_minor,due_date,status,next_action) VALUES
 ('collect-1','board-1','crm-1','INV-DEMO-001',1250000,'2026-09-01','open','Forbered vennlig påminnelse');
+INSERT OR IGNORE INTO purchase_orders (id,board_id,order_number,supplier_name,status,total_minor,currency,requested_by) VALUES
+('po-1','board-1','PO-2026-001','Demo Leverandør AS','approved',1250000,'NOK','CFO');
+INSERT OR IGNORE INTO goods_receipts (id,board_id,purchase_order_id,received_date,received_by,status,notes) VALUES
+('gr-1','board-1','po-1','2026-08-22','Ola Turmo','confirmed','Kontorutstyr mottatt');
+INSERT OR IGNORE INTO supplier_invoices (id,board_id,purchase_order_id,invoice_number,supplier_name,amount_minor,currency,due_date,status,match_status) VALUES
+('si-1','board-1','po-1','INV-2026-001','Demo Leverandør AS',1250000,'NOK','2026-09-01','matched','matched');

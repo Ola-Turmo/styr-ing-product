@@ -40,6 +40,8 @@ const specs: SearchSpec[] = [
   { table: 'compliance_submissions', type: 'Innsending', title: "submission_type || ' · ' || period", snippet: "coalesce(status,'') || ' · ' || coalesce(notes,'')", source: 'Innsendinger' },
   { table: 'liquidity_snapshots', type: 'Likviditet', title: "as_of_date || ' · Likviditetsbilde'", snippet: "coalesce(status,'') || ' · Runway: ' || coalesce(runway_months,'') || ' måneder'", source: 'Likviditet' },
   { table: 'collection_cases', type: 'Innkrevingssak', title: 'reference', snippet: "coalesce(status,'') || ' · ' || coalesce(next_action,'')", source: 'Innkrevingsspor' },
+  { table: 'purchase_orders', type: 'Bestilling', title: "order_number || ' · ' || supplier_name", snippet: "coalesce(status,'') || ' · ' || coalesce(total_minor,'')", source: 'Innkjøp' },
+  { table: 'supplier_invoices', type: 'Leverandørfaktura', title: "invoice_number || ' · ' || supplier_name", snippet: "coalesce(match_status,'') || ' · ' || coalesce(status,'')", source: 'Leverandørfakturaer' },
   { table: 'crm_accounts', type: 'Kunde', title: 'company_name', snippet: "coalesce(stage,'') || ' · Neste steg: ' || coalesce(next_action,'')", source: 'Kundeoppfølging' },
   { table: 'contracts', type: 'Avtale', title: 'title', snippet: "coalesce(counterparty,'') || ' · ' || coalesce(status,'') || ' · Fornyelse: ' || coalesce(renewal_notice_date,'')", source: 'Avtaler' },
   { table: 'quotes', type: 'Tilbud', title: 'title', snippet: "coalesce(status,'') || ' · ' || coalesce(currency,'NOK') || ' · ' || coalesce(total_minor,'')", source: 'Tilbud' },

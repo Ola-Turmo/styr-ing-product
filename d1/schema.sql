@@ -590,3 +590,24 @@ CREATE INDEX IF NOT EXISTS idx_payroll_items_run ON payroll_items(payroll_run_id
 CREATE INDEX IF NOT EXISTS idx_compliance_submissions_board ON compliance_submissions(board_id,period,status);
 CREATE INDEX IF NOT EXISTS idx_liquidity_snapshots_board ON liquidity_snapshots(board_id,as_of_date);
 CREATE INDEX IF NOT EXISTS idx_collection_cases_board ON collection_cases(board_id,status,due_date);
+
+-- Procure-to-pay control trail: request, receipt, invoice and approval.
+CREATE TABLE IF NOT EXISTS purchase_orders (
+  id TEXT PRIMARY KEY, board_id TEXT NOT NULL REFERENCES boards(id) ON DELETE CASCADE,
+  order_number TEXT NOT NULL, supplier_name TEXT NOT NULL, status TEXT NOT NULL DEFAULT 'draft' CHECK(status IN ('draft','pending_approval','approved','ordered','received','closed','cancelled')),
+  total_minor INTEGER NOT NULL DEFAULT 0, currency TEXT NOT NULL DEFAULT 'NOK', requested_by TEXT, approved_by TEXT, approved_at TEXT,
+  external_reference TEXT, created_at TEXT NOT NULL DEFAULT (datetime('now')), UNIQUE(board_id,order_number)
+);
+CREATE TABLE IF NOT EXISTS goods_receipts (
+  id TEXT PRIMARY KEY, board_id TEXT NOT NULL REFERENCES boards(id) ON DELETE CASCADE, purchase_order_id TEXT NOT NULL REFERENCES purchase_orders(id) ON DELETE CASCADE,
+  received_date TEXT NOT NULL, received_by TEXT, status TEXT NOT NULL DEFAULT 'draft' CHECK(status IN ('draft','confirmed','disputed')), notes TEXT, created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+CREATE TABLE IF NOT EXISTS supplier_invoices (
+  id TEXT PRIMARY KEY, board_id TEXT NOT NULL REFERENCES boards(id) ON DELETE CASCADE, purchase_order_id TEXT REFERENCES purchase_orders(id) ON DELETE SET NULL,
+  invoice_number TEXT NOT NULL, supplier_name TEXT NOT NULL, amount_minor INTEGER NOT NULL DEFAULT 0, currency TEXT NOT NULL DEFAULT 'NOK', due_date TEXT,
+  status TEXT NOT NULL DEFAULT 'received' CHECK(status IN ('received','matched','exception','approved','booked','paid')), match_status TEXT NOT NULL DEFAULT 'unmatched' CHECK(match_status IN ('unmatched','matched','partial','exception')),
+  approved_by TEXT, approved_at TEXT, external_reference TEXT, created_at TEXT NOT NULL DEFAULT (datetime('now')), UNIQUE(board_id,invoice_number)
+);
+CREATE INDEX IF NOT EXISTS idx_purchase_orders_board ON purchase_orders(board_id,status,created_at);
+CREATE INDEX IF NOT EXISTS idx_goods_receipts_board ON goods_receipts(board_id,received_date);
+CREATE INDEX IF NOT EXISTS idx_supplier_invoices_board ON supplier_invoices(board_id,status,due_date);
