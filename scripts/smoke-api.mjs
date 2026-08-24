@@ -1,6 +1,7 @@
 const baseUrl = (process.env.STYR_SMOKE_BASE_URL || 'https://styr.ing').replace(/\/$/, '');
 const checks = [
   ['health', '/api/health', 200],
+  ['auth session', '/api/auth', 200],
   ['boards', '/api/boards', 200],
   ['event mesh summary', '/api/events?boardId=board-1&view=summary', 200],
   ['compliance summary', '/api/compliance?boardId=board-1&view=summary', 200],
@@ -25,6 +26,8 @@ for (const [label, path] of [
   const response = await fetch(`${baseUrl}${path}`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: '{}' });
   if (response.status !== 401) failures.push(`${label}: expected 401, got ${response.status}`);
 }
+const invalidLogin = await fetch(`${baseUrl}/api/auth`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ action: 'login', email: 'nobody@example.invalid', password: 'not-a-real-password' }) });
+if (invalidLogin.status !== 401) failures.push(`invalid login guard: expected 401, got ${invalidLogin.status}`);
 if (failures.length) {
   console.error(`LIVE API SMOKE: FAIL (${failures.length})`);
   failures.forEach((failure) => console.error(`- ${failure}`));

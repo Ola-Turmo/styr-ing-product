@@ -8,7 +8,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ env, request }) => {
   const view = url.searchParams.get('view') || 'summary';
   if (!boardId) return json({ error: 'boardId_required' }, { status: 400 });
   if (!views.has(view)) return json({ error: 'unknown_view', allowed: [...views] }, { status: 400 });
-  if (!authorizeBoardRead(request, env, boardId)) return json({ error: 'board_access_denied' }, { status: 403 });
+  if (!(await authorizeBoardRead(request, env, boardId))) return json({ error: 'board_access_denied' }, { status: 403 });
   try {
     const db = requireDb(env);
     if (view === 'assets') return json({ boardId, view, data: (await db.prepare(`SELECT a.id,a.asset_tag,a.name,a.asset_type,a.status,a.vendor,a.renewal_date,p.name owner_name,aa.status custody_status,aa.assigned_at FROM it_assets a LEFT JOIN people p ON p.id=a.owner_id LEFT JOIN asset_assignments aa ON aa.asset_id=a.id AND aa.status='assigned' WHERE a.board_id=? ORDER BY a.renewal_date`).bind(boardId).all()).results });

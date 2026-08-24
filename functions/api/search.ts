@@ -91,7 +91,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ env, request }) => {
   const query = (url.searchParams.get('q') || '').trim();
   if (!boardId) return json({ error: 'boardId_required' }, { status: 400 });
   if (query.length < 2) return json({ error: 'query_too_short', minLength: 2 }, { status: 400 });
-  if (!authorizeBoardRead(request, env, boardId)) return json({ error: 'board_access_denied' }, { status: 403 });
+  if (!(await authorizeBoardRead(request, env, boardId))) return json({ error: 'board_access_denied' }, { status: 403 });
   try {
     const results = await searchBoard(requireDb(env), boardId, query);
     return json({ boardId, query, data: results, count: results.length, mode: 'semantic-contract', humanReviewRequired: true });

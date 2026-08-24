@@ -4,7 +4,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ env, request }) => {
   const u = new URL(request.url); const boardId = (u.searchParams.get('boardId') || '').trim(); const view = u.searchParams.get('view') || 'summary';
   if (!boardId) return json({ error: 'boardId_required' }, { status: 400 });
   if (!views.has(view)) return json({ error: 'unknown_view', allowed: [...views] }, { status: 400 });
-  if (!authorizeBoardRead(request, env, boardId)) return json({ error: 'board_access_denied' }, { status: 403 });
+  if (!(await authorizeBoardRead(request, env, boardId))) return json({ error: 'board_access_denied' }, { status: 403 });
   try { const db = requireDb(env); const q: Record<string, string> = {
     cards: `SELECT c.*,p.name holder_name FROM corporate_cards c LEFT JOIN people p ON p.id=c.holder_id WHERE c.board_id=? ORDER BY c.card_name`,
     transactions: `SELECT t.*,c.card_name,p.name holder_name FROM card_transactions t LEFT JOIN corporate_cards c ON c.id=t.card_id LEFT JOIN people p ON p.id=c.holder_id WHERE t.board_id=? ORDER BY t.transaction_date DESC`,

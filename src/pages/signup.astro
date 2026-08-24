@@ -1,17 +1,12 @@
 ---
 import Layout from '../layouts/Layout.astro';
 ---
-<Layout title="Ingen selvbetjent registrering" activeNav="">
-  <div class="container" style="max-width: 440px; margin: 4rem auto; padding: 0 20px;">
-    <h1 style="font-size: 1.8rem; margin-bottom: 0.5rem;">Ingen selvbetjent registrering</h1>
-    <p style="font-family: system-ui, sans-serif; color: var(--muted); margin: 0 0 2rem 0;">
-      Den offentlige siden oppretter ikke kontoer og samler ikke inn registreringsdata. Styr.ing er ikke et separat aktivt tilbud.
-    </p>
-
-    <div style="text-align: center; margin-top: 1.5rem; padding: 1rem; background: rgba(31,111,91,0.06); border-radius: 10px;">
-      <p style="font-family: system-ui, sans-serif; font-size: 0.85rem; color: var(--muted); margin: 0;">
-        <a href="/personvern" style="display:inline-block; background:var(--accent); color:white; padding:12px 22px; border-radius:999px; font-weight:600;">Les personvern</a>
-      </p>
-    </div>
-  </div>
+<Layout title="Be om tilgang — Styr.ing" activeNav="login">
+  <main class="request-shell">
+    <span class="section-kicker">Tilgang avtales separat</span>
+    <h1>Ingen selvbetjent registrering.</h1>
+    <p>Styr.ing er SaaS-only. En administrator oppretter brukere etter godkjent kundeavtale, og knytter dem til riktig virksomhet og rolle.</p>
+    <div class="request-actions"><a href="mailto:ola@styr.ing?subject=Be%20om%20Styr.ing-tilgang">Be om tilgang på e-post ↗</a><a href="/login">Til innlogging</a></div>
+  </main>
 </Layout>
+<style>.request-shell{max-width:650px;margin:0 auto;padding:90px 24px 120px}.request-shell h1{font:500 clamp(2.5rem,6vw,4.5rem)/.95 Georgia,serif;letter-spacing:-.06em;margin:17px 0}.request-shell p{max-width:520px;color:var(--muted);font:.94rem/1.65 system-ui,sans-serif}.request-actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:28px}.request-actions a{padding:13px 16px;border-radius:9px;background:var(--night);color:#fff;font:700 .74rem/1 system-ui,sans-serif}.request-actions a+ a{background:#e8f1df;color:var(--accent)}</style>

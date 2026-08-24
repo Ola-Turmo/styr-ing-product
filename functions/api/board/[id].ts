@@ -3,7 +3,7 @@ import { authorizeBoardRead, json, requireDb, type Env } from '../_lib';
 export const onRequestGet: PagesFunction<Env> = async ({ env, params, request }) => {
   try {
     const db = requireDb(env); const id = String(params.id);
-    if (!authorizeBoardRead(request, env, id)) return json({ error: 'board_access_denied' }, { status: 403 });
+    if (!(await authorizeBoardRead(request, env, id))) return json({ error: 'board_access_denied' }, { status: 403 });
     const board = await db.prepare('SELECT id,name,description,org_number,status,plan,created_at,updated_at FROM boards WHERE id = ?').bind(id).first();
     if (!board) return json({ error: 'not_found' }, { status: 404 });
     const [members, meetings, actions, resolutions, documents, risks, people, goals, assets, tickets, finance, crm, contracts, sustainability, integrations] = await Promise.all([

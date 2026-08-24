@@ -3,7 +3,7 @@ import { authorizeBoardRead, authorizeWrite, body, id, json, requireDb, type Env
 const views = new Set(['summary','pipeline','quotes','rooms','subscriptions','cases']);
 export const onRequestGet: PagesFunction<Env> = async ({ env, request }) => {
   const url=new URL(request.url);const boardId=(url.searchParams.get('boardId')||'').trim();const view=url.searchParams.get('view')||'summary';
-  if(!boardId)return json({error:'boardId_required'},{status:400});if(!views.has(view))return json({error:'unknown_view',allowed:[...views]},{status:400});if(!authorizeBoardRead(request,env,boardId))return json({error:'board_access_denied'},{status:403});
+  if(!boardId)return json({error:'boardId_required'},{status:400});if(!views.has(view))return json({error:'unknown_view',allowed:[...views]},{status:400});if(!(await authorizeBoardRead(request,env,boardId)))return json({error:'board_access_denied'},{status:403});
   try{const db=requireDb(env);
     if(view==='pipeline')return json({boardId,view,data:(await db.prepare(`SELECT a.id,a.company_name,a.stage,a.next_action,a.estimated_value_minor,a.currency,p.name AS owner_name FROM crm_accounts a LEFT JOIN people p ON p.id=a.owner_id WHERE a.board_id=? ORDER BY CASE a.stage WHEN 'won' THEN 1 WHEN 'proposal' THEN 2 WHEN 'qualified' THEN 3 ELSE 4 END,a.created_at DESC`).bind(boardId).all()).results});
     if(view==='quotes')return json({boardId,view,data:(await db.prepare(`SELECT q.id,q.quote_number,q.title,q.status,q.total_minor,q.currency,q.valid_until,q.approval_required,a.company_name,p.name AS owner_name FROM quotes q LEFT JOIN crm_accounts a ON a.id=q.account_id LEFT JOIN people p ON p.id=q.owner_id WHERE q.board_id=? ORDER BY q.created_at DESC`).bind(boardId).all()).results});

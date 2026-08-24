@@ -6,7 +6,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ env, request }) => {
   const url = new URL(request.url); const boardId = (url.searchParams.get('boardId') || '').trim(); const view = url.searchParams.get('view') || 'summary';
   if (!boardId) return json({ error: 'boardId_required' }, { status: 400 });
   if (!views.has(view)) return json({ error: 'unknown_view', allowed: [...views] }, { status: 400 });
-  if (!authorizeBoardRead(request, env, boardId)) return json({ error: 'board_access_denied' }, { status: 403 });
+  if (!(await authorizeBoardRead(request, env, boardId))) return json({ error: 'board_access_denied' }, { status: 403 });
   try {
     const db = requireDb(env);
     if (view === 'contracts') return json({ boardId, view, data: (await db.prepare(`SELECT c.id,c.title,c.counterparty,c.contract_type,c.status,c.start_date,c.end_date,c.renewal_notice_date,p.name owner_name,r.status review_status,r.findings,r.due_date FROM contracts c LEFT JOIN people p ON p.id=c.owner_id LEFT JOIN contract_reviews r ON r.contract_id=c.id AND r.board_id=c.board_id WHERE c.board_id=? ORDER BY COALESCE(r.due_date,c.renewal_notice_date)`).bind(boardId).all()).results });

@@ -4,7 +4,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ env, request }) => {
   const url = new URL(request.url);
   const boardId = (url.searchParams.get('boardId') || '').trim();
   if (!boardId) return json({ error: 'boardId_required' }, { status: 400 });
-  if (!authorizeBoardRead(request, env, boardId)) return json({ error: 'board_access_denied' }, { status: 403 });
+  if (!(await authorizeBoardRead(request, env, boardId))) return json({ error: 'board_access_denied' }, { status: 403 });
   try {
     const db = requireDb(env);
     const latest = await db.prepare('SELECT cash_minor,receivables_minor,payables_minor,payroll_due_minor,runway_months,as_of_date FROM liquidity_snapshots WHERE board_id=? ORDER BY as_of_date DESC LIMIT 1').bind(boardId).first<Record<string, number|string>>();

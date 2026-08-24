@@ -8,7 +8,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ env, request }) => {
   const view = url.searchParams.get('view') || 'summary';
   if (!boardId) return json({ error: 'boardId_required' }, { status: 400 });
   if (!views.has(view)) return json({ error: 'unknown_view', allowed: [...views] }, { status: 400 });
-  if (!authorizeBoardRead(request, env, boardId)) return json({ error: 'board_access_denied' }, { status: 403 });
+  if (!(await authorizeBoardRead(request, env, boardId))) return json({ error: 'board_access_denied' }, { status: 403 });
   try {
     const db = requireDb(env);
     if (view === 'items') return json({ boardId, view, data: (await db.prepare('SELECT id,title,owner,frequency,status,last_review,notes,category FROM control_items WHERE board_id=? ORDER BY CASE status WHEN \'red\' THEN 1 WHEN \'yellow\' THEN 2 ELSE 3 END, title').bind(boardId).all()).results });

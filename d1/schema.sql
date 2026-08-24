@@ -111,6 +111,20 @@ CREATE TABLE IF NOT EXISTS users (
   last_login TEXT
 );
 
+-- Revocable, hashed session tokens for approved tenant users.
+CREATE TABLE IF NOT EXISTS sessions (
+  id TEXT PRIMARY KEY,
+  user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  expires_at TEXT NOT NULL,
+  created_at TEXT NOT NULL DEFAULT (datetime('now')),
+  last_seen_at TEXT,
+  user_agent TEXT,
+  ip_address TEXT
+);
+
+CREATE INDEX IF NOT EXISTS idx_sessions_user ON sessions(user_id);
+CREATE INDEX IF NOT EXISTS idx_sessions_expiry ON sessions(expires_at);
+
 -- Board-user memberships
 CREATE TABLE IF NOT EXISTS user_boards (
   user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,

@@ -1,5 +1,6 @@
 // Styr.ing Auth Middleware
-// Simple session-based auth for MVP. Replace with Clerk/Ory for production.
+// Shared session contract for server-rendered or adapter code. Pages Functions
+// use the equivalent helpers in functions/api/_lib.ts.
 
 export interface Session {
   userId: string;
@@ -10,7 +11,7 @@ export interface Session {
 
 export async function getSession(request: Request, env: any): Promise<Session | null> {
   const cookie = request.headers.get('Cookie') || '';
-  const sessionId = cookie.match(/styr_session=([^;]+)/)?.[1];
+  const sessionId = cookie.match(/(?:^|;\s*)styr_session=([^;]+)/)?.[1];
   if (!sessionId) return null;
   
   try {

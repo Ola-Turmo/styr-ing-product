@@ -5,7 +5,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ env, request }) => {
   const boardId = (url.searchParams.get('boardId') || '').trim();
   const view = url.searchParams.get('view') || 'checks';
   if (!boardId) return json({ error: 'boardId_required' }, { status: 400 });
-  if (!authorizeBoardRead(request, env, boardId)) return json({ error: 'board_access_denied' }, { status: 403 });
+  if (!(await authorizeBoardRead(request, env, boardId))) return json({ error: 'board_access_denied' }, { status: 403 });
   try {
     const db = requireDb(env);
     if (view === 'summary') {

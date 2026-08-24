@@ -3,7 +3,7 @@ const views = new Set(['summary','orders','receipts','invoices']);
 export const onRequestGet: PagesFunction<Env> = async ({ env, request }) => {
   const u = new URL(request.url); const boardId = (u.searchParams.get('boardId') || '').trim(); const view = u.searchParams.get('view') || 'summary';
   if (!boardId) return json({ error: 'boardId_required' }, { status: 400 }); if (!views.has(view)) return json({ error: 'unknown_view', allowed: [...views] }, { status: 400 });
-  if (!authorizeBoardRead(request, env, boardId)) return json({ error: 'board_access_denied' }, { status: 403 });
+  if (!(await authorizeBoardRead(request, env, boardId))) return json({ error: 'board_access_denied' }, { status: 403 });
   try { const db = requireDb(env); const q: Record<string,string> = {
     orders: `SELECT * FROM purchase_orders WHERE board_id=? ORDER BY created_at DESC`,
     receipts: `SELECT r.*,o.order_number,o.supplier_name FROM goods_receipts r JOIN purchase_orders o ON o.id=r.purchase_order_id WHERE r.board_id=? ORDER BY r.received_date DESC`,
