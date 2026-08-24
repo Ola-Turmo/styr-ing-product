@@ -86,6 +86,10 @@ The public preview is safe to explore with fictional data. The deployed backend 
 - `GET /api/operations?boardId=...` — live D1-backed cockpit metrics across people, IT, finance, commercial, field and platform; read-only and tenant-scoped
 - `GET /api/risk?boardId=...&view=summary|risks|actions` — tenant-scoped live risk register, overdue indicators, and action queue
 - `POST /api/risk` (API key) — create/update risks and complete action items; review remains human-controlled
+- `GET /api/compliance?boardId=...&view=summary|events` — tenant-scoped deadlines with overdue/upcoming counts
+- `POST /api/compliance` (API key) — transition a compliance deadline to pending, in progress, done or waived
+- `GET /api/controls?boardId=...&view=summary|items` — tenant-scoped COSO-style control register and status counts
+- `POST /api/controls` (API key) — record a reviewed control status; evidence remains separately attached and human-reviewed
 
 Initialize or update the remote database with `wrangler d1 execute styr-ing-db --remote --file=d1/schema.sql`, then seed the illustrative board with `wrangler d1 execute styr-ing-db --remote --file=d1/seed.sql`.
 
