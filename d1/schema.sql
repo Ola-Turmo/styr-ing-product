@@ -254,11 +254,25 @@ CREATE TABLE IF NOT EXISTS api_events (
   created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 
+CREATE TABLE IF NOT EXISTS ai_drafts (
+  id TEXT PRIMARY KEY,
+  board_id TEXT NOT NULL REFERENCES boards(id) ON DELETE CASCADE,
+  question TEXT NOT NULL,
+  answer TEXT NOT NULL,
+  citations TEXT NOT NULL DEFAULT '[]',
+  status TEXT NOT NULL DEFAULT 'draft' CHECK(status IN ('draft','approved','rejected')),
+  provider TEXT NOT NULL DEFAULT 'rules-based-preview',
+  created_by TEXT,
+  created_at TEXT NOT NULL DEFAULT (datetime('now')),
+  approved_at TEXT
+);
+
 CREATE INDEX IF NOT EXISTS idx_risks_board ON risks(board_id);
 CREATE INDEX IF NOT EXISTS idx_actions_board ON action_items(board_id);
 CREATE INDEX IF NOT EXISTS idx_resolutions_board ON resolutions(board_id);
 CREATE INDEX IF NOT EXISTS idx_documents_board ON board_documents(board_id);
 CREATE INDEX IF NOT EXISTS idx_review_states_entity ON review_states(board_id, entity_type, entity_id);
+CREATE INDEX IF NOT EXISTS idx_ai_drafts_board ON ai_drafts(board_id, created_at);
 
 -- Unified operating-system domains from PRD v8.
 CREATE TABLE IF NOT EXISTS people (
