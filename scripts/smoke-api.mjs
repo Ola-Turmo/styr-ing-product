@@ -7,6 +7,7 @@ const checks = [
   ['event mesh summary', '/api/events?boardId=board-1&view=summary', 200],
   ['compliance summary', '/api/compliance?boardId=board-1&view=summary', 200],
   ['controls summary', '/api/controls?boardId=board-1&view=summary', 200],
+  ['HCM goals', '/api/hcm?boardId=board-1&view=goals', 200],
   ['audit trail', '/api/audit?boardId=board-1', 200], ['SAF-T export', '/api/finance?boardId=board-1&view=saf-t', 200],
   ['private board guard', '/api/events?boardId=board-2&view=summary', 403],
 ];
@@ -25,6 +26,7 @@ for (const [label, path, payload] of [
   ['compliance write guard', '/api/compliance', { boardId: 'board-1', eventId: 'fixture-not-used', status: 'pending' }],
   ['controls write guard', '/api/controls', { boardId: 'board-1', controlId: 'fixture-not-used', status: 'green' }],
   ['risk write guard', '/api/risk', { boardId: 'board-1', action: 'update_risk', riskId: 'fixture-not-used', status: 'monitoring' }],
+  ['HCM write guard', '/api/hcm', { boardId: 'board-1', action: 'update_goal', goalId: 'fixture-not-used', progress: 50, status: 'on_track' }],
   ['billing checkout guard', '/api/billing-checkout', { boardId: 'board-1', plan: 'paid' }],
   ['privacy request guard', '/api/privacy', { boardId: 'board-1', requestType: 'access' }],
   ['invite guard', '/api/auth', { action: 'invite_user', boardId: 'board-1', email: 'invite@example.invalid', name: 'Invite User' }],

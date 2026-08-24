@@ -1,4 +1,4 @@
-import { authorizeBoardRead, authorizeWrite, body, id, json, requireDb, type Env } from './_lib';
+import { authorizeBoardRead, authorizeBoardWrite, body, id, json, recordAudit, requireDb, type Env } from './_lib';
 
 const datePattern = /^\d{4}-\d{2}-\d{2}$/;
 const views = new Set(['summary','people','goals','candidates','handbook','training','reviews','offboarding']);
@@ -32,36 +32,38 @@ export const onRequestGet: PagesFunction<Env> = async ({ env, request }) => {
 };
 
 export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
-  if (!authorizeWrite(request, env)) return json({ error: 'write_not_authorized' }, { status: 401 });
   try {
     const value = await body(request); const boardId = String(value?.boardId || '').trim(); const action = String(value?.action || ''); if (!boardId || !action) return json({ error: 'boardId_and_action_required' }, { status: 400 });
+    const authorization = await authorizeBoardWrite(request, env, boardId);
+    if (!authorization.allowed) return json({ error: 'write_not_authorized' }, { status: 401 });
     const db = requireDb(env);
     if (action === 'create_candidate') {
       const name = String(value?.name || '').trim(); const email = String(value?.email || '').trim(); const requisitionId = String(value?.requisitionId || '').trim(); if (!name || !requisitionId) return json({ error: 'candidate_fields_required' }, { status: 400 });
-      const candidateId = id('candidate'); await db.prepare("INSERT INTO candidates (id,board_id,requisition_id,name,email,stage,skills,score,consent_status) VALUES (?,?,?,?,?,'new','[]',NULL,'pending')").bind(candidateId, boardId, requisitionId, name, email || null).run(); return json({ ok: true, action, id: candidateId, stage: 'new', consentStatus: 'pending' }, { status: 201 });
+      const candidateId = id('candidate'); await db.prepare("INSERT INTO candidates (id,board_id,requisition_id,name,email,stage,skills,score,consent_status) VALUES (?,?,?,?,?,'new','[]',NULL,'pending')").bind(candidateId, boardId, requisitionId, name, email || null).run(); await recordAudit(db, { boardId, action: 'candidate_created', entityType: 'candidate', entityId: candidateId, userId: authorization.userId || undefined, details: { requisitionId } }); return json({ ok: true, action, id: candidateId, stage: 'new', consentStatus: 'pending' }, { status: 201 });
     }
     if (action === 'acknowledge_handbook') {
       const handbookId = String(value?.handbookId || ''); const personId = String(value?.personId || ''); if (!handbookId || !personId) return json({ error: 'handbookId_and_personId_required' }, { status: 400 });
-      await db.prepare('INSERT OR IGNORE INTO handbook_acknowledgements (id,board_id,handbook_id,person_id) VALUES (?,?,?,?)').bind(id('ack'), boardId, handbookId, personId).run(); return json({ ok: true, action, handbookId, personId, status: 'acknowledged' });
+      await db.prepare('INSERT OR IGNORE INTO handbook_acknowledgements (id,board_id,handbook_id,person_id) VALUES (?,?,?,?)').bind(id('ack'), boardId, handbookId, personId).run(); await recordAudit(db, { boardId, action: 'handbook_acknowledged', entityType: 'handbook', entityId: handbookId, userId: authorization.userId || undefined, details: { personId } }); return json({ ok: true, action, handbookId, personId, status: 'acknowledged' });
     }
     if (action === 'complete_training') {
       const enrollmentId = String(value?.enrollmentId || ''); const score = Number(value?.score); if (!enrollmentId || !Number.isInteger(score) || score < 0 || score > 100) return json({ error: 'enrollment_and_score_required' }, { status: 400 });
-      await db.prepare("UPDATE training_enrollments SET status='passed',score=?,completed_at=datetime('now') WHERE id=? AND board_id=?").bind(score, enrollmentId, boardId).run(); return json({ ok: true, action, enrollmentId, status: 'passed', score });
+      const result = await db.prepare("UPDATE training_enrollments SET status='passed',score=?,completed_at=datetime('now') WHERE id=? AND board_id=?").bind(score, enrollmentId, boardId).run(); if (!result.meta?.changes) return json({ error: 'enrollment_not_found' }, { status: 404 }); await recordAudit(db, { boardId, action: 'training_completed', entityType: 'training_enrollment', entityId: enrollmentId, userId: authorization.userId || undefined, details: { score } }); return json({ ok: true, action, enrollmentId, status: 'passed', score });
     }
     if (action === 'update_goal') {
       const goalId = String(value?.goalId || '').trim(); const progress = Number(value?.progress); const status = String(value?.status || '').trim();
       if (!goalId || !Number.isInteger(progress) || progress < 0 || progress > 100 || !['on_track','at_risk','complete','draft'].includes(status)) return json({ error: 'goal_id_progress_status_required' }, { status: 400 });
       const result = await db.prepare("UPDATE goals SET progress=?,status=?,updated_at=datetime('now') WHERE id=? AND board_id=?").bind(progress, status, goalId, boardId).run();
       if (!result.meta?.changes) return json({ error: 'goal_not_found' }, { status: 404 });
+      await recordAudit(db, { boardId, action: 'goal_status_changed', entityType: 'goal', entityId: goalId, userId: authorization.userId || undefined, details: { progress, status } });
       return json({ ok: true, action, goalId, progress, status, requiresHumanReview: true });
     }
     if (action === 'create_offboarding') {
       const personId = String(value?.personId || ''); const lastDay = String(value?.lastDay || ''); if (!personId || !datePattern.test(lastDay)) return json({ error: 'personId_and_lastDay_required' }, { status: 400 });
-      const caseId = id('offboard'); await db.prepare("INSERT INTO offboarding_cases (id,board_id,person_id,last_day,status,notes) VALUES (?,?,?,?,'planned',?)").bind(caseId, boardId, personId, lastDay, String(value?.notes || '')).run(); return json({ ok: true, action, id: caseId, status: 'planned', requiresHumanApproval: true });
+      const caseId = id('offboard'); await db.prepare("INSERT INTO offboarding_cases (id,board_id,person_id,last_day,status,notes) VALUES (?,?,?,?,'planned',?)").bind(caseId, boardId, personId, lastDay, String(value?.notes || '')).run(); await recordAudit(db, { boardId, action: 'offboarding_created', entityType: 'offboarding_case', entityId: caseId, userId: authorization.userId || undefined, details: { personId, lastDay } }); return json({ ok: true, action, id: caseId, status: 'planned', requiresHumanApproval: true });
     }
     if (action === 'advance_offboarding') {
       const caseId = String(value?.caseId || ''); const accessRevoked = value?.accessRevoked ? 1 : 0; const assetsReturned = value?.assetsReturned ? 1 : 0; const payrollReviewed = value?.payrollReviewed ? 1 : 0; if (!caseId) return json({ error: 'caseId_required' }, { status: 400 });
-      const complete = accessRevoked && assetsReturned && payrollReviewed; await db.prepare(`UPDATE offboarding_cases SET access_revoked=?,assets_returned=?,payroll_reviewed=?,status=?${complete ? ",completed_at=datetime('now')" : ''} WHERE id=? AND board_id=?`).bind(accessRevoked, assetsReturned, payrollReviewed, complete ? 'complete' : 'in_progress', caseId, boardId).run(); return json({ ok: true, action, caseId, status: complete ? 'complete' : 'in_progress', requiresHumanApproval: true });
+      const complete = accessRevoked && assetsReturned && payrollReviewed; const result = await db.prepare(`UPDATE offboarding_cases SET access_revoked=?,assets_returned=?,payroll_reviewed=?,status=?${complete ? ",completed_at=datetime('now')" : ''} WHERE id=? AND board_id=?`).bind(accessRevoked, assetsReturned, payrollReviewed, complete ? 'complete' : 'in_progress', caseId, boardId).run(); if (!result.meta?.changes) return json({ error: 'offboarding_case_not_found' }, { status: 404 }); await recordAudit(db, { boardId, action: 'offboarding_advanced', entityType: 'offboarding_case', entityId: caseId, userId: authorization.userId || undefined, details: { accessRevoked, assetsReturned, payrollReviewed, status: complete ? 'complete' : 'in_progress' } }); return json({ ok: true, action, caseId, status: complete ? 'complete' : 'in_progress', requiresHumanApproval: true });
     }
     return json({ error: 'unknown_action', allowed: ['create_candidate','acknowledge_handbook','complete_training','update_goal','create_offboarding','advance_offboarding'] }, { status: 400 });
   } catch (error) { return json({ error: 'database_unavailable', detail: error instanceof Error ? error.message : 'unknown' }, { status: 503 }); }
