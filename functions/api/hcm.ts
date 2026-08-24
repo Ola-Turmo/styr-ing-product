@@ -12,7 +12,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ env, request }) => {
     const db = requireDb(env);
     if (view === 'people') return json({ boardId, view, data: (await db.prepare('SELECT id,name,email,role,department,employment_status,start_date FROM people WHERE board_id=? ORDER BY name').bind(boardId).all()).results });
     if (view === 'goals') return json({ boardId, view, data: (await db.prepare(`SELECT g.id,g.title,g.period,g.status,g.progress,p.name AS owner_name FROM goals g LEFT JOIN people p ON p.id=g.owner_id WHERE g.board_id=? ORDER BY CASE g.status WHEN 'at_risk' THEN 1 WHEN 'on_track' THEN 2 WHEN 'draft' THEN 3 ELSE 4 END,g.created_at DESC`).bind(boardId).all()).results });
-    if (view === 'candidates') return json({ boardId, view, data: (await db.prepare(`SELECT c.id,c.name,c.email,c.stage,c.score,c.consent_status,r.title AS requisition_title FROM candidates c LEFT JOIN job_requisitions r ON r.id=c.requisition_id WHERE c.board_id=? ORDER BY c.created_at DESC`).bind(boardId).all()).results });
+    if (view === 'candidates') return json({ boardId, view, data: (await db.prepare(`SELECT c.id,c.name,c.email,c.stage,c.score,c.skills,c.consent_status,r.title AS requisition_title FROM candidates c LEFT JOIN job_requisitions r ON r.id=c.requisition_id WHERE c.board_id=? ORDER BY c.created_at DESC`).bind(boardId).all()).results });
     if (view === 'handbook') return json({ boardId, view, data: (await db.prepare(`SELECT h.id,h.title,h.category,h.version,h.status,h.requires_ack,h.published_at,COUNT(a.id) AS acknowledgements FROM handbook_documents h LEFT JOIN handbook_acknowledgements a ON a.handbook_id=h.id WHERE h.board_id=? GROUP BY h.id ORDER BY h.published_at DESC`).bind(boardId).all()).results });
     if (view === 'training') return json({ boardId, view, data: (await db.prepare(`SELECT e.id,e.status,e.due_date,e.score,c.title AS course_title,p.name AS person_name FROM training_enrollments e JOIN training_courses c ON c.id=e.course_id JOIN people p ON p.id=e.person_id WHERE e.board_id=? ORDER BY e.due_date`).bind(boardId).all()).results });
     if (view === 'reviews') return json({ boardId, view, data: (await db.prepare(`SELECT r.id,r.period,r.status,r.rating,r.due_date,p.name AS person_name,rv.name AS reviewer_name FROM performance_reviews r JOIN people p ON p.id=r.person_id LEFT JOIN people rv ON rv.id=r.reviewer_id WHERE r.board_id=? ORDER BY r.due_date`).bind(boardId).all()).results });
@@ -44,11 +44,13 @@ export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
     if (action === 'update_candidate') {
       const candidateId = String(value?.candidateId || '').trim(); const stage = String(value?.stage || '').trim();
       if (!candidateId || !['new','screening','interview','offer','hired','rejected'].includes(stage)) return json({ error: 'candidate_id_and_valid_stage_required' }, { status: 400 });
+      const score = value?.score === undefined || value?.score === null || value?.score === '' ? null : Number(value.score);
+      if (score !== null && (!Number.isInteger(score) || score < 0 || score > 100)) return json({ error: 'candidate_score_must_be_0_to_100' }, { status: 400 });
       const candidate = await db.prepare('SELECT id,stage FROM candidates WHERE id=? AND board_id=?').bind(candidateId, boardId).first<{ id: string; stage: string }>();
       if (!candidate) return json({ error: 'candidate_not_found' }, { status: 404 });
-      await db.prepare("UPDATE candidates SET stage=?,updated_at=datetime('now') WHERE id=? AND board_id=?").bind(stage, candidateId, boardId).run();
-      await recordAudit(db, { boardId, action: 'candidate_stage_changed', entityType: 'candidate', entityId: candidateId, userId: authorization.userId || undefined, details: { from: candidate.stage, to: stage } });
-      return json({ ok: true, action, candidateId, stage, requiresHumanReview: ['hired','rejected'].includes(stage) });
+      await db.prepare("UPDATE candidates SET stage=?,score=COALESCE(?,score),updated_at=datetime('now') WHERE id=? AND board_id=?").bind(stage, score, candidateId, boardId).run();
+      await recordAudit(db, { boardId, action: 'candidate_updated', entityType: 'candidate', entityId: candidateId, userId: authorization.userId || undefined, details: { from: candidate.stage, to: stage, score } });
+      return json({ ok: true, action, candidateId, stage, score, requiresHumanReview: ['hired','rejected'].includes(stage) });
     }
     if (action === 'acknowledge_handbook') {
       const handbookId = String(value?.handbookId || ''); const personId = String(value?.personId || ''); if (!handbookId || !personId) return json({ error: 'handbookId_and_personId_required' }, { status: 400 });
