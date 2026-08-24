@@ -170,6 +170,34 @@ CREATE TABLE IF NOT EXISTS billing_accounts (
 
 CREATE INDEX IF NOT EXISTS idx_billing_accounts_status ON billing_accounts(status, plan);
 
+-- Privacy operations: access, export and deletion requests with a review trail.
+CREATE TABLE IF NOT EXISTS privacy_requests (
+  id TEXT PRIMARY KEY,
+  board_id TEXT NOT NULL REFERENCES boards(id) ON DELETE CASCADE,
+  user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  request_type TEXT NOT NULL CHECK(request_type IN ('access','export','deletion')),
+  status TEXT NOT NULL DEFAULT 'received' CHECK(status IN ('received','in_review','fulfilled','rejected','cancelled')),
+  notes TEXT,
+  fulfilled_at TEXT,
+  created_at TEXT NOT NULL DEFAULT (datetime('now')),
+  updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+CREATE TABLE IF NOT EXISTS retention_policies (
+  id TEXT PRIMARY KEY,
+  board_id TEXT REFERENCES boards(id) ON DELETE CASCADE,
+  data_category TEXT NOT NULL,
+  retention_period TEXT NOT NULL,
+  deletion_method TEXT NOT NULL,
+  legal_basis TEXT,
+  status TEXT NOT NULL DEFAULT 'draft' CHECK(status IN ('draft','active','retired')),
+  created_at TEXT NOT NULL DEFAULT (datetime('now')),
+  UNIQUE(board_id,data_category)
+);
+
+CREATE INDEX IF NOT EXISTS idx_privacy_requests_board ON privacy_requests(board_id,user_id,status,created_at);
+CREATE INDEX IF NOT EXISTS idx_retention_policies_board ON retention_policies(board_id,status);
+
 -- Board-user memberships
 CREATE TABLE IF NOT EXISTS user_boards (
   user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
