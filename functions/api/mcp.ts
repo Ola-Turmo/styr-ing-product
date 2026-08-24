@@ -5,6 +5,8 @@ type RpcRequest = { jsonrpc?: string; id?: string | number | null; method?: stri
 const result = (id: RpcRequest['id'], value: unknown) => json({ jsonrpc: '2.0', id: id ?? null, result: value });
 const error = (id: RpcRequest['id'], code: number, message: string) => json({ jsonrpc: '2.0', id: id ?? null, error: { code, message } }, { status: code === -32001 ? 401 : 400 });
 
+export const onRequestGet: PagesFunction<Env> = async () => json({ service: 'styr.ing-mcp', protocol: 'JSON-RPC 2.0', authentication: 'x-styr-api-key', mode: 'read-only', tools: ['search_board'], humanReviewRequired: true, writes: false });
+
 export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
   if (!authorizeWrite(request, env)) return error(null, -32001, 'mcp_authentication_required');
   let rpc: RpcRequest;
