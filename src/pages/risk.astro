@@ -42,6 +42,15 @@ import Layout from '../layouts/Layout.astro';
   <section id="demo" class="section">
     <h2>Statisk risikobilde</h2>
     <p class="section-desc">En illustrert arbeidsflate med fiktive eksempeldata. Ingen overvåking eller oppdatering skjer på siden.</p>
+    <div class="risk-toolbar" aria-label="Filtrer risikoer">
+      <div class="risk-filters" role="group" aria-label="Risikonivå">
+        <button class="risk-filter is-active" type="button" data-risk-filter="all">Alle</button>
+        <button class="risk-filter" type="button" data-risk-filter="Kritisk">Kritiske</button>
+        <button class="risk-filter" type="button" data-risk-filter="Høy">Høye</button>
+        <button class="risk-filter" type="button" data-risk-filter="open">Åpne</button>
+      </div>
+      <button class="risk-filter" type="button" id="export-risks">Eksporter demo-utdrag ↗</button>
+    </div>
     
     <div class="dashboard-grid">
       
@@ -62,13 +71,14 @@ import Layout from '../layouts/Layout.astro';
             {id:'R-004',name:'Likviditetsrisiko Q3 — forsinkede kundebetalinger',level:'Medium',trend:'↑',owner:'CFO',status:'overvåkes'},
             {id:'R-005',name:'Kompetanseflukt — nøkkelpersoner i tech-avdeling',level:'Høy',trend:'→',owner:'HR-sjef',status:'åpen'},
           ].map(r => (
-            <div class="rt-row">
+            <div class="rt-row" data-risk-row data-risk-level={r.level} data-risk-status={r.status} data-risk-id={r.id}>
               <span class="rt-id">{r.id}</span>
               <span class="rt-name">{r.name}</span>
               <span class={`rt-level level-${r.level === 'Kritisk' ? 'critical' : r.level === 'Høy' ? 'high' : 'medium'}`}>{r.level}</span>
               <span class={`rt-trend trend-${r.trend === '↑' ? 'up' : r.trend === '↓' ? 'down' : 'stable'}`}>{r.trend}</span>
               <span class="rt-owner">{r.owner}</span>
               <span class="rt-status">{r.status}</span>
+              <button class="risk-review" type="button" data-review-risk={r.id} aria-pressed="false">Gjennomgå</button>
             </div>
           ))}
         </div>
@@ -153,6 +163,23 @@ import Layout from '../layouts/Layout.astro';
 </div>
 </Layout>
 
+<script>
+  const key = 'styring-demo-reviewed-risks';
+  const rows = [...document.querySelectorAll('[data-risk-row]')];
+  const reviewed = new Set(JSON.parse(localStorage.getItem(key) || '[]'));
+  let mode = 'all';
+  const render = () => rows.forEach((row) => {
+    const level = row.getAttribute('data-risk-level'); const status = row.getAttribute('data-risk-status');
+    row.toggleAttribute('hidden', !(mode === 'all' || level === mode || (mode === 'open' && status !== 'overvåkes')));
+    const button = row.querySelector('[data-review-risk]'); const id = row.getAttribute('data-risk-id') || '';
+    const active = reviewed.has(id); button?.setAttribute('aria-pressed', String(active)); if (button) { button.textContent = active ? 'Gjennomgått ✓' : 'Gjennomgå'; button.classList.toggle('is-reviewed', active); }
+  });
+  document.querySelectorAll('[data-risk-filter]').forEach((button) => button.addEventListener('click', () => { mode = button.getAttribute('data-risk-filter') || 'all'; document.querySelectorAll('[data-risk-filter]').forEach((item) => item.classList.toggle('is-active', item === button)); render(); }));
+  document.querySelectorAll('[data-review-risk]').forEach((button) => button.addEventListener('click', () => { const id = button.getAttribute('data-review-risk'); if (!id) return; reviewed.has(id) ? reviewed.delete(id) : reviewed.add(id); localStorage.setItem(key, JSON.stringify([...reviewed])); render(); }));
+  document.getElementById('export-risks')?.addEventListener('click', () => { const lines = rows.map((row) => `${reviewed.has(row.getAttribute('data-risk-id') || '') ? '[x]' : '[ ]'} ${row.querySelector('.rt-id')?.textContent} ${row.querySelector('.rt-name')?.textContent}`); const blob = new Blob([`Styr.ing — risikoregister (demo)\n\n${lines.join('\n')}`], {type:'text/plain;charset=utf-8'}); const link = document.createElement('a'); link.href = URL.createObjectURL(blob); link.download = 'styring-demo-risiko.txt'; link.click(); URL.revokeObjectURL(link.href); });
+  render();
+</script>
+
 <style>
 .risk-home { max-width: 1100px; margin: 0 auto; padding: 0 20px; }
 
@@ -174,6 +201,13 @@ import Layout from '../layouts/Layout.astro';
 .section { padding: 3rem 0; }
 .section h2 { font-size: 1.5rem; text-align: center; margin: 0 0 0.5rem; }
 .section-desc { text-align: center; color: var(--muted); font-family: system-ui, sans-serif; margin: 0 0 2rem; }
+.risk-toolbar { display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap; margin:0 auto 1rem; max-width:1100px; }
+.risk-filters { display:flex; gap:6px; flex-wrap:wrap; }
+.risk-filter, .risk-review { border:1px solid rgba(16,36,31,0.14); background:#fff; color:var(--ink); border-radius:9px; padding:7px 11px; font:600 0.74rem system-ui,sans-serif; cursor:pointer; }
+.risk-filter.is-active { background:var(--ink); color:#fff; border-color:var(--ink); }
+.risk-review { margin-left:auto; padding:4px 7px; font-size:0.68rem; }
+.risk-review.is-reviewed { background:rgba(31,111,91,0.1); color:var(--accent); border-color:rgba(31,111,91,0.25); }
+.rt-row[hidden] { display:none; }
 .bg-light { background: rgba(246,242,234,0.5); margin: 0 -20px; padding: 3rem 20px; }
 
 .dashboard-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
