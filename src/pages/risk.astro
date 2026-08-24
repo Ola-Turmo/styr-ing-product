@@ -21,27 +21,27 @@ import Layout from '../layouts/Layout.astro';
   <!-- Stats -->
   <div class="risk-stats">
     <div class="risk-stat">
-      <div class="stat-value">47</div>
-      <div class="stat-label">fiktive risikoer i eksempelet</div>
+      <div id="risk-total" class="stat-value">—</div>
+      <div class="stat-label">risikoer i registeret</div>
     </div>
     <div class="risk-stat">
-      <div class="stat-value">128</div>
-      <div class="stat-label">fiktive kontroller i eksempelet</div>
+      <div id="risk-actions" class="stat-value">—</div>
+      <div class="stat-label">åpne tiltak</div>
     </div>
     <div class="risk-stat">
-      <div class="stat-value">3</div>
-      <div class="stat-label">fiktive kritiske avvik</div>
+      <div id="risk-critical" class="stat-value">—</div>
+      <div class="stat-label">kritiske åpne risikoer</div>
     </div>
     <div class="risk-stat">
-      <div class="stat-value">94%</div>
-      <div class="stat-label">illustrert kontrollstatus</div>
+      <div id="risk-overdue" class="stat-value">—</div>
+      <div class="stat-label">forfalte risikovurderinger</div>
     </div>
   </div>
 
   <!-- Demo Dashboard -->
   <section id="demo" class="section">
-    <h2>Statisk risikobilde</h2>
-    <p class="section-desc">En illustrert arbeidsflate med fiktive eksempeldata. Ingen overvåking eller oppdatering skjer på siden.</p>
+    <h2>Risikobilde med neste steg</h2>
+    <p class="section-desc">Live tenant-scoped register fra Styr.ing. Status, tiltak og forfall må fortsatt vurderes av virksomheten.</p>
     <div class="risk-toolbar" aria-label="Filtrer risikoer">
       <div class="risk-filters" role="group" aria-label="Risikonivå">
         <button class="risk-filter is-active" type="button" data-risk-filter="all">Alle</button>
@@ -58,9 +58,9 @@ import Layout from '../layouts/Layout.astro';
       <div class="card card-span-2">
         <div class="card-header">
           <h3>Risikoregister</h3>
-          <span class="badge">12 risikoer</span>
+          <span id="risk-badge" class="badge">Henter…</span>
         </div>
-        <div class="risk-table">
+        <div id="risk-table" class="risk-table">
           <div class="rt-header">
             <span>ID</span><span>Risiko</span><span>Nivå</span><span>Trend</span><span>Eier</span><span>Status</span>
           </div>
@@ -165,7 +165,8 @@ import Layout from '../layouts/Layout.astro';
 
 <script>
   const key = 'styring-demo-reviewed-risks';
-  const rows = [...document.querySelectorAll('[data-risk-row]')];
+  const table = document.getElementById('risk-table');
+  let rows = [...document.querySelectorAll('[data-risk-row]')];
   const reviewed = new Set(JSON.parse(localStorage.getItem(key) || '[]'));
   let mode = 'all';
   const render = () => rows.forEach((row) => {
@@ -177,7 +178,10 @@ import Layout from '../layouts/Layout.astro';
   document.querySelectorAll('[data-risk-filter]').forEach((button) => button.addEventListener('click', () => { mode = button.getAttribute('data-risk-filter') || 'all'; document.querySelectorAll('[data-risk-filter]').forEach((item) => item.classList.toggle('is-active', item === button)); render(); }));
   document.querySelectorAll('[data-review-risk]').forEach((button) => button.addEventListener('click', () => { const id = button.getAttribute('data-review-risk'); if (!id) return; reviewed.has(id) ? reviewed.delete(id) : reviewed.add(id); localStorage.setItem(key, JSON.stringify([...reviewed])); render(); }));
   document.getElementById('export-risks')?.addEventListener('click', () => { const lines = rows.map((row) => `${reviewed.has(row.getAttribute('data-risk-id') || '') ? '[x]' : '[ ]'} ${row.querySelector('.rt-id')?.textContent} ${row.querySelector('.rt-name')?.textContent}`); const blob = new Blob([`Styr.ing — risikoregister (demo)\n\n${lines.join('\n')}`], {type:'text/plain;charset=utf-8'}); const link = document.createElement('a'); link.href = URL.createObjectURL(blob); link.download = 'styring-demo-risiko.txt'; link.click(); URL.revokeObjectURL(link.href); });
-  render();
+  const labels = {critical:'Kritisk',high:'Høy',medium:'Medium',low:'Lav',open:'Åpen',treating:'Under behandling',monitoring:'Overvåkes',closed:'Lukket'};
+  const esc = (v) => String(v ?? '').replace(/[&<>'"]/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;', '"':'&quot;'}[c]));
+  const loadLiveRisks = async () => { try { const [summaryResponse, risksResponse] = await Promise.all([fetch('/api/risk?boardId=board-1&view=summary'), fetch('/api/risk?boardId=board-1&view=risks')]); const summary = (await summaryResponse.json()).data || {}; const risks = (await risksResponse.json()).data || []; document.getElementById('risk-total').textContent = summary.total?.count ?? 0; document.getElementById('risk-actions').textContent = summary.actions?.count ?? 0; document.getElementById('risk-critical').textContent = summary.critical?.count ?? 0; document.getElementById('risk-overdue').textContent = summary.overdue?.count ?? 0; document.getElementById('risk-badge').textContent = `${risks.length} risikoer · live`; if (table && risks.length) { table.innerHTML = `<div class="rt-header"><span>ID</span><span>Risiko</span><span>Nivå</span><span>Trend</span><span>Eier</span><span>Status</span></div>` + risks.map((r) => `<div class="rt-row" data-risk-row data-risk-level="${esc(r.level)}" data-risk-status="${esc(r.status)}" data-risk-id="${esc(r.code)}"><span class="rt-id">${esc(r.code)}</span><span class="rt-name">${esc(r.title)}</span><span class="rt-level level-${esc(r.level)}">${esc(labels[r.level] || r.level)}</span><span class="rt-trend trend-${esc(r.trend)}">${r.trend === 'up' ? '↑' : r.trend === 'down' ? '↓' : '→'}</span><span class="rt-owner">${esc(r.owner || '—')}</span><span class="rt-status">${esc(labels[r.status] || r.status)}</span><button class="risk-review" type="button" data-review-risk="${esc(r.code)}" aria-pressed="false">Gjennomgå</button></div>`).join(''); rows = [...document.querySelectorAll('[data-risk-row]')]; rows.forEach((buttonRow) => { const button = buttonRow.querySelector('[data-review-risk]'); button?.addEventListener('click', () => { const id = buttonRow.getAttribute('data-risk-id'); if (!id) return; reviewed.has(id) ? reviewed.delete(id) : reviewed.add(id); localStorage.setItem(key, JSON.stringify([...reviewed])); render(); }); }); render(); } } catch { const badge = document.getElementById('risk-badge'); if (badge) badge.textContent = 'Live-data utilgjengelig'; } };
+  render(); loadLiveRisks();
 </script>
 
 <style>
