@@ -24,4 +24,11 @@ export function authorizeWrite(request: Request, env: Env) {
   return Boolean(supplied && supplied === configured);
 }
 
+// The public preview is intentionally limited to its fictional board. Any
+// customer board must come through an authenticated service boundary (the
+// write key is the current adapter credential until end-user SSO is enabled).
+export function authorizeBoardRead(request: Request, env: Env, boardId: string) {
+  return boardId === 'board-1' || authorizeWrite(request, env);
+}
+
 export function id(prefix: string) { return `${prefix}-${crypto.randomUUID()}`; }

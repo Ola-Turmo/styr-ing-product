@@ -47,12 +47,17 @@ The public preview is safe to explore with fictional data. The deployed backend 
 - `GET /api/health` — binding and service health (no secrets returned)
 - `GET /api/boards` — active boards
 - `GET /api/board/:id` — board plus members, meetings, actions, resolutions, documents and risks
+- `GET /api/domains/:domain?boardId=...` — tenant-scoped people, goals, IT, tickets, finance, CRM, contracts, sustainability and integration records
+- `GET /api/search?boardId=...&q=...` — cross-domain, source-labelled universal search
+- `POST /api/assistant` — protected, rules-based evidence draft with citations; always `requiresHumanApproval: true` and `executed: false`
 - `GET|POST|DELETE /api/reviews` — auditable review state (`boardId`, `entityType`, `entityId`)
 - `POST /api/events` — append-only event intake contract for future event mesh adapters
 
 Initialize or update the remote database with `wrangler d1 execute styr-ing-db --remote --file=d1/schema.sql`, then seed the illustrative board with `wrangler d1 execute styr-ing-db --remote --file=d1/seed.sql`.
 
 The API is deliberately not a claim that all PRD adapters are live. Altinn/NAV, bank/payment, EHF/PEPPOL, Stripe, eID, payroll, cards, collections, CRM enrichment, AI providers and external MCP consumers each require credentials, contracts, legal approval, authentication, authorization, monitoring and dedicated adapter implementation before production use.
+
+Preview access is intentionally limited to the fictional `board-1`. A production tenant must be issued through an authenticated SSO/service boundary and pass the same board authorization check before any customer data is readable.
 
 ## STY Issues
 - STY-33 (schema/API) — DONE

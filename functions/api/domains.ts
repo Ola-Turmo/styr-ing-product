@@ -1,4 +1,4 @@
-import { authorizeWrite, body, id, json, requireDb, type Env } from './_lib';
+import { authorizeBoardRead, authorizeWrite, body, id, json, requireDb, type Env } from './_lib';
 
 type Domain = 'people' | 'goals' | 'it_assets' | 'service_tickets' | 'finance_records' | 'crm_accounts' | 'contracts' | 'sustainability_items' | 'integration_registry';
 const allowed: Record<Domain, string[]> = {
@@ -21,6 +21,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ env, params, request })
   try {
     const db = requireDb(env); const url = new URL(request.url); const boardId = url.searchParams.get('boardId');
     if (!boardId) return json({ error: 'boardId_required' }, { status: 400 });
+    if (!authorizeBoardRead(request, env, boardId)) return json({ error: 'board_access_denied' }, { status: 403 });
     const columns = allowed[domain].filter((column) => column !== 'updated_at' || domain !== 'people');
     const { results } = await db.prepare(`SELECT ${columns.join(',')} FROM ${domain} WHERE board_id = ? ORDER BY created_at DESC LIMIT 500`).bind(boardId).all();
     return json({ data: results, domain, boardId });
