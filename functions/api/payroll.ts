@@ -1,4 +1,4 @@
-import { authorizeBoardRead, authorizeWrite, body, id, json, requireDb, type Env } from './_lib';
+import { authorizeBoardRead, authorizeBoardWrite, body, id, json, recordAudit, requireDb, type Env } from './_lib';
 
 export const onRequestGet: PagesFunction<Env> = async ({ env, request }) => {
   const url = new URL(request.url);
@@ -24,13 +24,14 @@ export const onRequestGet: PagesFunction<Env> = async ({ env, request }) => {
 };
 
 export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
-  if (!authorizeWrite(request, env)) return json({ error: 'write_not_authorized' }, { status: 401 });
   try {
     const value = await body(request);
     const boardId = String(value?.boardId || '').trim();
     const action = String(value?.action || '').trim();
     const db = requireDb(env);
     if (!boardId || !action) return json({ error: 'boardId_and_action_required' }, { status: 400 });
+    const authorization = await authorizeBoardWrite(request, env, boardId);
+    if (!authorization.allowed) return json({ error: 'write_not_authorized' }, { status: 401 });
     if (action === 'calculate_compliance') {
       const runId = String(value?.payrollRunId || '').trim();
       const run = await db.prepare('SELECT gross_minor, employee_count FROM payroll_runs WHERE id=? AND board_id=?').bind(runId, boardId).first<Record<string, unknown>>();
@@ -44,12 +45,14 @@ export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
       const checkId = id('paycheck');
       const assumptions = JSON.stringify({ holidayBasis: 'gross wages', otpBasis: 'pensionable salary', externalRules: 'requires payroll review' });
       await db.prepare("INSERT INTO payroll_compliance_checks (id,board_id,payroll_run_id,holiday_rate,otp_rate,holiday_pay_minor,otp_minor,employee_count,status,assumptions) VALUES (?,?,?,?,?,?,?,?,?,?) ON CONFLICT(payroll_run_id) DO UPDATE SET holiday_rate=excluded.holiday_rate,otp_rate=excluded.otp_rate,holiday_pay_minor=excluded.holiday_pay_minor,otp_minor=excluded.otp_minor,employee_count=excluded.employee_count,status='calculated',assumptions=excluded.assumptions").bind(checkId, boardId, runId, holidayRate, otpRate, holiday, otp, Number(run.employee_count || 0), 'calculated', assumptions).run();
+      await recordAudit(db, { boardId, action: 'payroll_compliance_calculated', entityType: 'payroll_run', entityId: runId, userId: authorization.userId || undefined, details: { holidayRate, otpRate, holidayPayMinor: holiday, otpMinor: otp } });
       return json({ ok: true, action, payrollRunId: runId, holidayPayMinor: holiday, otpMinor: otp, status: 'calculated', requiresHumanReview: true }, { status: 201 });
     }
     if (action === 'approve_compliance') {
       const checkId = String(value?.checkId || '').trim();
       const result = await db.prepare("UPDATE payroll_compliance_checks SET status='approved', reviewed_by=?, reviewed_at=datetime('now') WHERE id=? AND board_id=? AND status IN ('calculated','review')").bind(value?.reviewedBy || 'api', checkId, boardId).run();
       if (!result.meta?.changes) return json({ error: 'compliance_check_not_open_or_found' }, { status: 409 });
+      await recordAudit(db, { boardId, action: 'payroll_compliance_approved', entityType: 'payroll_compliance_check', entityId: checkId, userId: authorization.userId || undefined, details: { externalSubmission: 'not_configured' } });
       return json({ ok: true, action, checkId, status: 'approved', externalSubmission: 'not_configured' });
     }
     return json({ error: 'unknown_action', allowed: ['calculate_compliance', 'approve_compliance'] }, { status: 400 });
