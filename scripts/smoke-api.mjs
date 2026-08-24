@@ -23,7 +23,7 @@ for (const [label, path] of [
   ['assistant write guard', '/api/assistant'],
   ['compliance write guard', '/api/compliance'],
 ]) {
-  const response = await fetch(`${baseUrl}${path}`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: '{}' });
+  const response = await fetch(`${baseUrl}${path}`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ boardId: 'board-1' }) });
   if (response.status !== 401) failures.push(`${label}: expected 401, got ${response.status}`);
 }
 const invalidLogin = await fetch(`${baseUrl}/api/auth`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ action: 'login', email: 'nobody@example.invalid', password: 'not-a-real-password' }) });

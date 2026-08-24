@@ -1,4 +1,4 @@
-import { authorizeBoardRead, authorizeWrite, body, json, recordAudit, requireDb, type Env } from './_lib';
+import { authorizeBoardRead, authorizeBoardWrite, body, json, recordAudit, requireDb, type Env } from './_lib';
 
 const views = new Set(['summary', 'items']);
 
@@ -25,17 +25,18 @@ export const onRequestGet: PagesFunction<Env> = async ({ env, request }) => {
 };
 
 export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
-  if (!authorizeWrite(request, env)) return json({ error: 'write_not_authorized' }, { status: 401 });
   try {
     const value = await body(request);
     const boardId = String(value?.boardId || '').trim();
     const controlId = String(value?.controlId || '').trim();
     const status = String(value?.status || '').trim();
     if (!boardId || !controlId || !['green', 'yellow', 'red'].includes(status)) return json({ error: 'boardId_controlId_valid_status_required' }, { status: 400 });
+    const authorization = await authorizeBoardWrite(request, env, boardId);
+    if (!authorization.allowed) return json({ error: 'write_not_authorized' }, { status: 401 });
     const db = requireDb(env);
     const result = await db.prepare('UPDATE control_items SET status=?, last_review=date(\'now\') WHERE id=? AND board_id=?').bind(status, controlId, boardId).run();
     if (!result.meta?.changes) return json({ error: 'control_not_found' }, { status: 404 });
-    await recordAudit(db, { boardId, action: 'control_status_changed', entityType: 'control_item', entityId: controlId, details: { status } });
+    await recordAudit(db, { boardId, action: 'control_status_changed', entityType: 'control_item', entityId: controlId, userId: authorization.userId || undefined, details: { status } });
     return json({ ok: true, controlId, status, requiresHumanReview: status !== 'green' });
   } catch (error) {
     return json({ error: 'database_unavailable', detail: error instanceof Error ? error.message : 'unknown' }, { status: 503 });

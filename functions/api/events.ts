@@ -1,4 +1,4 @@
-import { authorizeBoardRead, authorizeWrite, body, id, json, recordAudit, requireDb, type Env } from './_lib';
+import { authorizeBoardRead, authorizeBoardWrite, body, id, json, recordAudit, requireDb, type Env } from './_lib';
 
 const views = new Set(['summary', 'destinations', 'deliveries', 'events']);
 const validStatuses = new Set(['proposed', 'active', 'paused', 'revoked']);
@@ -42,12 +42,13 @@ export const onRequestGet: PagesFunction<Env> = async ({ env, request }) => {
 };
 
 export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
-  if (!authorizeWrite(request, env)) return json({ error: 'write_not_authorized' }, { status: 401 });
   try {
     const value = await body(request);
     const action = String(value?.action || 'ingest_event');
     const boardId = String(value?.boardId || '').trim();
     if (!boardId) return json({ error: 'boardId_required' }, { status: 400 });
+    const authorization = await authorizeBoardWrite(request, env, boardId);
+    if (!authorization.allowed) return json({ error: 'write_not_authorized' }, { status: 401 });
     const db = requireDb(env);
 
     if (action === 'register_destination') {
@@ -60,7 +61,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
       if (!['https:', 'http:'].includes(parsed.protocol)) return json({ error: 'endpointUrl_must_be_http' }, { status: 400 });
       const destinationId = id('destination');
       await db.prepare('INSERT INTO event_destinations (id,board_id,name,endpoint_url,event_filter,status,secret_ref) VALUES (?,?,?,?,?,?,?)').bind(destinationId, boardId, name, parsed.toString(), eventFilter || '*', 'proposed', value?.secretRef ? String(value.secretRef).slice(0, 200) : null).run();
-      await recordAudit(db, { boardId, action: 'event_destination_registered', entityType: 'event_destination', entityId: destinationId, details: { name, eventFilter } });
+      await recordAudit(db, { boardId, action: 'event_destination_registered', entityType: 'event_destination', entityId: destinationId, userId: authorization.userId || undefined, details: { name, eventFilter } });
       return json({ ok: true, action, destinationId, status: 'proposed', delivery: 'disabled_until_activation' }, { status: 201 });
     }
 
@@ -69,7 +70,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
       const status = action === 'activate_destination' ? 'active' : action === 'pause_destination' ? 'paused' : 'revoked';
       const result = await db.prepare(`UPDATE event_destinations SET status=?,activated_at=CASE WHEN ?='active' THEN datetime('now') ELSE activated_at END WHERE id=? AND board_id=?`).bind(status, status, destinationId, boardId).run();
       if (!result.meta?.changes) return json({ error: 'destination_not_found' }, { status: 404 });
-      await recordAudit(db, { boardId, action: `event_destination_${status}`, entityType: 'event_destination', entityId: destinationId });
+      await recordAudit(db, { boardId, action: `event_destination_${status}`, entityType: 'event_destination', entityId: destinationId, userId: authorization.userId || undefined });
       return json({ ok: true, action, destinationId, status, delivery: status === 'active' ? 'queued_only_until_sender_enabled' : 'disabled' });
     }
 
@@ -77,7 +78,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
       const deliveryId = String(value?.deliveryId || '').trim();
       const result = await db.prepare("UPDATE event_deliveries SET status='queued',last_error=NULL WHERE id=? AND board_id=? AND status='failed'").bind(deliveryId, boardId).run();
       if (!result.meta?.changes) return json({ error: 'failed_delivery_not_found' }, { status: 404 });
-      await recordAudit(db, { boardId, action: 'event_delivery_retried', entityType: 'event_delivery', entityId: deliveryId });
+      await recordAudit(db, { boardId, action: 'event_delivery_retried', entityType: 'event_delivery', entityId: deliveryId, userId: authorization.userId || undefined });
       return json({ ok: true, action, deliveryId, status: 'queued', delivery: 'sender_not_configured' });
     }
 
@@ -94,7 +95,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
         await db.prepare('INSERT OR IGNORE INTO event_deliveries (id,board_id,destination_id,event_id,status) VALUES (?,?,?,?,?)').bind(id('delivery'), boardId, destination.id, eventId, 'queued').run();
         queued += 1;
       }
-      await recordAudit(db, { boardId, action: 'event_ingested', entityType: 'api_event', entityId: eventId, details: { eventType, queued } });
+      await recordAudit(db, { boardId, action: 'event_ingested', entityType: 'api_event', entityId: eventId, userId: authorization.userId || undefined, details: { eventType, queued } });
       return json({ ok: true, action, eventId, eventType, queued, sender: 'not_configured', requiresHumanApproval: true });
     }
 

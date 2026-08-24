@@ -109,6 +109,14 @@ export async function authorizeBoardRead(request: Request, env: Env, boardId: st
   return Boolean(membership);
 }
 
+export async function authorizeBoardWrite(request: Request, env: Env, boardId: string) {
+  if (authorizeWrite(request, env)) return { allowed: true, userId: null as string | null, role: 'service' };
+  const session = await getSession(request, env);
+  if (!session || !env.DB) return { allowed: false, userId: null as string | null, role: null as string | null };
+  const membership = await env.DB.prepare("SELECT role FROM user_boards WHERE user_id=? AND board_id=? AND role IN ('owner','editor')").bind(session.userId, boardId).first<{ role: string }>();
+  return { allowed: Boolean(membership), userId: session.userId, role: membership?.role || null };
+}
+
 export function id(prefix: string) { return `${prefix}-${crypto.randomUUID()}`; }
 
 export async function recordAudit(db: D1Database, input: {
