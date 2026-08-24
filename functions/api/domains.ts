@@ -1,4 +1,4 @@
-import { authorizeBoardRead, authorizeWrite, body, id, json, requireDb, type Env } from './_lib';
+import { authorizeBoardRead, authorizeBoardWrite, body, id, json, recordAudit, requireDb, type Env } from './_lib';
 
 type Domain = 'people' | 'goals' | 'it_assets' | 'service_tickets' | 'finance_records' | 'crm_accounts' | 'contracts' | 'sustainability_items' | 'integration_registry';
 const allowed: Record<Domain, string[]> = {
@@ -31,15 +31,17 @@ export const onRequestGet: PagesFunction<Env> = async ({ env, params, request })
 export const onRequestPost: PagesFunction<Env> = async ({ env, params, request }) => {
   const domain = String(params.domain || '');
   if (!validDomain(domain)) return json({ error: 'unknown_domain', allowed: [...domains] }, { status: 404 });
-  if (!authorizeWrite(request, env)) return json({ error: 'write_not_authorized' }, { status: 401 });
   try {
     const db = requireDb(env); const value = await body(request); const boardId = String(value?.boardId || '');
     if (!boardId) return json({ error: 'boardId_required' }, { status: 400 });
+    const authorization = await authorizeBoardWrite(request, env, boardId);
+    if (!authorization.allowed) return json({ error: 'board_write_denied' }, { status: 401 });
     const data = (value?.data && typeof value.data === 'object') ? value.data as Record<string, unknown> : {};
     const columns = allowed[domain].filter((column) => !['id','board_id','created_at','updated_at'].includes(column) && data[column] !== undefined);
     if (!columns.length) return json({ error: 'data_required', fields: allowed[domain] }, { status: 400 });
     const recordId = id(domain.slice(0, 4)); const values = columns.map((column) => data[column]);
     await db.prepare(`INSERT INTO ${domain} (id,board_id,${columns.join(',')}) VALUES (?, ?, ${columns.map(() => '?').join(',')})`).bind(recordId, boardId, ...values).run();
+    await recordAudit(db, { boardId, action: 'domain_record_created', entityType: domain, entityId: recordId, userId: authorization.userId || undefined, details: { fields: columns } });
     return json({ ok: true, id: recordId, domain, boardId }, { status: 201 });
   } catch (error) { return json({ error: 'database_unavailable', detail: error instanceof Error ? error.message : 'unknown' }, { status: 503 }); }
 };
