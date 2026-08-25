@@ -27,19 +27,21 @@ async function boardData(env: Env, boardId: string, view: string) {
   if (view === 'periods') return (await db.prepare('SELECT id,period,status,locked_by,locked_at,seal_checksum FROM accounting_periods WHERE board_id = ? ORDER BY period DESC').bind(boardId).all()).results;
   if (view === 'saf-t-exports') return (await db.prepare('SELECT id,period_from,period_to,status,row_count,checksum,created_by,created_at FROM saf_t_exports WHERE board_id=? ORDER BY created_at DESC LIMIT 50').bind(boardId).all()).results;
   if (view === 'intercompany') return (await db.prepare('SELECT * FROM intercompany_postings WHERE board_id=? ORDER BY period DESC,created_at DESC').bind(boardId).all()).results;
+  if (view === 'invoices') return (await db.prepare("SELECT i.*,a.company_name FROM sales_invoices i LEFT JOIN crm_accounts a ON a.id=i.account_id WHERE i.board_id=? ORDER BY CASE i.status WHEN 'overdue' THEN 1 WHEN 'review' THEN 2 WHEN 'approved' THEN 3 ELSE 4 END,i.due_date,i.created_at DESC").bind(boardId).all()).results;
   if (view === 'fx') return (await db.prepare('SELECT * FROM fx_revaluations WHERE board_id=? ORDER BY period DESC,created_at DESC').bind(boardId).all()).results;
   if (view === 'notes') return (await db.prepare('SELECT * FROM statutory_notes WHERE board_id=? ORDER BY period DESC,created_at DESC').bind(boardId).all()).results;
   if (view === 'vouchers') return (await db.prepare(`SELECT v.id,v.voucher_number,v.voucher_date,v.period,v.description,v.source,v.status,v.external_reference,
     COALESCE(SUM(l.debit_minor),0) AS debit_minor, COALESCE(SUM(l.credit_minor),0) AS credit_minor
     FROM vouchers v LEFT JOIN voucher_lines l ON l.voucher_id = v.id WHERE v.board_id = ? GROUP BY v.id ORDER BY v.voucher_date DESC,v.voucher_number DESC LIMIT 500`).bind(boardId).all()).results;
-    const [accounts, periods, vouchers, intercompany, notes] = await Promise.all([
+    const [accounts, periods, vouchers, intercompany, notes, invoices] = await Promise.all([
     db.prepare('SELECT COUNT(*) AS count FROM ledger_accounts WHERE board_id = ? AND active = 1').bind(boardId).first(),
     db.prepare("SELECT COUNT(*) AS count FROM accounting_periods WHERE board_id = ? AND status = 'locked'").bind(boardId).first(),
     db.prepare('SELECT COUNT(*) AS count, COALESCE(SUM(debit_minor),0) AS debit_minor, COALESCE(SUM(credit_minor),0) AS credit_minor FROM vouchers v LEFT JOIN voucher_lines l ON l.voucher_id = v.id WHERE v.board_id = ?').bind(boardId).first(),
     db.prepare("SELECT COUNT(*) AS count,SUM(CASE WHEN status IN ('prepared','review') THEN 1 ELSE 0 END) AS open_count FROM intercompany_postings WHERE board_id=?").bind(boardId).first(),
     db.prepare("SELECT COUNT(*) AS count,SUM(CASE WHEN status IN ('draft','review') THEN 1 ELSE 0 END) AS open_count FROM statutory_notes WHERE board_id=?").bind(boardId).first(),
+    db.prepare("SELECT COUNT(*) AS count,COALESCE(SUM(CASE WHEN status IN ('review','approved','sent','overdue') THEN total_minor ELSE 0 END),0) AS outstanding_minor,COALESCE(SUM(CASE WHEN status='overdue' THEN total_minor ELSE 0 END),0) AS overdue_minor FROM sales_invoices WHERE board_id=? AND status NOT IN ('paid','cancelled')").bind(boardId).first(),
   ]);
-  return { accounts, periods, vouchers, intercompany, notes };
+  return { accounts, periods, vouchers, intercompany, notes, invoices };
 }
 
 export const onRequestGet: PagesFunction<Env> = async ({ env, request }) => {
@@ -118,6 +120,23 @@ export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
     }
     if (action === 'approve_intercompany') {
       const postingId=String(value?.postingId||''); const result=await db.prepare("UPDATE intercompany_postings SET status='mirrored' WHERE id=? AND board_id=? AND status IN ('prepared','review')").bind(postingId,boardId).run(); if(!result.meta?.changes)return json({error:'intercompany_not_open_or_found'},{status:409}); return json({ok:true,action,postingId,status:'mirrored',targetVoucher:'not_created',requiresHumanApproval:true});
+    }
+    if (action === 'create_invoice') {
+      const invoiceNumber=String(value?.invoiceNumber||'').trim(), issueDate=String(value?.issueDate||'').trim(), dueDate=String(value?.dueDate||'').trim()||null, description=String(value?.description||'').trim(), amountMinor=Number(value?.amountMinor||0), vatMinor=Number(value?.vatMinor||0);
+      if (!invoiceNumber||!datePattern.test(issueDate)||(dueDate&&!datePattern.test(dueDate))||!description||!Number.isSafeInteger(amountMinor)||amountMinor<=0||!Number.isSafeInteger(vatMinor)||vatMinor<0) return json({error:'invoice_fields_invalid'},{status:400});
+      const invoiceId=id('sinv'), totalMinor=amountMinor+vatMinor;
+      await db.prepare("INSERT INTO sales_invoices (id,board_id,account_id,invoice_number,issue_date,due_date,description,amount_minor,vat_minor,total_minor,currency,status,source,external_status) VALUES (?,?,?,?,?,?,?,?,?,?,?,'NOK','draft','manual','not_configured')").bind(invoiceId,boardId,value?.accountId||null,invoiceNumber,issueDate,dueDate,description,amountMinor,vatMinor,totalMinor).run();
+      await recordAudit(db,{boardId,action:'sales_invoice_created',entityType:'sales_invoice',entityId:invoiceId,userId:authorization.userId||undefined,details:{status:'draft',externalDelivery:'not_configured'}});
+      return json({ok:true,action,invoiceId,status:'draft',totalMinor,externalDelivery:'not_configured'},{status:201});
+    }
+    if (action === 'review_invoice') {
+      const invoiceId=String(value?.invoiceId||'').trim(); const result=await db.prepare("UPDATE sales_invoices SET status='review',updated_at=datetime('now') WHERE id=? AND board_id=? AND status='draft'").bind(invoiceId,boardId).run(); if(!result.meta?.changes)return json({error:'invoice_not_draft_or_found'},{status:409}); await recordAudit(db,{boardId,action:'sales_invoice_reviewed',entityType:'sales_invoice',entityId:invoiceId,userId:authorization.userId||undefined,details:{status:'review'}}); return json({ok:true,action,invoiceId,status:'review',requiresHumanApproval:true});
+    }
+    if (action === 'approve_invoice') {
+      const invoiceId=String(value?.invoiceId||'').trim(); const result=await db.prepare("UPDATE sales_invoices SET status='approved',approved_by=?,approved_at=datetime('now'),updated_at=datetime('now') WHERE id=? AND board_id=? AND status='review'").bind(authorization.userId||String(value?.approvedBy||'api'),invoiceId,boardId).run(); if(!result.meta?.changes)return json({error:'invoice_not_in_review_or_found'},{status:409}); await recordAudit(db,{boardId,action:'sales_invoice_approved',entityType:'sales_invoice',entityId:invoiceId,userId:authorization.userId||undefined,details:{status:'approved',externalDelivery:'not_configured'}}); return json({ok:true,action,invoiceId,status:'approved',externalDelivery:'not_configured'});
+    }
+    if (action === 'record_invoice_payment') {
+      const invoiceId=String(value?.invoiceId||'').trim(), paymentReference=String(value?.paymentReference||'').trim(); if(!paymentReference)return json({error:'payment_reference_required'},{status:400}); const result=await db.prepare("UPDATE sales_invoices SET status='paid',paid_at=datetime('now'),payment_reference=?,updated_at=datetime('now') WHERE id=? AND board_id=? AND status IN ('approved','sent','overdue')").bind(paymentReference,invoiceId,boardId).run(); if(!result.meta?.changes)return json({error:'invoice_not_payable_or_found'},{status:409}); await recordAudit(db,{boardId,action:'sales_invoice_payment_recorded',entityType:'sales_invoice',entityId:invoiceId,userId:authorization.userId||undefined,details:{status:'paid',paymentSource:'manual'}}); return json({ok:true,action,invoiceId,status:'paid',paymentSource:'manual'});
     }
     if (action === 'approve_note') {
       const noteId=String(value?.noteId||''); const result=await db.prepare("UPDATE statutory_notes SET status='approved',approved_by=?,approved_at=datetime('now') WHERE id=? AND board_id=? AND status IN ('draft','review')").bind(value?.approvedBy||'api',noteId,boardId).run(); if(!result.meta?.changes)return json({error:'note_not_open_or_found'},{status:409}); return json({ok:true,action,noteId,status:'approved',externalFiling:'not_configured'});

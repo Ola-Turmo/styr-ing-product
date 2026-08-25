@@ -1,7 +1,9 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import SalesInvoiceQuick from '../components/SalesInvoiceQuick.astro';
 ---
 <Layout title="Økonomi — Styr.ing" activeNav="finance">
+  <SalesInvoiceQuick />
   <main class="finance-shell">
     <section class="finance-hero"><div><span class="eyebrow"><i></i>Økonomi · hovedbok</span><h1>Tall du kan <em>stole på.</em></h1><p>Hold bilag, avstemmingsspor, perioder og styrebeslutninger i samme arbeidsflate. Bilagsnummeret tildeles atomisk sammen med bilaget og linjene, mens API-kontrakten validerer balanse før postering.</p></div><div class="ledger-orb"><span>Saldo</span><strong>+44 000</strong><small>NOK · illustrert</small></div></section>
     <section class="finance-metrics"><div><span>Aktive kontoer</span><strong id="account-count">—</strong></div><div><span>Perioder låst</span><strong id="locked-count">—</strong></div><div><span>Bilag</span><strong id="voucher-count">—</strong></div><div><span>Kontroll</span><strong id="balance-status">Sjekker…</strong></div></section>
