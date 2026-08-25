@@ -1,7 +1,7 @@
 import { authorizeBoardRead, authorizeBoardWrite, body, id, json, recordAudit, requireDb, type Env } from './_lib';
 
 const datePattern = /^\d{4}-\d{2}-\d{2}$/;
-const views = new Set(['summary','people','goals','candidates','handbook','training','reviews','offboarding']);
+const views = new Set(['summary','people','goals','requisitions','candidates','handbook','training','reviews','offboarding']);
 
 export const onRequestGet: PagesFunction<Env> = async ({ env, request }) => {
   const url = new URL(request.url); const boardId = (url.searchParams.get('boardId') || '').trim(); const view = url.searchParams.get('view') || 'summary';
@@ -12,6 +12,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ env, request }) => {
     const db = requireDb(env);
     if (view === 'people') return json({ boardId, view, data: (await db.prepare('SELECT id,name,email,role,department,employment_status,start_date FROM people WHERE board_id=? ORDER BY name').bind(boardId).all()).results });
     if (view === 'goals') return json({ boardId, view, data: (await db.prepare(`SELECT g.id,g.title,g.period,g.status,g.progress,g.parent_goal_id,p.name AS owner_name,parent.title AS parent_title FROM goals g LEFT JOIN people p ON p.id=g.owner_id LEFT JOIN goals parent ON parent.id=g.parent_goal_id WHERE g.board_id=? ORDER BY CASE g.status WHEN 'at_risk' THEN 1 WHEN 'on_track' THEN 2 WHEN 'draft' THEN 3 ELSE 4 END,g.created_at DESC`).bind(boardId).all()).results });
+    if (view === 'requisitions') return json({ boardId, view, data: (await db.prepare(`SELECT r.id,r.title,r.department,r.status,r.employment_type,r.location,r.description,r.opened_at,COUNT(c.id) AS candidate_count FROM job_requisitions r LEFT JOIN candidates c ON c.requisition_id=r.id AND c.board_id=r.board_id WHERE r.board_id=? GROUP BY r.id ORDER BY CASE r.status WHEN 'open' THEN 1 WHEN 'draft' THEN 2 WHEN 'paused' THEN 3 ELSE 4 END,r.created_at DESC`).bind(boardId).all()).results });
     if (view === 'candidates') return json({ boardId, view, data: (await db.prepare(`SELECT c.id,c.name,c.email,c.stage,c.score,c.skills,c.consent_status,r.title AS requisition_title,COALESCE((SELECT COUNT(*) FROM interview_scorecards sc WHERE sc.candidate_id=c.id AND sc.board_id=c.board_id AND sc.status='complete'),0) AS completed_scorecards,COALESCE((SELECT MAX(sc.overall_score) FROM interview_scorecards sc WHERE sc.candidate_id=c.id AND sc.board_id=c.board_id AND sc.status='complete'),c.score) AS scorecard_score FROM candidates c LEFT JOIN job_requisitions r ON r.id=c.requisition_id WHERE c.board_id=? ORDER BY c.created_at DESC`).bind(boardId).all()).results });
     if (view === 'handbook') return json({ boardId, view, data: (await db.prepare(`SELECT h.id,h.title,h.category,h.version,h.status,h.requires_ack,h.published_at,COUNT(a.id) AS acknowledgements FROM handbook_documents h LEFT JOIN handbook_acknowledgements a ON a.handbook_id=h.id WHERE h.board_id=? GROUP BY h.id ORDER BY h.published_at DESC`).bind(boardId).all()).results });
     if (view === 'training') return json({ boardId, view, data: (await db.prepare(`SELECT e.id,e.status,e.due_date,e.score,c.title AS course_title,p.name AS person_name FROM training_enrollments e JOIN training_courses c ON c.id=e.course_id JOIN people p ON p.id=e.person_id WHERE e.board_id=? ORDER BY e.due_date`).bind(boardId).all()).results });
@@ -38,8 +39,20 @@ export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
     if (!authorization.allowed) return json({ error: 'write_not_authorized' }, { status: 401 });
     const db = requireDb(env);
     if (action === 'create_candidate') {
-      const name = String(value?.name || '').trim(); const email = String(value?.email || '').trim(); const requisitionId = String(value?.requisitionId || '').trim(); if (!name || !requisitionId) return json({ error: 'candidate_fields_required' }, { status: 400 });
+      const name = String(value?.name || '').trim(); const email = String(value?.email || '').trim(); const requisitionId = String(value?.requisitionId || '').trim(); if (!name || name.length > 200 || !requisitionId) return json({ error: 'candidate_fields_required' }, { status: 400 });
+      if (email.length > 320) return json({ error: 'candidate_email_too_long' }, { status: 400 });
+      const requisition = await db.prepare("SELECT id FROM job_requisitions WHERE id=? AND board_id=? AND status IN ('open','paused')").bind(requisitionId, boardId).first<{ id: string }>();
+      if (!requisition) return json({ error: 'requisition_not_open' }, { status: 409 });
       const candidateId = id('candidate'); await db.prepare("INSERT INTO candidates (id,board_id,requisition_id,name,email,stage,skills,score,consent_status) VALUES (?,?,?,?,?,'new','[]',NULL,'pending')").bind(candidateId, boardId, requisitionId, name, email || null).run(); await recordAudit(db, { boardId, action: 'candidate_created', entityType: 'candidate', entityId: candidateId, userId: authorization.userId || undefined, details: { requisitionId } }); return json({ ok: true, action, id: candidateId, stage: 'new', consentStatus: 'pending' }, { status: 201 });
+    }
+    if (action === 'create_requisition') {
+      const title = String(value?.title || '').trim(); const department = String(value?.department || '').trim(); const employmentType = String(value?.employmentType || 'full_time').trim(); const location = String(value?.location || '').trim(); const description = String(value?.description || '').trim(); const status = String(value?.status || 'draft').trim();
+      if (!title || title.length > 200 || !['full_time','part_time','contract','internship'].includes(employmentType) || !['draft','open','paused'].includes(status)) return json({ error: 'requisition_fields_required' }, { status: 400 });
+      if (department.length > 120 || location.length > 160 || description.length > 5000) return json({ error: 'requisition_text_too_long' }, { status: 400 });
+      const requisitionId = id('req');
+      await db.prepare("INSERT INTO job_requisitions (id,board_id,title,department,status,employment_type,location,description,opened_at) VALUES (?,?,?,?,?,?,?,?,CASE WHEN ?='open' THEN datetime('now') ELSE NULL END)").bind(requisitionId, boardId, title, department || null, status, employmentType, location || null, description || null, status).run();
+      await recordAudit(db, { boardId, action: 'requisition_created', entityType: 'job_requisition', entityId: requisitionId, userId: authorization.userId || undefined, details: { title, department, employmentType, status } });
+      return json({ ok: true, action, requisitionId, status, employmentType }, { status: 201 });
     }
     if (action === 'update_candidate') {
       const candidateId = String(value?.candidateId || '').trim(); const stage = String(value?.stage || '').trim();
@@ -123,6 +136,6 @@ export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
       await recordAudit(db, { boardId, action: 'offboarding_advanced', entityType: 'offboarding_case', entityId: caseId, userId: authorization.userId || undefined, details: { accessRevoked, assetsReturned, payrollReviewed, status: complete ? 'complete' : 'in_progress', lifecycleTasksSynchronized: true } });
       return json({ ok: true, action, caseId, status: complete ? 'complete' : 'in_progress', lifecycleTasksSynchronized: true, requiresHumanApproval: true });
     }
-    return json({ error: 'unknown_action', allowed: ['create_candidate','update_candidate','save_scorecard','acknowledge_handbook','complete_training','create_goal','update_goal','create_offboarding','advance_offboarding'] }, { status: 400 });
+    return json({ error: 'unknown_action', allowed: ['create_requisition','create_candidate','update_candidate','save_scorecard','acknowledge_handbook','complete_training','create_goal','update_goal','create_offboarding','advance_offboarding'] }, { status: 400 });
   } catch (error) { return json({ error: 'database_unavailable', detail: error instanceof Error ? error.message : 'unknown' }, { status: 503 }); }
 };
