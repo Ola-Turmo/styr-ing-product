@@ -9,6 +9,7 @@ import PayrollQuick from '../../components/PayrollQuick.astro';
 import PeriodCloseQuick from '../../components/PeriodCloseQuick.astro';
 import AccountingReportsQuick from '../../components/AccountingReportsQuick.astro';
 import ReceivablesPayablesQuick from '../../components/ReceivablesPayablesQuick.astro';
+import CreditNotePostingQuick from '../../components/CreditNotePostingQuick.astro';
 ---
 <Layout title="Økonomi og flyt — Styr.ing" activeNav="workspace">
   <div class="finance-shell">
@@ -17,6 +18,7 @@ import ReceivablesPayablesQuick from '../../components/ReceivablesPayablesQuick.
     <div id="finance-content" hidden>
       <header class="finance-header"><div><a id="finance-back" href="/app">← Kundeområde</a><span class="section-kicker">Regnskap og økonomi</span><h1>Fra kilde til kontroll.</h1><p>Bilag, faktura, bankgrunnlag, lønn og innkjøp samlet i ett spor — med tydelig menneskelig godkjenning før bokføring eller eksterne steg.</p></div><div class="finance-identity"><strong id="finance-board">—</strong><span id="finance-role">—</span></div></header>
       <PostingQueueQuick />
+      <CreditNotePostingQuick />
       <VatPeriodQuick />
       <BankReconciliationQuick />
       <SalesInvoiceQuick />

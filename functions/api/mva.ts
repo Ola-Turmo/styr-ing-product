@@ -8,10 +8,11 @@ type VatLine = { id: string; voucher_number: string | number; voucher_date: stri
 
 function classify(code: string | null) {
   const value = String(code || '').trim().toLowerCase();
-  if (['1', 'in25', 'input25', 'inngående25', 'inngaaende25', 'input_25'].includes(value)) return { direction: 'input' as const, rate: 0.25 };
-  if (['3', 'out25', 'output25', 'utgående25', 'utgaaende25', 'output_25'].includes(value)) return { direction: 'output' as const, rate: 0.25 };
-  if (['0', 'none', 'fritatt', 'exempt'].includes(value) || !value) return { direction: 'unmapped' as const, rate: null };
-  return { direction: 'unmapped' as const, rate: null };
+  if (['1', 'in25', 'input25', 'inngående25', 'inngaaende25', 'input_25'].includes(value)) return { direction: 'input' as const, rate: 0.25, sign: 1 };
+  if (['3', 'out25', 'output25', 'utgående25', 'utgaaende25', 'output_25'].includes(value)) return { direction: 'output' as const, rate: 0.25, sign: 1 };
+  if (['3c', 'out25_credit', 'output25_credit'].includes(value)) return { direction: 'output' as const, rate: 0.25, sign: -1 };
+  if (['0', 'none', 'fritatt', 'exempt'].includes(value) || !value) return { direction: 'unmapped' as const, rate: null, sign: 0 };
+  return { direction: 'unmapped' as const, rate: null, sign: 0 };
 }
 
 async function calculate(db: D1Database, boardId: string, period: string) {
@@ -22,13 +23,13 @@ async function calculate(db: D1Database, boardId: string, period: string) {
     WHERE v.board_id=? AND v.period=? ORDER BY v.voucher_number,l.id`).bind(boardId, period).all()).results as Record<string, unknown>[];
   const lines: VatLine[] = rows.map((row) => {
     const base = Math.max(minor(row.debit_minor), minor(row.credit_minor)); const kind = classify(row.vat_code as string | null);
-    return { id: txt(row.id, 120), voucher_number: row.voucher_number as string | number, voucher_date: txt(row.voucher_date, 20), description: txt(row.description, 200), account_code: txt(row.account_code, 30), account_name: txt(row.account_name, 120), vat_code: row.vat_code ? txt(row.vat_code, 40) : null, base_minor: base, direction: kind.direction, rate: kind.rate, vat_minor: kind.rate ? Math.round(base * kind.rate) : 0 };
+    return { id: txt(row.id, 120), voucher_number: row.voucher_number as string | number, voucher_date: txt(row.voucher_date, 20), description: txt(row.description, 200), account_code: txt(row.account_code, 30), account_name: txt(row.account_name, 120), vat_code: row.vat_code ? txt(row.vat_code, 40) : null, base_minor: base * kind.sign, direction: kind.direction, rate: kind.rate, vat_minor: kind.rate ? Math.round(base * kind.rate * kind.sign) : 0 };
   });
   const output = lines.filter((x) => x.direction === 'output').reduce((sum, x) => sum + x.vat_minor, 0);
   const input = lines.filter((x) => x.direction === 'input').reduce((sum, x) => sum + x.vat_minor, 0);
   const basis = lines.filter((x) => x.direction !== 'unmapped').reduce((sum, x) => sum + x.base_minor, 0);
   const unmapped = lines.filter((x) => x.direction === 'unmapped' && x.vat_code).length;
-  const snapshot = JSON.stringify({ basis: 'voucher_lines', rateAssumptions: { '1': 0.25, '3': 0.25 }, lines });
+  const snapshot = JSON.stringify({ basis: 'voucher_lines', rateAssumptions: { '1': 0.25, '3': 0.25, '3C': -0.25 }, lines });
   return { lines, output, input, net: output - input, basis, unmapped, snapshot, hash: await sha256(snapshot) };
 }
 
