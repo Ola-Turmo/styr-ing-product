@@ -1,5 +1,6 @@
 const baseUrl = (process.env.STYR_SMOKE_BASE_URL || 'https://styr.ing').replace(/\/$/, '');
 const checks = [
+  ['MCP descriptor', '/api/mcp', 200],
   ['health', '/api/health', 200], ['auth session', '/api/auth', 200],
   ['legal status', '/api/legal?boardId=board-1', 200], ['billing status', '/api/billing?boardId=board-1', 200],
   ['privacy center', '/api/privacy?boardId=board-1', 200], ['membership guard', '/api/members?boardId=board-1', 401],
@@ -56,7 +57,7 @@ for (const [label, path, expected] of checks) {
   }
 }
 for (const [label, path, payload] of [
-  ['event mesh write guard', '/api/events', { boardId: 'board-1' }], ['assistant write guard', '/api/assistant', { boardId: 'board-1', question: 'status' }],
+  ['event mesh write guard', '/api/events', { boardId: 'board-1' }], ['assistant write guard', '/api/assistant', { boardId: 'board-1', question: 'status' }], ['MCP write guard', '/api/mcp', { jsonrpc: '2.0', id: 1, method: 'tools/list' }],
   ['domain write guard', '/api/domains/people', { boardId: 'board-1', data: { name: 'Unauthorised' } }],
   ['meeting write guard', '/api/board_governance', { boardId: 'board-1', action: 'create_meeting', title: 'Unauthorised', date: '2026-08-25' }],
   ['resolution write guard', '/api/board_governance', { boardId: 'board-1', action: 'create_resolution', number: 'X-UNAUTH', title: 'Unauthorised' }],
