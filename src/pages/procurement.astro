@@ -3,7 +3,7 @@ import Layout from '../layouts/Layout.astro';
 import EHFInboxQuick from '../components/EHFInboxQuick.astro';
 ---
 <Layout title="Innkjøp og fakturakontroll" activeNav="procurement">
-  <main class="p-shell">
+  <div class="p-shell">
     <EHFInboxQuick />
     <section class="p-hero"><div><span class="eyebrow">Styr.ing · procure-to-pay</span><h1>Fra bestilling til bokføring.<br /><em>Med kontroll i hvert steg.</em></h1><p>Opprett innkjøpsordrer, registrer varemottak og match leverandørfakturaer i ett spor. Ingen betaling eller EHF sendes automatisk.</p><a class="primary" href="#p-work">Åpne innkjøpskontrollen ↓</a></div><div class="p-orb"><strong id="hero-orders">—</strong><span>aktive ordre</span><small id="hero-exceptions">— avvik</small></div></section>
     <section class="metrics"><article><span>Åpne innkjøpsordrer</span><strong id="m-orders">—</strong><small id="m-orders-total">—</small></article><article><span>Bekreftede mottak</span><strong id="m-receipts">—</strong><small>grunnlag for matching</small></article><article><span>EHF i kontroll</span><strong id="m-ehf">—</strong><small>transport ikke aktivert</small></article><article class="dark"><span>Match-avvik</span><strong id="m-exceptions">—</strong><small>krever menneskelig vurdering</small></article></section>
@@ -21,7 +21,7 @@ import EHFInboxQuick from '../components/EHFInboxQuick.astro';
       <form id="assign-invoice-form"><strong>2 · Anvis faktura</strong><label>Attestert faktura<select name="invoiceId" id="assign-invoice" required></select></label><button type="submit">Anvis for neste steg</button><small>Anvisning krever attestasjon først. Betaling og bokføring utføres fortsatt ikke automatisk.</small></form>
     </div><p id="action-status" class="action-status" role="status" hidden></p></section>
     <section class="notice"><strong>Kontrollgrense</strong><p>Styr.ing oppretter og dokumenterer intern arbeidsdata. EHF-utsending, bankavstemming, bokføring, betaling og attestasjon krever konfigurerte adaptere, fullmakter og eksplisitt menneskelig godkjenning.</p></section>
-  </main>
+  </div>
 </Layout>
 <script is:inline>
   const esc=(v)=>String(v??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
