@@ -53,6 +53,7 @@ const faqSchema = {
   ],
 };
 import CarbonQuick from '../components/CarbonQuick.astro';
+import TransparencyQuick from '../components/TransparencyQuick.astro';
 ---
 <!doctype html>
 <html lang="no">
@@ -212,6 +213,7 @@ import CarbonQuick from '../components/CarbonQuick.astro';
 
   <main>
     {activeNav === 'sustainability' && <CarbonQuick />}
+    {activeNav === 'sustainability' && <TransparencyQuick />}
     <slot />
   </main>
 
