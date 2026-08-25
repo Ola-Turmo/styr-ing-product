@@ -66,6 +66,7 @@ for (const [label, path, payload] of [
   ['risk create guard', '/api/risk', { boardId: 'board-1', action: 'create_risk', title: 'Unauthorised risk', level: 'high' }],
   ['risk action completion guard', '/api/risk', { boardId: 'board-1', action: 'complete_action', actionId: 'fixture-not-used' }],
   ['HCM write guard', '/api/hcm', { boardId: 'board-1', action: 'update_goal', goalId: 'fixture-not-used', progress: 50, status: 'on_track' }],
+  ['HCM offboarding guard', '/api/hcm', { boardId: 'board-1', action: 'advance_offboarding', caseId: 'fixture-not-used', accessRevoked: true }],
   ['HCM candidate write guard', '/api/hcm', { boardId: 'board-1', action: 'update_candidate', candidateId: 'fixture-not-used', stage: 'screening' }],
   ['governance write guard', '/api/governance', { boardId: 'board-1', action: 'review_contract', reviewId: 'fixture-not-used', decision: 'approved' }],
   ['board governance write guard', '/api/board_governance', { boardId: 'board-1', action: 'record_attendance', attendanceId: 'fixture-not-used', attendanceStatus: 'present' }],
