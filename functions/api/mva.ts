@@ -66,6 +66,11 @@ export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
     const row = await db.prepare('SELECT * FROM vat_periods WHERE board_id=? AND period=?').bind(boardId, period).first<Record<string, unknown>>(); if (!row) return json({ error: 'vat_period_not_found' }, { status: 404 });
     if (action === 'approve_period') {
       if (!['calculated'].includes(String(row.status)) || Number(row.unmapped_count || 0) > 0) return json({ error: 'vat_period_requires_review' }, { status: 409 });
+      const current = await calculate(db, boardId, period);
+      if (String(row.source_hash || '') !== current.hash) {
+        await recordAudit(db, { boardId, action: 'vat_period_approval_blocked_stale_snapshot', entityType: 'vat_period', entityId: String(row.id), userId: authorization.userId || undefined, details: { period, storedHash: row.source_hash || null, currentHash: current.hash, sourceCount: current.lines.length } });
+        return json({ error: 'vat_period_snapshot_stale', period, message: 'Det er bokført nye eller endrede bilag etter beregningen. Beregn MVA-perioden på nytt før godkjenning.', sourceCount: current.lines.length, unmappedCount: current.unmapped }, { status: 409 });
+      }
       await db.prepare("UPDATE vat_periods SET status='approved',approved_by=?,approved_at=datetime('now'),updated_at=datetime('now') WHERE id=? AND board_id=?").bind(actor, row.id, boardId).run(); await recordAudit(db, { boardId, action: 'vat_period_approved', entityType: 'vat_period', entityId: String(row.id), userId: authorization.userId || undefined, details: { period, externalSubmission: 'not_configured' } }); return json({ ok: true, action, period, status: 'approved', externalSubmission: 'not_configured' });
     }
     if (action === 'prepare_submission') {
