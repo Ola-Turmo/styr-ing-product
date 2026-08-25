@@ -18,7 +18,7 @@ const checks = [
   ['board governance attendance', '/api/board_governance?boardId=board-1&view=attendance', 200],
   ['board governance ballots', '/api/board_governance?boardId=board-1&view=ballots', 200],
   ['operations cockpit', '/api/operations?boardId=board-1', 200],
-  ['audit trail', '/api/audit?boardId=board-1', 200], ['SAF-T export', '/api/finance?boardId=board-1&view=saf-t', 200],
+  ['audit trail', '/api/audit?boardId=board-1', 200], ['SAF-T export history', '/api/finance?boardId=board-1&view=saf-t-exports', 200], ['SAF-T export', '/api/finance?boardId=board-1&view=saf-t', 200],
   ['accounting periods', '/api/finance?boardId=board-1&view=periods', 200], ['chart of accounts', '/api/finance?boardId=board-1&view=accounts', 200],
   ['treasury summary', '/api/treasury?boardId=board-1&view=summary', 200], ['treasury payroll', '/api/treasury?boardId=board-1&view=payroll', 200],
   ['treasury submissions', '/api/treasury?boardId=board-1&view=submissions', 200], ['treasury liquidity', '/api/treasury?boardId=board-1&view=liquidity', 200],
