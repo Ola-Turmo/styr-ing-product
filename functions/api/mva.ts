@@ -21,7 +21,7 @@ async function calculate(db: D1Database, boardId: string, period: string) {
     l.debit_minor,l.credit_minor,a.code AS account_code,a.name AS account_name
     FROM voucher_lines l JOIN vouchers v ON v.id=l.voucher_id
     LEFT JOIN ledger_accounts a ON a.id=l.account_id
-    WHERE v.board_id=? AND v.period=? ORDER BY v.voucher_number,l.id`).bind(boardId, period).all()).results as Record<string, unknown>[];
+    WHERE v.board_id=? AND v.period=? AND v.status='posted' ORDER BY v.voucher_number,l.id`).bind(boardId, period).all()).results as Record<string, unknown>[];
   const lines: VatLine[] = rows.map((row) => {
     const base = Math.max(minor(row.debit_minor), minor(row.credit_minor)); const kind = classify(row.vat_code as string | null);
     return { id: txt(row.id, 120), voucher_number: row.voucher_number as string | number, voucher_date: txt(row.voucher_date, 20), description: txt(row.description, 200), account_code: txt(row.account_code, 30), account_name: txt(row.account_name, 120), vat_code: row.vat_code ? txt(row.vat_code, 40) : null, base_minor: base * kind.sign, direction: kind.direction, rate: kind.rate, vat_minor: kind.rate ? Math.round(base * kind.rate * kind.sign) : 0 };

@@ -1,6 +1,7 @@
 ---
 import Layout from '../../layouts/Layout.astro';
 import PostingQueueQuick from '../../components/PostingQueueQuick.astro';
+import ManualVoucherQuick from '../../components/ManualVoucherQuick.astro';
 import VatPeriodQuick from '../../components/VatPeriodQuick.astro';
 import BankReconciliationQuick from '../../components/BankReconciliationQuick.astro';
 import SalesInvoiceQuick from '../../components/SalesInvoiceQuick.astro';
@@ -18,6 +19,7 @@ import CreditNotePostingQuick from '../../components/CreditNotePostingQuick.astr
     <div id="finance-content" hidden>
       <header class="finance-header"><div><a id="finance-back" href="/app">← Kundeområde</a><span class="section-kicker">Regnskap og økonomi</span><h1>Fra kilde til kontroll.</h1><p>Bilag, faktura, bankgrunnlag, lønn og innkjøp samlet i ett spor — med tydelig menneskelig godkjenning før bokføring eller eksterne steg.</p></div><div class="finance-identity"><strong id="finance-board">—</strong><span id="finance-role">—</span></div></header>
       <PostingQueueQuick />
+      <ManualVoucherQuick />
       <CreditNotePostingQuick />
       <VatPeriodQuick />
       <BankReconciliationQuick />
