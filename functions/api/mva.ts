@@ -10,6 +10,7 @@ function classify(code: string | null) {
   const value = String(code || '').trim().toLowerCase();
   if (['1', 'in25', 'input25', 'inngående25', 'inngaaende25', 'input_25'].includes(value)) return { direction: 'input' as const, rate: 0.25, sign: 1 };
   if (['3', 'out25', 'output25', 'utgående25', 'utgaaende25', 'output_25'].includes(value)) return { direction: 'output' as const, rate: 0.25, sign: 1 };
+  if (['3_15', 'out15', 'output15', 'utgående15', 'utgaaende15', 'output_15'].includes(value)) return { direction: 'output' as const, rate: 0.15, sign: 1 };
   if (['3c', 'out25_credit', 'output25_credit'].includes(value)) return { direction: 'output' as const, rate: 0.25, sign: -1 };
   if (['0', 'none', 'fritatt', 'exempt'].includes(value) || !value) return { direction: 'unmapped' as const, rate: null, sign: 0 };
   return { direction: 'unmapped' as const, rate: null, sign: 0 };
@@ -29,7 +30,7 @@ async function calculate(db: D1Database, boardId: string, period: string) {
   const input = lines.filter((x) => x.direction === 'input').reduce((sum, x) => sum + x.vat_minor, 0);
   const basis = lines.filter((x) => x.direction !== 'unmapped').reduce((sum, x) => sum + x.base_minor, 0);
   const unmapped = lines.filter((x) => x.direction === 'unmapped' && x.vat_code).length;
-  const snapshot = JSON.stringify({ basis: 'voucher_lines', rateAssumptions: { '1': 0.25, '3': 0.25, '3C': -0.25 }, lines });
+  const snapshot = JSON.stringify({ basis: 'voucher_lines', rateAssumptions: { '1': 0.25, '3': 0.25, '3_15': 0.15, '3C': -0.25 }, lines });
   return { lines, output, input, net: output - input, basis, unmapped, snapshot, hash: await sha256(snapshot) };
 }
 
