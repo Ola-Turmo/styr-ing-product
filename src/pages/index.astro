@@ -2,9 +2,10 @@
 import Layout from '../layouts/Layout.astro';
 
 const modules = [
+  ['◒', 'Økonomi og lønn', 'Bilag, perioder, lønnskontroller og rapporteringsgrunnlag i ett spor.', '/finance'],
+  ['▤', 'Regnskap i hverdagen', 'Bilag, bankgrunnlag, fakturaer, MVA og perioder samlet for små AS.', '/finance'],
   ['⌁', 'Styrearbeid', 'Møter, sakspapirer, vedtak og protokoller samlet.', '/board'],
   ['◈', 'Risiko og kontroll', 'Knytt risiko, kontroll, bevis og tiltak til ansvar.', '/risk'],
-  ['◒', 'Økonomi og lønn', 'Bilag, perioder, lønnskontroller og rapporteringsgrunnlag i ett spor.', '/finance'],
   ['＋', 'Mennesker og HCM', 'Roller, mål, rekruttering, onboarding og offboarding med godkjenning.', '/people'],
   ['▣', 'Innkjøp', 'Bestilling, mottak, leverandørfaktura og treveis kontroll.', '/procurement'],
   ['◎', 'Kunder og kommersielt', 'Følg pipeline, tilbud, kundesaker og SLA fra samme kilde.', '/commercial'],
@@ -21,20 +22,20 @@ const audiences = [
 ];
 ---
 
-<Layout title="Styrearbeid med retning" activeNav="home">
+<Layout title="Regnskap for små AS med kontroll" activeNav="home">
   <div class="home">
     <section class="positioning" aria-label="Styr.ing for norske virksomheter">
-      <span>NORSK SAAS FOR AS</span><strong>For norske styrer og ledere som vil følge opp det de beslutter.</strong><a href="/trust">Sikkerhet og datagrunnlag ↗</a>
+      <span>NORSK SAAS FOR SMÅ AS</span><strong>Regnskap, lønn og virksomhetsstyring samlet i én arbeidsflate.</strong><a href="/trust">Sikkerhet og datagrunnlag ↗</a>
     </section>
 
     <section class="hero">
       <div class="hero-copy">
-        <p class="eyebrow"><i></i>Norsk SaaS for norske AS</p>
-        <h1>Se hva styret<br /><em>må følge opp.</em></h1>
-        <p class="lede">Styr.ing samler sak, vedtak, ansvar, risiko og dokumentasjon i én arbeidsflate. Slik blir det tydelig hva som ble besluttet, hvem som eier neste steg og hvilket grunnlag styret kan stole på.</p>
+        <p class="eyebrow"><i></i>Norsk regnskapssky for små AS</p>
+        <h1>Regnskapet<br /><em>du kan styre etter.</em></h1>
+        <p class="lede">Styr.ing gir små norske virksomheter en samlet regnskapsflate for bilag, faktura, MVA, lønn, bankgrunnlag og rapportering — med styre, ansvar og oppfølging i samme kilde.</p>
         <div class="actions"><a class="button primary" href="/workspace">Se arbeidsflaten med eksempeldata ↗</a><a class="button secondary" href="mailto:ola@styr.ing?subject=Demo%20av%20Styr.ing">Bestill en gjennomgang</a></div>
         <div class="proof"><span><b>01</b>Før møtet</span><span><b>02</b>I møtet</span><span><b>03</b>Etter møtet</span></div>
-        <p class="hero-note"><span>✓</span> SaaS for styring og arbeidsflyt – ikke et nytt regnskaps- eller lønnssystem.</p>
+        <p class="hero-note"><span>✓</span> Regnskap først, styring når dere trenger det.</p>
       </div>
 
       <div class="product-stage" aria-label="Illustrasjon av Styr.ing arbeidsflate">
@@ -44,10 +45,10 @@ const audiences = [
           <div class="app-body">
             <aside><b>⌁ Oversikt</b><span>◈ Risiko</span><span>✓ Kontroll</span><span>＋ Oppgaver</span><span>⌂ Dokumenter</span></aside>
             <div class="dashboard">
-              <div class="dashboard-head"><div><small>Styrets arbeidsflate</small><h2>Dette krever oppmerksomhet.</h2></div><b class="avatar">AS</b></div>
-              <div class="stats"><div><small>Saker til behandling</small><strong>8</strong><em>2 krever vedtak</em></div><div><small>Åpne oppgaver</small><strong>6</strong><em class="warn">2 høy prioritet</em></div><div><small>Kontrollstatus</small><strong>94%</strong><em>Oppdatert i dag</em></div></div>
+              <div class="dashboard-head"><div><small>Regnskapsoversikt · illustrasjonsdata</small><h2>Dette krever oppmerksomhet.</h2></div><b class="avatar">AS</b></div>
+              <div class="stats"><div><small>Bilag til kontroll</small><strong>8</strong><em>2 med avvik</em></div><div><small>Ubetalte fakturaer</small><strong>6</strong><em class="warn">2 forfalte</em></div><div><small>Kontrollstatus</small><strong>94%</strong><em>Oppdatert i dag</em></div></div>
               <div class="chart"><div><b>Kontroll og oppfølging</b><span>Siste 6 måneder ↗</span></div><section class="bars" aria-hidden="true"><i style="height:42%"></i><i style="height:55%"></i><i style="height:50%"></i><i style="height:70%"></i><i style="height:65%"></i><i style="height:84%"></i><i style="height:94%"></i></section><small>Jan　 Feb　 Mar　 Apr　 Mai　 Jun　 Nå</small></div>
-              <div class="task"><i></i><div><b>Budsjett H2 2026 er klart for behandling</b><small>Økonomiansvarlig · Frist 30. mai</small></div><span>Til behandling</span></div>
+              <div class="task"><i></i><div><b>MVA-grunnlag for august er klart</b><small>Regnskapsansvarlig · Frist 10. september</small></div><span>Til kontroll</span></div>
             </div>
           </div>
         </div>
@@ -58,22 +59,22 @@ const audiences = [
     <section class="audience" aria-label="Hvem bruker Styr.ing"><span class="kicker">For norske styrer og ledere</span>{audiences.map(([title, text]) => <div><strong>{title}</strong><span>{text}</span></div>)}<div><strong>Regnskapsfører</strong><span>Del et ryddig beslutningsgrunnlag med styret uten å overta kundens ansvar for bokføring eller rapportering.</span></div></section>
 
     <section class="outcomes" aria-labelledby="outcomes-title">
-      <div class="section-intro outcomes-intro"><p class="kicker">Verdien i hverdagen</p><h2 id="outcomes-title">Mindre leting.<br /><em>Bedre oppfølging.</em></h2><p>Start med styrearbeidet dere allerede gjør. Koble på flere arbeidsflater når behovet er dokumentert.</p></div>
-      <div class="outcome-grid"><article><span>01</span><strong>Før møtet</strong><p>Agenda, vedlegg og beslutningsgrunnlag på ett sted.</p></article><article><span>02</span><strong>I møtet</strong><p>Vedtak, uenighet og ansvar registreres mens dere beslutter.</p></article><article><span>03</span><strong>Etter møtet</strong><p>Oppgaver, frister og kontrollpunkter følger saken videre.</p></article><article><span>04</span><strong>Når noe endrer seg</strong><p>Kilder, historikk og ansvar gjør det enklere å forklare hvorfor.</p></article></div>
+      <div class="section-intro outcomes-intro"><p class="kicker">Enklere økonomihverdag</p><h2 id="outcomes-title">Mindre manuelt.<br /><em>Mer å styre etter.</em></h2><p>Få kontroll på det som skjer hver måned, og gi styret et forståelig bilde når det er tid for beslutninger.</p></div>
+      <div class="outcome-grid"><article><span>01</span><strong>Bilag og bank</strong><p>Samle grunnlaget, finn avvikene og hold dokumentasjonen på plass.</p></article><article><span>02</span><strong>Faktura og MVA</strong><p>Følg inntekter, kostnader og perioder før rapportering og godkjenning.</p></article><article><span>03</span><strong>Lønn og frister</strong><p>Forbered lønn og lovpålagte kontrollpunkter med tydelig ansvar.</p></article><article><span>04</span><strong>Styre og oppfølging</strong><p>Gjør tallene forståelige og koble beslutninger til det som skal skje videre.</p></article></div>
     </section>
 
     <section class="modules" id="produkt">
-      <div class="section-intro"><p class="kicker">Én plattform · flere arbeidsflater</p><h2>Utvid når dere trenger<br /><em>mer enn møtereferatet.</em></h2><p>Økonomi, mennesker, drift, innkjøp og kontroll bygger på samme beslutningsspor – uten at Styr.ing later som det erstatter fagsystemene deres.</p></div>
+      <div class="section-intro"><p class="kicker">Regnskap først · mer når dere trenger det</p><h2>Én plattform for<br /><em>hele virksomheten.</em></h2><p>Start med regnskapet. Koble på lønn, innkjøp, kunder, prosjekter, styre og kontroll når dere trenger én samlet kilde.</p></div>
       <div class="module-grid">{modules.map(([icon, title, text, href], index) => <a class="module" href={href}><span class="number">{String(index + 1).padStart(2, '0')}</span><span class="icon">{icon}</span><h3>{title}</h3><p>{text}</p><b>Åpne arbeidsflate ↗</b></a>)}</div>
     </section>
 
-    <section class="trust-band"><div><p class="kicker">Trygghet i hver handling</p><h2>Oversikt uten<br /><em>falske løfter.</em></h2></div><div class="trust-copy"><p>Styr.ing er SaaS for styring og arbeidsflyt — ikke et regnskaps-, lønns- eller myndighetssystem. Den offentlige flaten bruker kun illustrasjonsdata; tilgang styres per virksomhet, skrivehandlinger krever autorisasjon og kildebevis følger endringene.</p><a href="/trust">Les om sikkerhet, personvern og datagrunnlag ↗</a></div></section>
+    <section class="trust-band"><div><p class="kicker">Trygghet i hver handling</p><h2>Oversikt uten<br /><em>falske løfter.</em></h2></div><div class="trust-copy"><p>Styr.ing er norsk SaaS for regnskap og virksomhetsstyring. Den offentlige flaten bruker kun illustrasjonsdata; tilgang styres per virksomhet, skrivehandlinger krever autorisasjon og kildebevis følger endringene.</p><a href="/trust">Les om sikkerhet, personvern og datagrunnlag ↗</a></div></section>
 
     <section class="fit" aria-labelledby="fit-title"><div><p class="kicker">Passer for dere som</p><h2 id="fit-title">Vil ha kontroll<br /><em>uten mer administrasjon.</em></h2></div><div class="fit-grid"><article><strong>Styreleder</strong><p>Få et samlet bilde av saker, risiko og oppfølging før møtet.</p></article><article><strong>Daglig leder</strong><p>Gjør beslutninger om til tydelige eiere, frister og kontrollpunkter.</p></article><article><strong>Styresekretær</strong><p>Hold sakspapirer, vedtak og protokoller i samme spor.</p></article><article><strong>Regnskapsfører</strong><p>Del beslutningsgrunnlag med styret uten å miste rollefordelingen.</p></article></div></section>
 
     <section class="steps"><div><p class="kicker">Slik fungerer det</p><h2>Fra sak til<br /><em>oppfølging.</em></h2><p>Én arbeidsflyt som gjør det tydelig hva som skal skje før, under og etter møtet.</p><a class="button dark" href="/board/board-1">Se et illustrert møteforløp ↗</a></div><div class="step-list"><div><b>01</b><span><strong>Forbered</strong><small>Samle agenda, dokumenter og beslutningsgrunnlag.</small></span></div><div class="active"><b>02</b><span><strong>Beslutt</strong><small>Gjør sak, ansvar og utfall tydelig for alle.</small></span></div><div><b>03</b><span><strong>Følg opp</strong><small>La oppgaver, kontroller og frister leve videre.</small></span></div></div></section>
 
-    <section class="faq" aria-labelledby="faq-title"><div><p class="kicker">Vanlige spørsmål</p><h2 id="faq-title">Kort forklart,<br /><em>før dere bestemmer dere.</em></h2><p>Styr.ing er laget for virksomheter som vil ha kontroll på ansvar og oppfølging uten å kjøpe et nytt økonomisystem.</p></div><div class="faq-list"><details open><summary>Er Styr.ing et komplett regnskaps- eller lønnssystem?</summary><p>Nei. Styr.ing er SaaS for styring, arbeidsflyt og kontrollspor. Regnskapsfører og virksomhet beholder ansvaret for bokføring, lønn og lovpålagte innsendinger.</p></details><details><summary>Kan vi teste uten å legge inn reelle data?</summary><p>Ja. Den offentlige arbeidsflaten bruker kun illustrasjonsdata. Be om aktivering for en virksomhetsspesifikk gjennomgang.</p></details><details><summary>Hvordan starter vi?</summary><p>Bestill en gjennomgang. Vi avklarer virksomhet, roller, datagrunnlag og hvilke arbeidsflater som skal aktiveres før tilgang gis.</p></details></div></section>
+    <section class="faq" aria-labelledby="faq-title"><div><p class="kicker">Vanlige spørsmål</p><h2 id="faq-title">Kort forklart,<br /><em>før dere bestemmer dere.</em></h2><p>Styr.ing er laget for små virksomheter som vil samle økonomi og oppfølging uten å bygge en verktøykasse av enkeltløsninger.</p></div><div class="faq-list"><details open><summary>Er Styr.ing et komplett regnskapssystem?</summary><p>Ja. Regnskapet er kjernen: bilag, faktura, MVA, perioder, lønnskontroller og rapporteringsgrunnlag. Styre, risiko og andre arbeidsflater bygger rundt den samme kilden.</p></details><details><summary>Kan vi teste uten å legge inn reelle data?</summary><p>Ja. Den offentlige arbeidsflaten bruker kun illustrasjonsdata. Be om aktivering for en virksomhetsspesifikk gjennomgang.</p></details><details><summary>Er dette laget for små AS?</summary><p>Ja. Arbeidsflyten er laget for norske virksomheter med få personer, mange hatter og behov for at regnskapet blir forståelig i hverdagen.</p></details></div></section>
     <section class="cta"><p class="kicker">Klarere styring starter her</p><h2>Gjør neste møte<br /><em>lettere å følge opp.</em></h2><p>Utforsk arbeidsflaten med fiktive data, eller bestill en rolig gjennomgang av hvordan Styr.ing kan passe deres AS.</p><div class="cta-actions"><a class="button primary" href="/workspace">Prøv arbeidsflaten ↗</a><a class="button secondary" href="mailto:ola@styr.ing?subject=Demo%20av%20Styr.ing">Kontakt oss</a></div></section>
   </div>
 </Layout>
