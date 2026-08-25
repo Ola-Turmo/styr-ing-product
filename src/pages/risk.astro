@@ -129,6 +129,35 @@ import Layout from '../layouts/Layout.astro';
     </div>
   </section>
 
+  <section class="risk-actions-panel" aria-labelledby="risk-actions-title">
+    <div class="risk-actions-head"><div><span class="eyebrow">Styrte handlinger</span><h2 id="risk-actions-title">Fra signal til ansvarlig tiltak.</h2><p>Registrer en risiko, oppdater vurderingen og lukk tiltak først når en ansvarlig har kontrollert grunnlaget. Alle endringer krever innlogget virksomhetstilgang og blir auditert.</p></div><span class="hitl-badge">HITL · påkrevd</span></div>
+    <div class="risk-action-grid">
+      <form data-risk-action="create_risk">
+        <h3>Ny risiko</h3>
+        <label>Tittel<input name="title" maxlength="240" required placeholder="Hva kan gå galt?" /></label>
+        <div class="risk-form-row"><label>Nivå<select name="level"><option value="medium">Middels</option><option value="high">Høy</option><option value="critical">Kritisk</option><option value="low">Lav</option></select></label><label>Eier<input name="owner" maxlength="120" placeholder="Rolle eller navn" /></label></div>
+        <label>Frist<input name="dueDate" type="date" /></label>
+        <label>Foreslått behandling<textarea name="treatment" maxlength="1000" rows="3" placeholder="Hva bør vurderes?" ></textarea></label>
+        <button type="submit">Registrer risiko</button>
+      </form>
+      <form data-risk-action="update_risk">
+        <h3>Oppdater vurdering</h3>
+        <label>Risiko<select name="riskId" id="risk-action-risk-id" required><option value="">Henter risikoer…</option></select></label>
+        <div class="risk-form-row"><label>Status<select name="status"><option value="open">Åpen</option><option value="treating">Under behandling</option><option value="monitoring">Overvåkes</option><option value="closed">Lukket</option></select></label><label>Nivå<select name="level"><option value="">Behold nivå</option><option value="critical">Kritisk</option><option value="high">Høy</option><option value="medium">Middels</option><option value="low">Lav</option></select></label></div>
+        <label>Neste frist<input name="dueDate" type="date" /></label>
+        <label>Oppdatert behandling<textarea name="treatment" maxlength="1000" rows="3" placeholder="Hva er neste kontrollerte steg?"></textarea></label>
+        <button type="submit">Lagre vurdering</button>
+      </form>
+      <form data-risk-action="complete_action">
+        <h3>Lukk tiltak</h3>
+        <label>Tiltak<select name="actionId" id="risk-action-action-id" required><option value="">Henter åpne tiltak…</option></select></label>
+        <p class="form-note">Lukking krever at bevis og effekt er kontrollert av ansvarlig person.</p>
+        <button type="submit">Marker som fullført</button>
+      </form>
+    </div>
+    <p id="risk-action-status" class="action-status" role="status" aria-live="polite"></p>
+  </section>
+
   <!-- Features grid -->
   <section class="section bg-light">
     <h2>Hva RISK gir deg</h2>
@@ -181,11 +210,33 @@ import Layout from '../layouts/Layout.astro';
   const labels = {critical:'Kritisk',high:'Høy',medium:'Medium',low:'Lav',open:'Åpen',treating:'Under behandling',monitoring:'Overvåkes',closed:'Lukket'};
   const esc = (v) => String(v ?? '').replace(/[&<>'"]/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;', '"':'&quot;'}[c]));
   const loadLiveRisks = async () => { try { const [summaryResponse, risksResponse] = await Promise.all([fetch('/api/risk?boardId=board-1&view=summary'), fetch('/api/risk?boardId=board-1&view=risks')]); const summary = (await summaryResponse.json()).data || {}; const risks = (await risksResponse.json()).data || []; document.getElementById('risk-total').textContent = summary.total?.count ?? 0; document.getElementById('risk-actions').textContent = summary.actions?.count ?? 0; document.getElementById('risk-critical').textContent = summary.critical?.count ?? 0; document.getElementById('risk-overdue').textContent = summary.overdue?.count ?? 0; document.getElementById('risk-badge').textContent = `${risks.length} risikoer · live`; if (table && risks.length) { table.innerHTML = `<div class="rt-header"><span>ID</span><span>Risiko</span><span>Nivå</span><span>Trend</span><span>Eier</span><span>Status</span></div>` + risks.map((r) => `<div class="rt-row" data-risk-row data-risk-level="${esc(r.level)}" data-risk-status="${esc(r.status)}" data-risk-id="${esc(r.code)}"><span class="rt-id">${esc(r.code)}</span><span class="rt-name">${esc(r.title)}</span><span class="rt-level level-${esc(r.level)}">${esc(labels[r.level] || r.level)}</span><span class="rt-trend trend-${esc(r.trend)}">${r.trend === 'up' ? '↑' : r.trend === 'down' ? '↓' : '→'}</span><span class="rt-owner">${esc(r.owner || '—')}</span><span class="rt-status">${esc(labels[r.status] || r.status)}</span><button class="risk-review" type="button" data-review-risk="${esc(r.code)}" aria-pressed="false">Gjennomgå</button></div>`).join(''); rows = [...document.querySelectorAll('[data-risk-row]')]; rows.forEach((buttonRow) => { const button = buttonRow.querySelector('[data-review-risk]'); button?.addEventListener('click', () => { const id = buttonRow.getAttribute('data-risk-id'); if (!id) return; reviewed.has(id) ? reviewed.delete(id) : reviewed.add(id); localStorage.setItem(key, JSON.stringify([...reviewed])); render(); }); }); render(); } } catch { const badge = document.getElementById('risk-badge'); if (badge) badge.textContent = 'Live-data utilgjengelig'; } };
-  render(); loadLiveRisks();
+   const riskActionStatus = document.getElementById('risk-action-status');
+   const riskActionMessage = (message, error = false) => { if (!riskActionStatus) return; riskActionStatus.textContent = message; riskActionStatus.classList.toggle('error', error); };
+   const fillRiskActions = async () => { try { const [risksResponse, actionsResponse] = await Promise.all([fetch('/api/risk?boardId=board-1&view=risks'), fetch('/api/risk?boardId=board-1&view=actions')]); const risks = (await risksResponse.json()).data || []; const actions = (await actionsResponse.json()).data || []; const riskSelect = document.getElementById('risk-action-risk-id'); const actionSelect = document.getElementById('risk-action-action-id'); if (riskSelect) riskSelect.innerHTML = risks.filter((r) => r.status !== 'closed').map((r) => `<option value="${esc(r.id)}">${esc(r.code)} · ${esc(r.title)}</option>`).join('') || '<option value="">Ingen åpne risikoer</option>'; if (actionSelect) actionSelect.innerHTML = actions.filter((a) => a.status !== 'completed').map((a) => `<option value="${esc(a.id)}">${esc(a.title)}</option>`).join('') || '<option value="">Ingen åpne tiltak</option>'; } catch { riskActionMessage('Kunne ikke hente risikohandlinger akkurat nå.', true); } };
+   document.querySelectorAll('[data-risk-action]').forEach((form) => form.addEventListener('submit', async (event) => { event.preventDefault(); const button = form.querySelector('button[type="submit"]'); if (button) button.disabled = true; const action = form.getAttribute('data-risk-action') || ''; const payload = Object.fromEntries(new FormData(form).entries()); try { const response = await fetch('/api/risk', { method:'POST', headers:{'content-type':'application/json'}, body: JSON.stringify({ boardId:'board-1', action, ...payload }) }); const result = await response.json(); if (!response.ok) throw new Error(result.error || 'Handlingen ble ikke godkjent'); riskActionMessage(action === 'create_risk' ? 'Risiko registrert og lagt i kontrollsporet.' : action === 'complete_action' ? 'Tiltak markert som fullført etter godkjenning.' : 'Risikobildet er oppdatert og auditert.'); form.reset(); await Promise.all([fillRiskActions(), loadLiveRisks()]); } catch (error) { riskActionMessage(error instanceof Error ? error.message : 'Handlingen kunne ikke gjennomføres.', true); } finally { if (button) button.disabled = false; } }));
+   render(); loadLiveRisks(); fillRiskActions();
 </script>
 
 <style>
 .risk-home { max-width: 1100px; margin: 0 auto; padding: 0 20px; }
+.risk-actions-panel { margin: 0 0 3rem; padding: 28px; border: 1px solid rgba(16,36,31,.1); border-radius: 18px; background: #fff; }
+.risk-actions-head { display:flex; justify-content:space-between; align-items:start; gap:20px; margin-bottom:20px; }
+.risk-actions-head h2 { margin:9px 0 7px; font:500 2rem/1.05 Georgia,serif; letter-spacing:-.04em; }
+.risk-actions-head p { max-width:700px; color:var(--muted); font:.82rem/1.55 system-ui,sans-serif; }
+.hitl-badge { flex:0 0 auto; padding:7px 10px; border-radius:999px; background:#fff1d7; color:#8b6118; font:700 .62rem/1 system-ui,sans-serif; letter-spacing:.06em; }
+.risk-action-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }
+.risk-action-grid form { display:grid; gap:10px; align-content:start; padding:17px; border:1px solid rgba(16,36,31,.09); border-radius:13px; background:#fafbf9; }
+.risk-action-grid h3 { font:700 .82rem/1 system-ui,sans-serif; }
+.risk-action-grid label { display:grid; gap:5px; color:var(--muted); font:600 .65rem/1.2 system-ui,sans-serif; }
+.risk-action-grid input,.risk-action-grid select,.risk-action-grid textarea { width:100%; padding:9px 10px; border:1px solid rgba(16,36,31,.15); border-radius:8px; background:#fff; color:var(--ink); font: .76rem/1.3 system-ui,sans-serif; }
+.risk-action-grid textarea { resize:vertical; }
+.risk-form-row { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+.risk-action-grid button { margin-top:3px; padding:10px 12px; border:0; border-radius:8px; background:var(--ink); color:#fff; cursor:pointer; font:700 .7rem/1 system-ui,sans-serif; }
+.risk-action-grid button:hover { background:var(--accent); }
+.risk-action-grid button:disabled { opacity:.55; cursor:wait; }
+.form-note { color:var(--muted); font:.7rem/1.45 system-ui,sans-serif; }
+.action-status { min-height:1.2em; margin:15px 0 0; color:var(--accent); font:700 .74rem/1.35 system-ui,sans-serif; }
+.action-status.error { color:#a04d4d; }
 
 .hero { text-align: center; padding: 4rem 1rem 3rem; }
 .hero-inner { max-width: 720px; margin: 0 auto; }
@@ -268,6 +319,8 @@ import Layout from '../layouts/Layout.astro';
 .demo-notice a { color: var(--accent); font-weight: 600; }
 
 @media (max-width: 768px) {
+  .risk-actions-head { flex-direction:column; }
+  .risk-action-grid { grid-template-columns:1fr; }
   .risk-stats { grid-template-columns: repeat(2,1fr); }
   .dashboard-grid { grid-template-columns: 1fr; }
   .card-span-2 { grid-column: span 1; }
