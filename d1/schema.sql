@@ -541,6 +541,14 @@ CREATE TABLE IF NOT EXISTS accounting_periods (
   period TEXT NOT NULL, status TEXT NOT NULL DEFAULT 'open', locked_by TEXT, locked_at TEXT, seal_checksum TEXT, created_at TEXT NOT NULL DEFAULT (datetime('now')),
   UNIQUE(board_id, period)
 );
+CREATE TABLE IF NOT EXISTS accounting_period_closures (
+  id TEXT PRIMARY KEY, board_id TEXT NOT NULL REFERENCES boards(id) ON DELETE CASCADE,
+  period TEXT NOT NULL, status TEXT NOT NULL DEFAULT 'review' CHECK(status IN ('review','approved','locked','rejected')),
+  checks_json TEXT NOT NULL DEFAULT '{}', source_hash TEXT NOT NULL, prepared_by TEXT,
+  approved_by TEXT, approved_at TEXT, locked_by TEXT, locked_at TEXT,
+  created_at TEXT NOT NULL DEFAULT (datetime('now')), updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+  UNIQUE(board_id,period)
+);
 CREATE TABLE IF NOT EXISTS vouchers (
   id TEXT PRIMARY KEY, board_id TEXT NOT NULL REFERENCES boards(id) ON DELETE CASCADE,
   voucher_number INTEGER NOT NULL, voucher_date TEXT NOT NULL, period TEXT NOT NULL, description TEXT NOT NULL,
@@ -590,6 +598,7 @@ CREATE TABLE IF NOT EXISTS saf_t_exports (
 );
 CREATE INDEX IF NOT EXISTS idx_ledger_accounts_board ON ledger_accounts(board_id);
 CREATE INDEX IF NOT EXISTS idx_accounting_periods_board ON accounting_periods(board_id, period);
+CREATE INDEX IF NOT EXISTS idx_accounting_period_closures_board ON accounting_period_closures(board_id,period,status);
 CREATE INDEX IF NOT EXISTS idx_vouchers_board_date ON vouchers(board_id, voucher_date);
 CREATE INDEX IF NOT EXISTS idx_voucher_sequences_board ON voucher_sequences(board_id);
 CREATE INDEX IF NOT EXISTS idx_voucher_lines_voucher ON voucher_lines(voucher_id);

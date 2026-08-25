@@ -26,6 +26,7 @@ async function boardData(env: Env, boardId: string, view: string) {
   if (view === 'accounts') return (await db.prepare('SELECT id,code,name,account_type,vat_code,active FROM ledger_accounts WHERE board_id = ? ORDER BY code').bind(boardId).all()).results;
   if (view === 'customers') return (await db.prepare("SELECT id,company_name,org_number,stage,currency FROM crm_accounts WHERE board_id=? AND stage NOT IN ('lost') ORDER BY company_name").bind(boardId).all()).results;
   if (view === 'periods') return (await db.prepare('SELECT id,period,status,locked_by,locked_at,seal_checksum FROM accounting_periods WHERE board_id = ? ORDER BY period DESC').bind(boardId).all()).results;
+  if (view === 'period-closures') return (await db.prepare('SELECT * FROM accounting_period_closures WHERE board_id=? ORDER BY period DESC').bind(boardId).all()).results;
   if (view === 'saf-t-exports') return (await db.prepare('SELECT id,period_from,period_to,status,row_count,checksum,created_by,created_at FROM saf_t_exports WHERE board_id=? ORDER BY created_at DESC LIMIT 50').bind(boardId).all()).results;
   if (view === 'intercompany') return (await db.prepare('SELECT * FROM intercompany_postings WHERE board_id=? ORDER BY period DESC,created_at DESC').bind(boardId).all()).results;
   if (view === 'invoices') return (await db.prepare("SELECT i.*,a.company_name FROM sales_invoices i LEFT JOIN crm_accounts a ON a.id=i.account_id WHERE i.board_id=? ORDER BY CASE i.status WHEN 'overdue' THEN 1 WHEN 'review' THEN 2 WHEN 'approved' THEN 3 ELSE 4 END,i.due_date,i.created_at DESC").bind(boardId).all()).results;
@@ -79,8 +80,46 @@ export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
       await recordAudit(db, { boardId, action: 'accounting_period_resealed', entityType: 'accounting_period', entityId: period, userId: authorization.userId || undefined, details: { period, sealChecksum, voucherLineCount: rows.length } });
       return json({ ok: true, action, boardId, period, status: 'locked', sealChecksum, voucherLineCount: rows.length, requiresHumanReview: true });
     }
+    if (action === 'prepare_period_close') {
+      const period = String(value?.period || '').trim(); if (!periodPattern.test(period)) return json({ error: 'period_invalid' }, { status: 400 });
+      const existingPeriod = await db.prepare('SELECT status,seal_checksum FROM accounting_periods WHERE board_id=? AND period=?').bind(boardId, period).first<Record<string, unknown>>();
+      if (existingPeriod?.status === 'locked') return json({ error: 'period_already_locked', period }, { status: 409 });
+      const [vouchers, balance, bank, sales, purchases, vat, payroll, proposals, saft] = await Promise.all([
+        db.prepare('SELECT COUNT(*) AS count FROM vouchers WHERE board_id=? AND period=?').bind(boardId, period).first<Record<string, unknown>>(),
+        db.prepare('SELECT COALESCE(SUM(l.debit_minor),0) AS debit_minor,COALESCE(SUM(l.credit_minor),0) AS credit_minor FROM vouchers v JOIN voucher_lines l ON l.voucher_id=v.id WHERE v.board_id=? AND v.period=?').bind(boardId, period).first<Record<string, unknown>>(),
+        db.prepare("SELECT COUNT(*) AS count FROM bank_transactions WHERE board_id=? AND substr(transaction_date,1,7)=? AND status IN ('imported','suggested','approved')").bind(boardId, period).first<Record<string, unknown>>(),
+        db.prepare("SELECT COUNT(*) AS count FROM sales_invoices WHERE board_id=? AND substr(issue_date,1,7)=? AND status IN ('draft','review','approved','sent','overdue')").bind(boardId, period).first<Record<string, unknown>>(),
+        db.prepare("SELECT COUNT(*) AS count FROM supplier_invoices WHERE board_id=? AND substr(due_date,1,7)=? AND status IN ('received','matched','exception','approved')").bind(boardId, period).first<Record<string, unknown>>(),
+        db.prepare('SELECT status,source_count,unmapped_count,submission_id,source_hash FROM vat_periods WHERE board_id=? AND period=?').bind(boardId, period).first<Record<string, unknown>>(),
+        db.prepare("SELECT COUNT(*) AS count FROM payroll_runs WHERE board_id=? AND period=? AND status NOT IN ('approved','submitted','closed')").bind(boardId, period).first<Record<string, unknown>>(),
+        db.prepare("SELECT COUNT(*) AS count FROM (SELECT id FROM posting_proposals WHERE board_id=? AND period=? AND status IN ('review','approved') UNION ALL SELECT id FROM payroll_posting_proposals WHERE board_id=? AND period=? AND status IN ('review','approved'))").bind(boardId, period, boardId, period).first<Record<string, unknown>>(),
+        db.prepare('SELECT id,row_count,checksum FROM saf_t_exports WHERE board_id=? AND period_from<=? AND period_to>=? ORDER BY created_at DESC LIMIT 1').bind(boardId, period, period).first<Record<string, unknown>>(),
+      ]);
+      const debit = Number(balance?.debit_minor || 0); const credit = Number(balance?.credit_minor || 0); const vatStatus = String(vat?.status || 'missing'); const vatBlocking = vatStatus !== 'missing' && (!['approved','prepared'].includes(vatStatus) || Number(vat?.unmapped_count || 0) > 0); const checks = {
+        vouchers: { count: Number(vouchers?.count || 0), balanced: debit === credit, blocking: debit !== credit },
+        balance: { debitMinor: debit, creditMinor: credit, balanced: debit === credit, blocking: debit !== credit },
+        bank: { openCount: Number(bank?.count || 0), clear: Number(bank?.count || 0) === 0, blocking: Number(bank?.count || 0) > 0 },
+        sales: { openCount: Number(sales?.count || 0), warning: Number(sales?.count || 0) > 0, blocking: false },
+        purchases: { openCount: Number(purchases?.count || 0), warning: Number(purchases?.count || 0) > 0, blocking: false },
+        vat: { status: vatStatus, unmappedCount: Number(vat?.unmapped_count || 0), ready: vatStatus === 'missing' || (['approved','prepared'].includes(vatStatus) && Number(vat?.unmapped_count || 0) === 0), blocking: vatBlocking },
+        payroll: { openCount: Number(payroll?.count || 0), clear: Number(payroll?.count || 0) === 0, blocking: Number(payroll?.count || 0) > 0 },
+        proposals: { openCount: Number(proposals?.count || 0), clear: Number(proposals?.count || 0) === 0, blocking: Number(proposals?.count || 0) > 0 },
+        safT: { present: Boolean(saft?.checksum), checksum: saft?.checksum || null, warning: !saft?.checksum, blocking: false },
+      };
+      const blocking = Object.entries(checks).filter(([, check]) => Boolean(check?.blocking)).map(([name]) => name); const warnings = Object.entries(checks).filter(([, check]) => Boolean(check?.warning)).map(([name]) => name);
+      const payload = JSON.stringify({ period, checks, blocking, warnings }); const sourceHash = await sha256(payload); const closureId = id('close');
+      await db.prepare("INSERT INTO accounting_period_closures (id,board_id,period,status,checks_json,source_hash,prepared_by,updated_at) VALUES (?,?,?,?,?,?,?,datetime('now')) ON CONFLICT(board_id,period) DO UPDATE SET status='review',checks_json=excluded.checks_json,source_hash=excluded.source_hash,prepared_by=excluded.prepared_by,approved_by=NULL,approved_at=NULL,updated_at=datetime('now')").bind(closureId, boardId, period, 'review', payload, sourceHash, authorization.userId || 'service').run();
+      await recordAudit(db, { boardId, action: 'accounting_period_close_prepared', entityType: 'accounting_period_closure', entityId: closureId, userId: authorization.userId || undefined, details: { period, blocking, warnings, sourceHash } }); return json({ ok: true, action, closureId, period, status: 'review', checks, blocking, warnings, ready: blocking.length === 0, sourceHash }, { status: 201 });
+    }
+    if (action === 'approve_period_close') {
+      const period = String(value?.period || '').trim(); if (!periodPattern.test(period)) return json({ error: 'period_invalid' }, { status: 400 });
+      const closure = await db.prepare("SELECT * FROM accounting_period_closures WHERE board_id=? AND period=? AND status='review'").bind(boardId, period).first<Record<string, unknown>>(); if (!closure) return json({ error: 'period_close_not_in_review' }, { status: 409 });
+      const checks = JSON.parse(String(closure.checks_json || '{}')); const blocking = Object.entries(checks).filter(([, check]) => Boolean((check as Record<string, unknown>)?.blocking)).map(([name]) => name); if (blocking.length) return json({ error: 'period_close_checks_blocking', blocking }, { status: 409 });
+      await db.prepare("UPDATE accounting_period_closures SET status='approved',approved_by=?,approved_at=datetime('now'),updated_at=datetime('now') WHERE id=? AND board_id=? AND status='review'").bind(authorization.userId || 'service', closure.id, boardId).run(); await recordAudit(db, { boardId, action: 'accounting_period_close_approved', entityType: 'accounting_period_closure', entityId: String(closure.id), userId: authorization.userId || undefined, details: { period } }); return json({ ok: true, action, period, status: 'approved' });
+    }
     if (action === 'lock_period') {
       const period = String(value?.period || ''); if (!periodPattern.test(period)) return json({ error: 'period_invalid' }, { status: 400 });
+      const closure = await db.prepare("SELECT status FROM accounting_period_closures WHERE board_id=? AND period=?").bind(boardId, period).first<{ status: string }>(); if (!closure || closure.status !== 'approved') return json({ error: 'period_close_not_approved', period }, { status: 409 });
       const existing = await db.prepare('SELECT status,seal_checksum FROM accounting_periods WHERE board_id=? AND period=?').bind(boardId, period).first<Record<string, unknown>>();
       if (existing?.status === 'locked') return json({ error: 'period_already_locked', period, sealChecksum: existing.seal_checksum || null }, { status: 409 });
       const rows = (await db.prepare(`SELECT v.voucher_number,v.voucher_date,v.description,l.id AS line_id,l.account_id,l.debit_minor,l.credit_minor,l.vat_code
@@ -88,6 +127,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
       const sealChecksum = await sha256(JSON.stringify(rows));
       const lockedBy = authorization.userId || String(value?.lockedBy || 'service');
       await db.prepare("INSERT INTO accounting_periods (id,board_id,period,status,locked_by,locked_at,seal_checksum) VALUES (?,?,?,?,?,datetime('now'),?) ON CONFLICT(board_id,period) DO UPDATE SET status='locked',locked_by=excluded.locked_by,locked_at=datetime('now'),seal_checksum=excluded.seal_checksum").bind(id('period'), boardId, period, 'locked', lockedBy, sealChecksum).run();
+      await db.prepare("UPDATE accounting_period_closures SET status='locked',locked_by=?,locked_at=datetime('now'),updated_at=datetime('now') WHERE board_id=? AND period=? AND status='approved'").bind(lockedBy, boardId, period).run();
       await recordAudit(db, { boardId, action: 'accounting_period_locked', entityType: 'accounting_period', entityId: period, userId: authorization.userId || undefined, details: { period, sealChecksum, voucherLineCount: rows.length } });
       return json({ ok: true, action, boardId, period, status: 'locked', sealChecksum, voucherLineCount: rows.length, requiresHumanReview: true });
     }
