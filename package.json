@@ -7,7 +7,7 @@
     "build": "astro build",
     "preview": "astro preview",
     "verify:source": "node scripts/verify-source-integrity.mjs",
-    "verify:api": "node scripts/verify-api-integrity.mjs",
+    "verify:api": "node scripts/verify-api-integrity.mjs && node scripts/verify-api-syntax.mjs",
     "verify:live": "node scripts/smoke-api.mjs",
     "verify": "npm run verify:source && npm run verify:api && npm run build && node scripts/verify-concept-boundary.mjs",
     "verify:concept-boundary": "npm run build && node scripts/verify-concept-boundary.mjs",
