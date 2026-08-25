@@ -65,6 +65,16 @@ export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
     const authorization = await authorizeBoardWrite(request, env, boardId);
     if (!authorization.allowed) return json({ error: 'write_not_authorized' }, { status: 401 });
     const db = requireDb(env);
+    if (action === 'reseal_period') {
+      const period = String(value?.period || ''); if (!periodPattern.test(period)) return json({ error: 'period_invalid' }, { status: 400 });
+      const existing = await db.prepare('SELECT status FROM accounting_periods WHERE board_id=? AND period=?').bind(boardId, period).first<Record<string, unknown>>();
+      if (existing?.status !== 'locked') return json({ error: 'period_must_be_locked' }, { status: 409 });
+      const rows = (await db.prepare(`SELECT v.voucher_number,v.voucher_date,v.description,l.id AS line_id,l.account_id,l.debit_minor,l.credit_minor,l.vat_code FROM vouchers v JOIN voucher_lines l ON l.voucher_id=v.id WHERE v.board_id=? AND v.period=? ORDER BY v.voucher_number,l.id`).bind(boardId, period).all()).results;
+      const sealChecksum = await sha256(JSON.stringify(rows));
+      await db.prepare("UPDATE accounting_periods SET seal_checksum=?,locked_at=COALESCE(locked_at,datetime('now')) WHERE board_id=? AND period=? AND status='locked'").bind(sealChecksum, boardId, period).run();
+      await recordAudit(db, { boardId, action: 'accounting_period_resealed', entityType: 'accounting_period', entityId: period, userId: authorization.userId || undefined, details: { period, sealChecksum, voucherLineCount: rows.length } });
+      return json({ ok: true, action, boardId, period, status: 'locked', sealChecksum, voucherLineCount: rows.length, requiresHumanReview: true });
+    }
     if (action === 'lock_period') {
       const period = String(value?.period || ''); if (!periodPattern.test(period)) return json({ error: 'period_invalid' }, { status: 400 });
       const existing = await db.prepare('SELECT status,seal_checksum FROM accounting_periods WHERE board_id=? AND period=?').bind(boardId, period).first<Record<string, unknown>>();
