@@ -1,6 +1,6 @@
-import { authorizeBoardRead, authorizeBoardWrite, body, id, json, recordAudit, requireDb, type Env } from './_lib';
+import { authorizeBoardRead, authorizeBoardWrite, body, id, json, recordAudit, requireDb, sha256, type Env } from './_lib';
 
-const views = new Set(['summary', 'contracts', 'redlines', 'mandates', 'equity', 'grants']);
+const views = new Set(['summary', 'contracts', 'redlines', 'mandates', 'equity', 'grants', 'filings']);
 
 export const onRequestGet: PagesFunction<Env> = async ({ env, request }) => {
   const url = new URL(request.url); const boardId = (url.searchParams.get('boardId') || '').trim(); const view = url.searchParams.get('view') || 'summary';
@@ -14,6 +14,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ env, request }) => {
     if (view === 'mandates') return json({ boardId, view, data: (await db.prepare(`SELECT m.*,p.name holder_name FROM mandates m LEFT JOIN people p ON p.id=m.holder_id WHERE m.board_id=? ORDER BY CASE m.status WHEN 'draft' THEN 1 WHEN 'active' THEN 2 ELSE 3 END,m.valid_until`).bind(boardId).all()).results });
     if (view === 'equity') return json({ boardId, view, data: (await db.prepare('SELECT * FROM equity_holders WHERE board_id=? ORDER BY ownership_percent DESC').bind(boardId).all()).results });
     if (view === 'grants') return json({ boardId, view, data: (await db.prepare(`SELECT g.*,p.name holder_name FROM equity_grants g LEFT JOIN people p ON p.id=g.holder_id WHERE g.board_id=? ORDER BY g.grant_date DESC`).bind(boardId).all()).results });
+    if (view === 'filings') return json({ boardId, view, data: (await db.prepare(`SELECT id,filing_type,period,status,row_count,payload_hash,external_status,created_by,approved_by,approved_at,created_at FROM equity_filing_packages WHERE board_id=? ORDER BY period DESC,created_at DESC`).bind(boardId).all()).results });
     const [contracts, mandates, equity, redlines, grants] = await Promise.all([
       db.prepare("SELECT COUNT(*) count,SUM(CASE WHEN status='review' THEN 1 ELSE 0 END) review_count FROM contracts WHERE board_id=?").bind(boardId).first(),
       db.prepare("SELECT COUNT(*) count,SUM(CASE WHEN status='draft' THEN 1 ELSE 0 END) draft_count FROM mandates WHERE board_id=?").bind(boardId).first(),
@@ -66,6 +67,26 @@ export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
       await recordAudit(db, { boardId, action: 'equity_grant_approved', entityType: 'equity_grant', entityId: grantId, userId: authorization.userId || undefined, details: { taxReview: 'required', externalFiling: 'not_configured' } });
       return json({ ok: true, action, grantId, status: 'approved', taxReview: 'required', externalFiling: 'not_configured' });
     }
-    return json({ error: 'unknown_action', allowed: ['review_contract', 'activate_mandate', 'create_contract_review', 'accept_redline', 'approve_grant'] }, { status: 400 });
+    if (action === 'prepare_equity_filing') {
+      const filingType = String(value?.filingType || '').trim(); const period = String(value?.period || '').trim();
+      if (!['shareholder_register','rf_1086'].includes(filingType) || !/^\d{4}$/.test(period)) return json({ error: 'filing_type_and_year_required' }, { status: 400 });
+      const holders = (await db.prepare(`SELECT id,holder_name,holder_type,shares,share_class,ownership_percent,vesting_status,updated_at FROM equity_holders WHERE board_id=? ORDER BY share_class,holder_name,id`).bind(boardId).all()).results as Record<string, unknown>[];
+      if (!holders.length) return json({ error: 'equity_register_empty' }, { status: 409 });
+      const totalShares = holders.reduce((sum, row) => sum + Number(row.shares || 0), 0);
+      const payload = JSON.stringify({ schemaVersion: 'styr-equity-1', filingType, period, boardId, totalShares, holders });
+      const payloadHash = await sha256(payload); const filingId = id('equityfiling');
+      try { await db.prepare(`INSERT INTO equity_filing_packages (id,board_id,filing_type,period,status,row_count,payload_hash,payload,external_status,created_by) VALUES (?,?,?,?,'prepared',?,?,?,'not_configured',?)`).bind(filingId,boardId,filingType,period,holders.length,payloadHash,payload,authorization.userId||'api').run(); }
+      catch (error) { if (error instanceof Error && error.message.includes('UNIQUE')) return json({ error: 'open_filing_package_exists' }, { status: 409 }); throw error; }
+      await recordAudit(db,{boardId,action:'equity_filing_prepared',entityType:'equity_filing_package',entityId:filingId,userId:authorization.userId||undefined,details:{filingType,period,rowCount:holders.length,totalShares,payloadHash,externalFiling:'not_configured'}});
+      return json({ok:true,action,filingId,filingType,period,status:'prepared',rowCount:holders.length,totalShares,payloadHash,externalFiling:'not_configured',requiresHumanReview:true},{status:201});
+    }
+    if (action === 'approve_equity_filing') {
+      const filingId = String(value?.filingId || '').trim(); if (!filingId) return json({ error: 'filingId_required' }, { status: 400 });
+      const result = await db.prepare(`UPDATE equity_filing_packages SET status='approved',approved_by=?,approved_at=datetime('now') WHERE id=? AND board_id=? AND status IN ('prepared','review')`).bind(authorization.userId||'api',filingId,boardId).run();
+      if (!result.meta?.changes) return json({ error: 'filing_not_open_or_found' }, { status: 409 });
+      await recordAudit(db,{boardId,action:'equity_filing_approved',entityType:'equity_filing_package',entityId:filingId,userId:authorization.userId||undefined,details:{externalFiling:'not_configured',requiresHumanSubmission:true}});
+      return json({ok:true,action,filingId,status:'approved',externalFiling:'not_configured',requiresHumanSubmission:true});
+    }
+    return json({ error: 'unknown_action', allowed: ['review_contract', 'activate_mandate', 'create_contract_review', 'accept_redline', 'approve_grant', 'prepare_equity_filing', 'approve_equity_filing'] }, { status: 400 });
   } catch (error) { return json({ error: 'database_unavailable', detail: error instanceof Error ? error.message : 'unknown' }, { status: 503 }); }
 };

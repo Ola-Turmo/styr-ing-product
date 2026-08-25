@@ -474,6 +474,19 @@ CREATE INDEX IF NOT EXISTS idx_contract_reviews_board ON contract_reviews(board_
 CREATE INDEX IF NOT EXISTS idx_mandates_board ON mandates(board_id,status,valid_until);
 CREATE INDEX IF NOT EXISTS idx_equity_holders_board ON equity_holders(board_id,holder_name);
 
+-- Deterministic ownership-register and RF-1086 preparation packages. External
+-- Brønnøysund filing remains disabled until a controlled adapter is configured.
+CREATE TABLE IF NOT EXISTS equity_filing_packages (
+  id TEXT PRIMARY KEY, board_id TEXT NOT NULL REFERENCES boards(id) ON DELETE CASCADE,
+  filing_type TEXT NOT NULL CHECK(filing_type IN ('shareholder_register','rf_1086')),
+  period TEXT NOT NULL, status TEXT NOT NULL DEFAULT 'prepared' CHECK(status IN ('prepared','review','approved','submitted','rejected')),
+  row_count INTEGER NOT NULL DEFAULT 0, payload_hash TEXT NOT NULL, payload TEXT NOT NULL,
+  external_status TEXT NOT NULL DEFAULT 'not_configured' CHECK(external_status IN ('not_configured','ready','submitted')),
+  created_by TEXT, approved_by TEXT, approved_at TEXT, created_at TEXT NOT NULL DEFAULT (datetime('now')),
+  UNIQUE(board_id,filing_type,period,status)
+);
+CREATE INDEX IF NOT EXISTS idx_equity_filing_packages_board ON equity_filing_packages(board_id,filing_type,period,status);
+
 -- Equity grants and contract redline controls. These are preparation records only;
 -- tax filing, e-signature and automated legal advice stay outside this boundary.
 CREATE TABLE IF NOT EXISTS equity_grants (
