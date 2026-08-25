@@ -601,6 +601,16 @@ CREATE INDEX IF NOT EXISTS idx_enrollments_board ON training_enrollments(board_i
 CREATE INDEX IF NOT EXISTS idx_reviews_board ON performance_reviews(board_id, period);
 CREATE INDEX IF NOT EXISTS idx_offboarding_board ON offboarding_cases(board_id, status);
 
+-- Interview scorecards are human-authored evaluation records; no automated hiring decision is made.
+CREATE TABLE IF NOT EXISTS interview_scorecards (
+  id TEXT PRIMARY KEY, board_id TEXT NOT NULL REFERENCES boards(id) ON DELETE CASCADE,
+  candidate_id TEXT NOT NULL REFERENCES candidates(id) ON DELETE CASCADE, interviewer_id TEXT REFERENCES people(id) ON DELETE SET NULL,
+  status TEXT NOT NULL DEFAULT 'draft' CHECK(status IN ('draft','complete','withdrawn')),
+  criteria TEXT NOT NULL DEFAULT '{}', overall_score INTEGER CHECK(overall_score BETWEEN 0 AND 100), recommendation TEXT CHECK(recommendation IN ('strong_yes','yes','mixed','no','strong_no')),
+  notes TEXT, completed_at TEXT, created_at TEXT NOT NULL DEFAULT (datetime('now')), updated_at TEXT
+);
+CREATE INDEX IF NOT EXISTS idx_scorecards_candidate ON interview_scorecards(board_id, candidate_id, status);
+
 -- ITSM, asset custody, SaaS spend and access review workflows.
 CREATE TABLE IF NOT EXISTS asset_assignments (
   id TEXT PRIMARY KEY, board_id TEXT NOT NULL REFERENCES boards(id) ON DELETE CASCADE,
