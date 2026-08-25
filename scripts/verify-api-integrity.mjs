@@ -12,6 +12,7 @@ const routeContracts = {
   'functions/api/payroll.ts': ['calculate_compliance', 'prepare_submission', 'payloadHash', 'externalSubmission'],
   'functions/api/field.ts': ['classify_trip', 'complete_maintenance', 'prepare_invoice', 'approve_time', 'requiresHumanApproval'],
   'functions/api/commercial.ts': ['approve_quote', 'send_quote', 'create_case', 'record_case_response', 'update_case_status'],
+  'functions/api/governance.ts': ['review_contract', 'activate_mandate', 'create_contract_review', 'accept_redline', 'approve_grant'],
 };
 
 async function walk(directory) {
