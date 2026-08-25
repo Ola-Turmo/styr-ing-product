@@ -76,6 +76,7 @@ for (const [label, path, payload] of [
   ['finance period write guard', '/api/finance', { boardId: 'board-1', action: 'lock_period', period: '2026-99' }],
   ['finance period reseal guard', '/api/finance', { boardId: 'board-1', action: 'reseal_period', period: '2026-07' }],
   ['finance note preparation guard', '/api/finance', { boardId: 'board-1', action: 'prepare_note', noteType: 'remuneration', period: '2026' }],
+  ['finance FX revaluation guard', '/api/finance', { boardId: 'board-1', action: 'prepare_fx', reference: 'FX-TEST', currency: 'EUR', period: '2026-08', foreignAmountMinor: 10000, bookedRate: 11, closingRate: 12 }],
   ['payroll write guard', '/api/payroll', { boardId: 'board-1', action: 'calculate_compliance', payrollRunId: 'fixture-not-used' }],
   ['payroll run creation guard', '/api/payroll', { boardId: 'board-1', action: 'create_run', period: '2026-99', grossMinor: 1000, employeeCount: 1 }],
   ['payroll approval guard', '/api/payroll', { boardId: 'board-1', action: 'approve_compliance', checkId: 'fixture-not-used' }],

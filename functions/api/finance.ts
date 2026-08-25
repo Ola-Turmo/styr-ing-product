@@ -27,6 +27,7 @@ async function boardData(env: Env, boardId: string, view: string) {
   if (view === 'periods') return (await db.prepare('SELECT id,period,status,locked_by,locked_at,seal_checksum FROM accounting_periods WHERE board_id = ? ORDER BY period DESC').bind(boardId).all()).results;
   if (view === 'saf-t-exports') return (await db.prepare('SELECT id,period_from,period_to,status,row_count,checksum,created_by,created_at FROM saf_t_exports WHERE board_id=? ORDER BY created_at DESC LIMIT 50').bind(boardId).all()).results;
   if (view === 'intercompany') return (await db.prepare('SELECT * FROM intercompany_postings WHERE board_id=? ORDER BY period DESC,created_at DESC').bind(boardId).all()).results;
+  if (view === 'fx') return (await db.prepare('SELECT * FROM fx_revaluations WHERE board_id=? ORDER BY period DESC,created_at DESC').bind(boardId).all()).results;
   if (view === 'notes') return (await db.prepare('SELECT * FROM statutory_notes WHERE board_id=? ORDER BY period DESC,created_at DESC').bind(boardId).all()).results;
   if (view === 'vouchers') return (await db.prepare(`SELECT v.id,v.voucher_number,v.voucher_date,v.period,v.description,v.source,v.status,v.external_reference,
     COALESCE(SUM(l.debit_minor),0) AS debit_minor, COALESCE(SUM(l.credit_minor),0) AS credit_minor
@@ -95,6 +96,20 @@ export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
       await db.prepare('INSERT INTO saf_t_exports (id,board_id,period_from,period_to,status,row_count,checksum,created_by) VALUES (?,?,?,?,?,?,?,?)').bind(exportId, boardId, from, to, 'prepared', result.rowCount, result.checksum, authorization.userId || 'authorized-user').run();
       await recordAudit(db, { boardId, action: 'saf_t_export_prepared', entityType: 'saf_t_export', entityId: exportId, userId: authorization.userId || undefined, details: { from, to, rowCount: result.rowCount, checksum: result.checksum } });
       return json({ ok: true, action, exportId, from, to, rowCount: result.rowCount, checksum: result.checksum, status: 'prepared', downloadUrl: `/api/finance?boardId=${encodeURIComponent(boardId)}&view=saf-t&from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}` }, { status: 201 });
+    }
+    if (action === 'prepare_fx') {
+      const reference = String(value?.reference || '').trim(); const currency = String(value?.currency || '').trim().toUpperCase(); const period = String(value?.period || '').trim();
+      const foreignAmountMinor = asMinor(value?.foreignAmountMinor); const bookedRate = Number(value?.bookedRate); const closingRate = Number(value?.closingRate);
+      if (!reference || reference.length > 120 || !/^[A-Z]{3}$/.test(currency) || !periodPattern.test(period) || foreignAmountMinor === null || foreignAmountMinor <= 0 || !Number.isFinite(bookedRate) || bookedRate <= 0 || !Number.isFinite(closingRate) || closingRate <= 0) return json({ error: 'fx_fields_invalid' }, { status: 400 });
+      const bookedNokMinor = Math.round(foreignAmountMinor * bookedRate); const closingNokMinor = Math.round(foreignAmountMinor * closingRate); const gainLossMinor = closingNokMinor - bookedNokMinor; const fxId = id('fx');
+      await db.prepare("INSERT INTO fx_revaluations (id,board_id,reference,currency,period,foreign_amount_minor,booked_rate,closing_rate,booked_nok_minor,closing_nok_minor,gain_loss_minor,source,status) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,'review')").bind(fxId, boardId, reference, currency, period, foreignAmountMinor, bookedRate, closingRate, bookedNokMinor, closingNokMinor, gainLossMinor, String(value?.source || 'manual') === 'norges_bank' ? 'norges_bank' : 'manual').run();
+      await recordAudit(db, { boardId, action: 'fx_revaluation_prepared', entityType: 'fx_revaluation', entityId: fxId, userId: authorization.userId || undefined, details: { reference, currency, period, bookedRate, closingRate, gainLossMinor, source: String(value?.source || 'manual') === 'norges_bank' ? 'norges_bank' : 'manual', glPosting: 'not_configured' } });
+      return json({ ok: true, action, fxId, status: 'review', reference, currency, period, bookedNokMinor, closingNokMinor, gainLossMinor, source: String(value?.source || 'manual') === 'norges_bank' ? 'norges_bank' : 'manual', glPosting: 'not_configured' }, { status: 201 });
+    }
+    if (action === 'approve_fx') {
+      const fxId = String(value?.fxId || '').trim(); if (!fxId) return json({ error: 'fxId_required' }, { status: 400 });
+      const result = await db.prepare("UPDATE fx_revaluations SET status='approved',approved_by=?,approved_at=datetime('now'),updated_at=datetime('now') WHERE id=? AND board_id=? AND status IN ('draft','review')").bind(authorization.userId || 'service', fxId, boardId).run(); if (!result.meta?.changes) return json({ error: 'fx_not_open_or_found' }, { status: 409 });
+      await recordAudit(db, { boardId, action: 'fx_revaluation_approved', entityType: 'fx_revaluation', entityId: fxId, userId: authorization.userId || undefined, details: { glPosting: 'not_configured' } }); return json({ ok: true, action, fxId, status: 'approved', glPosting: 'not_configured' });
     }
     if (action === 'prepare_intercompany') {
       const sourceEntity=String(value?.sourceEntity||'').trim(), targetEntity=String(value?.targetEntity||'').trim(), reference=String(value?.reference||'').trim(), period=String(value?.period||'');
