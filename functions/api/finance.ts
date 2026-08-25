@@ -24,6 +24,7 @@ async function buildSafT(db: D1Database, boardId: string, from: string, to: stri
 async function boardData(env: Env, boardId: string, view: string) {
   const db = requireDb(env);
   if (view === 'accounts') return (await db.prepare('SELECT id,code,name,account_type,vat_code,active FROM ledger_accounts WHERE board_id = ? ORDER BY code').bind(boardId).all()).results;
+  if (view === 'customers') return (await db.prepare("SELECT id,company_name,org_number,stage,currency FROM crm_accounts WHERE board_id=? AND stage NOT IN ('lost') ORDER BY company_name").bind(boardId).all()).results;
   if (view === 'periods') return (await db.prepare('SELECT id,period,status,locked_by,locked_at,seal_checksum FROM accounting_periods WHERE board_id = ? ORDER BY period DESC').bind(boardId).all()).results;
   if (view === 'saf-t-exports') return (await db.prepare('SELECT id,period_from,period_to,status,row_count,checksum,created_by,created_at FROM saf_t_exports WHERE board_id=? ORDER BY created_at DESC LIMIT 50').bind(boardId).all()).results;
   if (view === 'intercompany') return (await db.prepare('SELECT * FROM intercompany_postings WHERE board_id=? ORDER BY period DESC,created_at DESC').bind(boardId).all()).results;
@@ -123,9 +124,11 @@ export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
     }
     if (action === 'create_invoice') {
       const invoiceNumber=String(value?.invoiceNumber||'').trim(), issueDate=String(value?.issueDate||'').trim(), dueDate=String(value?.dueDate||'').trim()||null, description=String(value?.description||'').trim(), amountMinor=Number(value?.amountMinor||0), vatMinor=Number(value?.vatMinor||0);
-      if (!invoiceNumber||!datePattern.test(issueDate)||(dueDate&&!datePattern.test(dueDate))||!description||!Number.isSafeInteger(amountMinor)||amountMinor<=0||!Number.isSafeInteger(vatMinor)||vatMinor<0) return json({error:'invoice_fields_invalid'},{status:400});
+      const accountId=String(value?.accountId||'').trim();
+      if (!invoiceNumber||!accountId||!datePattern.test(issueDate)||(dueDate&&!datePattern.test(dueDate))||!description||!Number.isSafeInteger(amountMinor)||amountMinor<=0||!Number.isSafeInteger(vatMinor)||vatMinor<0) return json({error:'invoice_fields_invalid'},{status:400});
+      if (!(await db.prepare("SELECT id FROM crm_accounts WHERE id=? AND board_id=? AND stage NOT IN ('lost')").bind(accountId,boardId).first())) return json({error:'customer_not_found'},{status:400});
       const invoiceId=id('sinv'), totalMinor=amountMinor+vatMinor;
-      await db.prepare("INSERT INTO sales_invoices (id,board_id,account_id,invoice_number,issue_date,due_date,description,amount_minor,vat_minor,total_minor,currency,status,source,external_status) VALUES (?,?,?,?,?,?,?,?,?,?,?,'NOK','draft','manual','not_configured')").bind(invoiceId,boardId,value?.accountId||null,invoiceNumber,issueDate,dueDate,description,amountMinor,vatMinor,totalMinor).run();
+      await db.prepare("INSERT INTO sales_invoices (id,board_id,account_id,invoice_number,issue_date,due_date,description,amount_minor,vat_minor,total_minor,currency,status,source,external_status) VALUES (?,?,?,?,?,?,?,?,?,?,?,'NOK','draft','manual','not_configured')").bind(invoiceId,boardId,accountId,invoiceNumber,issueDate,dueDate,description,amountMinor,vatMinor,totalMinor).run();
       await recordAudit(db,{boardId,action:'sales_invoice_created',entityType:'sales_invoice',entityId:invoiceId,userId:authorization.userId||undefined,details:{status:'draft',externalDelivery:'not_configured'}});
       return json({ok:true,action,invoiceId,status:'draft',totalMinor,externalDelivery:'not_configured'},{status:201});
     }
