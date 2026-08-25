@@ -10,6 +10,7 @@ const routeContracts = {
   'functions/api/hcm.ts': ['create_offboarding', 'it_lifecycle_tasks', 'lifecycleTasksSynchronized', 'db.batch'],
   'functions/api/procurement.ts': ['create_order', 'create_receipt', 'create_invoice', 'three_way_match_required', 'approve_invoice', 'requiresHumanApproval'],
   'functions/api/payroll.ts': ['calculate_compliance', 'prepare_submission', 'payloadHash', 'externalSubmission'],
+  'functions/api/field.ts': ['classify_trip', 'complete_maintenance', 'prepare_invoice', 'approve_time', 'requiresHumanApproval'],
 };
 
 async function walk(directory) {
