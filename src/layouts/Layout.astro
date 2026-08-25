@@ -158,7 +158,11 @@ const faqSchema = {
     }
     /* Keep the public first impression readable on laptops and small tablets.
        The previous desktop-only menu could squeeze labels into single letters. */
-    @media (max-width: 1320px) {
+    /* Keep the primary navigation visible on normal laptop widths. The old
+       breakpoint hid the links at 1280 CSS px, which made the public page
+       look like a broken, letter-stacked desktop menu. Collapse only when
+       there is not enough room for the actual labels. */
+    @media (max-width: 920px) {
       .site-nav { align-items: center; gap: 12px; flex-wrap: wrap; }
       .mobile-nav-toggle { display: inline-flex; margin-left: auto; }
       .nav-links { display: none; width: 100%; gap: 12px 14px; flex-wrap: wrap; padding-top: 4px; white-space: normal; }

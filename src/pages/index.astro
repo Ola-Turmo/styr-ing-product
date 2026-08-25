@@ -24,16 +24,16 @@ const audiences = [
 <Layout title="Styrearbeid med retning" activeNav="home">
   <div class="home">
     <section class="positioning" aria-label="Styr.ing for norske virksomheter">
-      <span>NORSK SAAS</span><strong>For norske AS som vil gjøre beslutninger enklere å følge opp.</strong><a href="/trust">Sikkerhet og datagrunnlag ↗</a>
+      <span>NORSK SAAS FOR STYRER</span><strong>For norske AS som vil gjøre styreansvar synlig i hverdagen.</strong><a href="/trust">Sikkerhet og datagrunnlag ↗</a>
     </section>
 
     <section class="hero">
       <div class="hero-copy">
-        <p class="eyebrow"><i></i>Styrearbeid og virksomhetsoppfølging for norske AS</p>
-        <h1>Fra styresak til<br /><em>tydelig oppfølging.</em></h1>
-        <p class="lede">Styr.ing gir styreleder, daglig leder og styresekretær ett sted for agenda, vedtak, risiko og neste steg. Se hva som krever beslutning, hvem som eier oppgaven og hvilket grunnlag som dokumenterer den.</p>
+        <p class="eyebrow"><i></i>Styrets arbeidsflate for norske AS</p>
+        <h1>Fra beslutning til<br /><em>synlig oppfølging.</em></h1>
+        <p class="lede">Styr.ing samler møtesaker, vedtak, økonomisk oversikt, risiko og oppgaver i ett kontrollert arbeidsrom. Styreleder, daglig leder og styresekretær ser hva som krever beslutning, hvem som eier neste steg og hvilket grunnlag som ligger bak.</p>
         <div class="actions"><a class="button primary" href="/workspace">Se en illustrert arbeidsflate ↗</a><a class="button secondary" href="mailto:ola@styr.ing?subject=Demo%20av%20Styr.ing">Bestill en gjennomgang</a></div>
-        <div class="proof"><span><b>01</b>For norske AS</span><span><b>02</b>Kilde og ansvar synlig</span><span><b>03</b>Mennesket godkjenner</span></div>
+        <div class="proof"><span><b>01</b>Styrets tilsyn</span><span><b>02</b>Økonomi og likviditet</span><span><b>03</b>Ansvar med kontrollspor</span></div>
       </div>
 
       <div class="product-stage" aria-label="Illustrasjon av Styr.ing arbeidsflate">
@@ -54,10 +54,10 @@ const audiences = [
       </div>
     </section>
 
-    <section class="audience" aria-label="Hvem bruker Styr.ing"><span class="kicker">Start med én jobb</span>{audiences.map(([title, text]) => <div><strong>{title}</strong><span>{text}</span></div>)}<div><strong>Regnskapsfører</strong><span>Få et ryddig beslutnings- og kontrollspor uten å overta kundens ansvar.</span></div></section>
+    <section class="audience" aria-label="Hvem bruker Styr.ing"><span class="kicker">Bygget rundt styrets ansvar</span>{audiences.map(([title, text]) => <div><strong>{title}</strong><span>{text}</span></div>)}<div><strong>Regnskapsfører</strong><span>Gi styret et ryddig beslutningsspor uten å overta kundens ansvar for bokføring eller rapportering.</span></div></section>
 
     <section class="modules" id="produkt">
-      <div class="section-intro"><p class="kicker">Én plattform · flere arbeidsflater</p><h2>Alt som holder<br /><em>virksomheten på sporet.</em></h2><p>Start med styret. Koble på økonomi, mennesker, drift og kontroll når dere trenger det – uten å miste kilden, ansvaret eller historikken.</p></div>
+      <div class="section-intro"><p class="kicker">Én plattform · flere arbeidsflater</p><h2>Styrets ansvar,<br /><em>fulgt opp i praksis.</em></h2><p>Start med møte, sak og vedtak. Koble på økonomi, mennesker, drift og kontroll når dere trenger det – uten å miste kilden, ansvaret eller historikken.</p></div>
       <div class="module-grid">{modules.map(([icon, title, text, href], index) => <a class="module" href={href}><span class="number">{String(index + 1).padStart(2, '0')}</span><span class="icon">{icon}</span><h3>{title}</h3><p>{text}</p><b>Åpne arbeidsflate ↗</b></a>)}</div>
     </section>
 
