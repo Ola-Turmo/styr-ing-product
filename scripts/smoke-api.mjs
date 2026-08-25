@@ -76,6 +76,8 @@ for (const [label, path, payload] of [
   ['procurement invoice creation guard', '/api/procurement', { boardId: 'board-1', action: 'create_invoice', invoiceNumber: 'UNAUTH', supplierName: 'Unauthorised', amountMinor: 100, currency: 'NOK', dueDate: '2026-08-25' }],
   ['procurement invoice match guard', '/api/procurement', { boardId: 'board-1', action: 'match_invoice', invoiceId: 'fixture-not-used' }],
   ['procurement invoice approval guard', '/api/procurement', { boardId: 'board-1', action: 'approve_invoice', invoiceId: 'fixture-not-used' }],
+  ['payroll compliance calculation guard', '/api/payroll', { boardId: 'board-1', action: 'calculate_compliance', payrollRunId: 'fixture-not-used' }],
+  ['payroll submission preparation guard', '/api/payroll', { boardId: 'board-1', action: 'prepare_submission', submissionType: 'a_melding', period: '2026-08' }],
   ['billing checkout guard', '/api/billing-checkout', { boardId: 'board-1', plan: 'paid' }],
   ['privacy request guard', '/api/privacy', { boardId: 'board-1', requestType: 'access' }],
   ['invite guard', '/api/auth', { action: 'invite_user', boardId: 'board-1', email: 'invite@example.invalid', name: 'Invite User' }],

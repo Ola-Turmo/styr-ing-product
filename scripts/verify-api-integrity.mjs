@@ -9,6 +9,7 @@ const malformedSql = [/\bSELECT\s+FROM\b/i, /\bFROM\s+(?:WHERE|LEFT\s+JOIN|RIGHT
 const routeContracts = {
   'functions/api/hcm.ts': ['create_offboarding', 'it_lifecycle_tasks', 'lifecycleTasksSynchronized', 'db.batch'],
   'functions/api/procurement.ts': ['create_order', 'create_receipt', 'create_invoice', 'three_way_match_required', 'approve_invoice', 'requiresHumanApproval'],
+  'functions/api/payroll.ts': ['calculate_compliance', 'prepare_submission', 'payloadHash', 'externalSubmission'],
 };
 
 async function walk(directory) {
