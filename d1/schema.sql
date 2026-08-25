@@ -891,7 +891,7 @@ CREATE TABLE IF NOT EXISTS supplier_invoices (
   invoice_number TEXT NOT NULL, supplier_name TEXT NOT NULL, amount_minor INTEGER NOT NULL DEFAULT 0, currency TEXT NOT NULL DEFAULT 'NOK', due_date TEXT,
   status TEXT NOT NULL DEFAULT 'received' CHECK(status IN ('received','matched','exception','approved','booked','paid')), match_status TEXT NOT NULL DEFAULT 'unmatched' CHECK(match_status IN ('unmatched','matched','partial','exception')),
   attested_by TEXT, attested_at TEXT, assigned_by TEXT, assigned_at TEXT,
-  approved_by TEXT, approved_at TEXT, external_reference TEXT, created_at TEXT NOT NULL DEFAULT (datetime('now')), UNIQUE(board_id,invoice_number)
+  approved_by TEXT, approved_at TEXT, paid_at TEXT, payment_reference TEXT, external_reference TEXT, created_at TEXT NOT NULL DEFAULT (datetime('now')), UNIQUE(board_id,invoice_number)
 );
 CREATE INDEX IF NOT EXISTS idx_purchase_orders_board ON purchase_orders(board_id,status,created_at);
 CREATE INDEX IF NOT EXISTS idx_goods_receipts_board ON goods_receipts(board_id,received_date);
