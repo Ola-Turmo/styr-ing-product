@@ -82,7 +82,7 @@ for (const [label, path, payload] of [
   ['board governance write guard', '/api/board_governance', { boardId: 'board-1', action: 'record_attendance', attendanceId: 'fixture-not-used', attendanceStatus: 'present' }],
   ['board dissent write guard', '/api/board_governance', { boardId: 'board-1', action: 'record_dissent', resolutionId: 'fixture-not-used', memberId: 'fixture-not-used', statement: 'fixture' }],
   ['finance period write guard', '/api/finance', { boardId: 'board-1', action: 'lock_period', period: '2026-99' }],
-  ['MVA calculation guard', '/api/mva', { boardId: 'board-1', action: 'calculate_period', period: '2026-99' }],
+  ['MVA calculation guard', '/api/mva', { boardId: 'board-1', action: 'calculate_period', period: '2026-08' }],
   ['MVA approval guard', '/api/mva', { boardId: 'board-1', action: 'approve_period', period: '2026-08' }],
   ['sales invoice write guard', '/api/finance', { boardId: 'board-1', action: 'create_invoice', invoiceNumber: 'UNAUTH', issueDate: '2026-08-25', description: 'Unauthorised', amountMinor: 100 }],
   ['bank account write guard', '/api/bank', { boardId: 'board-1', action: 'create_account', name: 'Unauthorised bank account' }],
