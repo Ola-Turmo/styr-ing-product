@@ -96,6 +96,8 @@ for (const [label, path, payload] of [
   ['commercial case creation guard', '/api/commercial', { boardId: 'board-1', action: 'create_case', title: 'Unauthorised case', priority: 'low', channel: 'internal' }],
   ['commercial quote send guard', '/api/commercial', { boardId: 'board-1', action: 'send_quote', quoteId: 'fixture-not-used' }],
   ['commercial case response guard', '/api/commercial', { boardId: 'board-1', action: 'record_case_response', caseId: 'fixture-not-used' }],
+  ['commercial case status guard', '/api/commercial', { boardId: 'board-1', action: 'update_case_status', caseId: 'fixture-not-used', status: 'in_progress' }],
+  ['commercial case resolution guard', '/api/commercial', { boardId: 'board-1', action: 'resolve_case', caseId: 'fixture-not-used' }],
   ['governance review guard', '/api/governance', { boardId: 'board-1', action: 'review_contract', reviewId: 'fixture-not-used', decision: 'approved' }],
   ['governance redline guard', '/api/governance', { boardId: 'board-1', action: 'accept_redline', redlineId: 'fixture-not-used' }],
   ['governance mandate guard', '/api/governance', { boardId: 'board-1', action: 'activate_mandate', mandateId: 'fixture-not-used' }],
