@@ -2,11 +2,13 @@
 import Layout from '../layouts/Layout.astro';
 import SalesInvoiceQuick from '../components/SalesInvoiceQuick.astro';
 import BankReconciliationQuick from '../components/BankReconciliationQuick.astro';
+import VatPeriodQuick from '../components/VatPeriodQuick.astro';
 ---
 <Layout title="Økonomi — Styr.ing" activeNav="finance">
   <div class="finance-shell">
     <SalesInvoiceQuick />
     <BankReconciliationQuick />
+    <VatPeriodQuick />
     <section class="finance-hero"><div><span class="eyebrow"><i></i>Økonomi · hovedbok</span><h1>Tall du kan <em>stole på.</em></h1><p>Hold bilag, avstemmingsspor, perioder og styrebeslutninger i samme arbeidsflate. Bilagsnummeret tildeles atomisk sammen med bilaget og linjene, mens API-kontrakten validerer balanse før postering.</p></div><div class="ledger-orb"><span>Saldo</span><strong>+44 000</strong><small>NOK · illustrert</small></div></section>
     <section class="finance-metrics"><div><span>Aktive kontoer</span><strong id="account-count">—</strong></div><div><span>Perioder låst</span><strong id="locked-count">—</strong></div><div><span>Bilag</span><strong id="voucher-count">—</strong></div><div><span>Kontroll</span><strong id="balance-status">Sjekker…</strong></div></section>
     <section class="finance-grid"><article class="finance-card"><div class="card-head"><div><span class="section-kicker">Hovedbok</span><h2>Kontoplan</h2></div><a href="/api/finance?boardId=board-1&view=accounts">API ↗</a></div><div id="accounts-list" class="account-list"><p class="muted">Henter kontoer…</p></div></article><article class="finance-card"><div class="card-head"><div><span class="section-kicker">Posteringer</span><h2>Siste bilag</h2></div><a href="/api/finance?boardId=board-1&view=vouchers">API ↗</a></div><div id="vouchers-list" class="voucher-list"><p class="muted">Henter bilag…</p></div></article></section>
