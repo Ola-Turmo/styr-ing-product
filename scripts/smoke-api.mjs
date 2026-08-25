@@ -68,6 +68,7 @@ for (const [label, path, payload] of [
   ['HCM write guard', '/api/hcm', { boardId: 'board-1', action: 'update_goal', goalId: 'fixture-not-used', progress: 50, status: 'on_track' }],
   ['HCM offboarding guard', '/api/hcm', { boardId: 'board-1', action: 'advance_offboarding', caseId: 'fixture-not-used', accessRevoked: true }],
   ['HCM candidate write guard', '/api/hcm', { boardId: 'board-1', action: 'update_candidate', candidateId: 'fixture-not-used', stage: 'screening' }],
+  ['HCM scorecard write guard', '/api/hcm', { boardId: 'board-1', action: 'save_scorecard', candidateId: 'fixture-not-used', overallScore: 80, recommendation: 'yes' }],
   ['governance write guard', '/api/governance', { boardId: 'board-1', action: 'review_contract', reviewId: 'fixture-not-used', decision: 'approved' }],
   ['board governance write guard', '/api/board_governance', { boardId: 'board-1', action: 'record_attendance', attendanceId: 'fixture-not-used', attendanceStatus: 'present' }],
   ['finance period write guard', '/api/finance', { boardId: 'board-1', action: 'lock_period', period: '2026-99' }],
