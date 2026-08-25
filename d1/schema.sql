@@ -514,6 +514,11 @@ CREATE TABLE IF NOT EXISTS vouchers (
   source TEXT NOT NULL DEFAULT 'manual', status TEXT NOT NULL DEFAULT 'posted', external_reference TEXT, created_by TEXT, created_at TEXT NOT NULL DEFAULT (datetime('now')),
   UNIQUE(board_id, voucher_number)
 );
+CREATE TABLE IF NOT EXISTS voucher_sequences (
+  board_id TEXT PRIMARY KEY REFERENCES boards(id) ON DELETE CASCADE,
+  next_number INTEGER NOT NULL DEFAULT 1 CHECK(next_number >= 1),
+  updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
 CREATE TABLE IF NOT EXISTS voucher_lines (
   id TEXT PRIMARY KEY, voucher_id TEXT NOT NULL REFERENCES vouchers(id) ON DELETE CASCADE, account_id TEXT NOT NULL REFERENCES ledger_accounts(id),
   description TEXT, debit_minor INTEGER NOT NULL DEFAULT 0, credit_minor INTEGER NOT NULL DEFAULT 0, vat_code TEXT, created_at TEXT NOT NULL DEFAULT (datetime('now')),
@@ -539,6 +544,7 @@ CREATE TABLE IF NOT EXISTS saf_t_exports (
 CREATE INDEX IF NOT EXISTS idx_ledger_accounts_board ON ledger_accounts(board_id);
 CREATE INDEX IF NOT EXISTS idx_accounting_periods_board ON accounting_periods(board_id, period);
 CREATE INDEX IF NOT EXISTS idx_vouchers_board_date ON vouchers(board_id, voucher_date);
+CREATE INDEX IF NOT EXISTS idx_voucher_sequences_board ON voucher_sequences(board_id);
 CREATE INDEX IF NOT EXISTS idx_voucher_lines_voucher ON voucher_lines(voucher_id);
 CREATE INDEX IF NOT EXISTS idx_saf_t_exports_board ON saf_t_exports(board_id, created_at);
 

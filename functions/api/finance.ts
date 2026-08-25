@@ -116,25 +116,21 @@ export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
     for (const line of lines) { const accountId = String(line.accountId || line.account_id || ''); const d = asMinor(line.debitMinor ?? line.debit_minor ?? 0); const c = asMinor(line.creditMinor ?? line.credit_minor ?? 0); if (!accountId || d === null || c === null || (d === 0 && c === 0) || (d > 0 && c > 0)) return json({ error: 'voucher_line_invalid' }, { status: 400 }); debit += d; credit += c; normalized.push({ accountId, description: String(line.description || ''), debit: d, credit: c, vatCode: line.vatCode ? String(line.vatCode) : null }); }
     if (debit !== credit) return json({ error: 'voucher_not_balanced', debitMinor: debit, creditMinor: credit }, { status: 422 });
     const accountIds = [...new Set(normalized.map((line) => line.accountId))]; const placeholders = accountIds.map(() => '?').join(','); const accountRows = (await db.prepare(`SELECT id FROM ledger_accounts WHERE board_id=? AND active=1 AND id IN (${placeholders})`).bind(boardId, ...accountIds).all()).results; if (accountRows.length !== accountIds.length) return json({ error: 'account_not_found' }, { status: 400 });
-    // D1 does not expose a sequence primitive. Allocate from the current max,
-    // then retry only a voucher-number uniqueness collision. This keeps the
-    // existing numbering contract while making concurrent writers converge on
-    // the next free number instead of returning a misleading 503.
-    let created: { voucherId: string; voucherNumber: number } | null = null;
-    for (let attempt = 0; attempt < 5 && !created; attempt += 1) {
-      const next = await db.prepare('SELECT COALESCE(MAX(voucher_number),0)+1 AS next FROM vouchers WHERE board_id=?').bind(boardId).first<Record<string, unknown>>();
-      const voucherNumber = Number(next?.next || 1); const voucherId = id('voucher');
-      const statements = [db.prepare('INSERT INTO vouchers (id,board_id,voucher_number,voucher_date,period,description,source,status,external_reference,created_by) VALUES (?,?,?,?,?,?,?,?,?,?)').bind(voucherId, boardId, voucherNumber, voucherDate, period, description, String(voucher.source || 'manual'), 'posted', voucher.externalReference || null, String(voucher.createdBy || 'api'))];
-      normalized.forEach((line) => statements.push(db.prepare('INSERT INTO voucher_lines (id,voucher_id,account_id,description,debit_minor,credit_minor,vat_code) VALUES (?,?,?,?,?,?,?)').bind(id('line'), voucherId, line.accountId, line.description, line.debit, line.credit, line.vatCode)));
-      try {
-        await db.batch(statements);
-        created = { voucherId, voucherNumber };
-      } catch (error) {
-        const detail = error instanceof Error ? error.message : String(error);
-        if (!detail.toLowerCase().includes('unique') || !detail.toLowerCase().includes('voucher')) throw error;
-      }
-    }
-    if (!created) return json({ error: 'voucher_number_contention', detail: 'Kunne ikke reservere neste bilagsnummer etter flere forsøk.' }, { status: 409 });
-    return json({ ok: true, action: 'create_voucher', boardId, voucherId: created.voucherId, voucherNumber: created.voucherNumber, period, debitMinor: debit, creditMinor: credit }, { status: 201 });
+    // Allocate and consume the per-board sequence in the same D1 batch as the
+    // voucher and its lines. A failed batch rolls back the sequence increment,
+    // so successful vouchers keep a gapless, collision-free number trail.
+    const voucherId = id('voucher');
+    const statements = [
+      db.prepare('INSERT INTO voucher_sequences (board_id,next_number) SELECT ?,COALESCE(MAX(voucher_number),0)+1 FROM vouchers WHERE board_id=? ON CONFLICT(board_id) DO NOTHING').bind(boardId, boardId),
+      db.prepare("UPDATE voucher_sequences SET next_number=next_number+1,updated_at=datetime('now') WHERE board_id=?").bind(boardId),
+      db.prepare('INSERT INTO vouchers (id,board_id,voucher_number,voucher_date,period,description,source,status,external_reference,created_by) SELECT ?,?,next_number-1,?,?,?,?,?,?,? FROM voucher_sequences WHERE board_id=?').bind(voucherId, boardId, voucherDate, period, description, String(voucher.source || 'manual'), 'posted', voucher.externalReference || null, String(voucher.createdBy || 'api'), boardId),
+    ];
+    normalized.forEach((line) => statements.push(db.prepare('INSERT INTO voucher_lines (id,voucher_id,account_id,description,debit_minor,credit_minor,vat_code) VALUES (?,?,?,?,?,?,?)').bind(id('line'), voucherId, line.accountId, line.description, line.debit, line.credit, line.vatCode)));
+    await db.batch(statements);
+    const created = await db.prepare('SELECT voucher_number FROM vouchers WHERE id=? AND board_id=?').bind(voucherId, boardId).first<{ voucher_number: number }>();
+    if (!created) return json({ error: 'voucher_created_without_number' }, { status: 503 });
+    const voucherNumber = Number(created.voucher_number);
+    await recordAudit(db, { boardId, action: 'voucher_created', entityType: 'voucher', entityId: voucherId, userId: authorization.userId || undefined, details: { period, voucherNumber, debitMinor: debit, creditMinor: credit, numbering: 'atomic_sequence' } });
+    return json({ ok: true, action: 'create_voucher', boardId, voucherId, voucherNumber, period, debitMinor: debit, creditMinor: credit }, { status: 201 });
   } catch (error) { return json({ error: 'database_unavailable', detail: error instanceof Error ? error.message : 'unknown' }, { status: 503 }); }
 };
