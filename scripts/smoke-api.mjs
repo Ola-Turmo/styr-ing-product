@@ -79,6 +79,7 @@ for (const [label, path, payload] of [
   ['fixed assets write guard', '/api/assets', { boardId: 'board-1', action: 'approve_depreciation', entryId: 'fixture-not-used' }],
   ['cards write guard', '/api/cards', { boardId: 'board-1', action: 'approve_transaction', transactionId: 'fixture-not-used' }],
   ['revenue write guard', '/api/revenue', { boardId: 'board-1', action: 'approve_schedule_entry', entryId: 'fixture-not-used' }],
+  ['revenue schedule preparation guard', '/api/revenue', { boardId: 'board-1', action: 'prepare_schedule', contractId: 'fixture-not-used' }],
   ['procurement write guard', '/api/procurement', { boardId: 'board-1', action: 'approve_order', orderId: 'fixture-not-used' }],
   ['procurement order creation guard', '/api/procurement', { boardId: 'board-1', action: 'create_order', orderNumber: 'UNAUTH', supplierName: 'Unauthorised', totalMinor: 100, currency: 'NOK' }],
   ['procurement receipt creation guard', '/api/procurement', { boardId: 'board-1', action: 'create_receipt', purchaseOrderId: 'fixture-not-used', receivedDate: '2026-08-25', status: 'confirmed' }],
