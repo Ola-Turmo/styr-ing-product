@@ -24,16 +24,16 @@ const audiences = [
 <Layout title="Styrearbeid med retning" activeNav="home">
   <div class="home">
     <section class="positioning" aria-label="Styr.ing for norske virksomheter">
-      <span>NORSK SAAS</span><strong>For norske AS som vil ha styrearbeid og oppfølging samlet.</strong><a href="/trust">Sikkerhet og datagrunnlag ↗</a>
+      <span>NORSK SAAS</span><strong>For norske AS som vil gjøre beslutninger enklere å følge opp.</strong><a href="/trust">Sikkerhet og datagrunnlag ↗</a>
     </section>
 
     <section class="hero">
       <div class="hero-copy">
-        <p class="eyebrow"><i></i>Norsk SaaS for små og mellomstore AS</p>
-        <h1>Styr virksomheten<br /><em>med ro i magen.</em></h1>
-        <p class="lede">Styr.ing samler styresaker, vedtak, risiko, internkontroll og oppfølging i én arbeidsflate. Se hva som krever beslutning, hvem som eier neste steg og hvilket grunnlag som dokumenterer det – før, under og etter møtet.</p>
-        <div class="actions"><a class="button primary" href="/workspace">Se arbeidsflaten ↗</a><a class="button secondary" href="mailto:ola@styr.ing?subject=Demo%20av%20Styr.ing">Bestill en gjennomgang</a></div>
-        <div class="proof"><span><b>01</b>Norsk arbeidsflyt</span><span><b>02</b>Kilde og ansvar synlig</span><span><b>03</b>Mennesket godkjenner</span></div>
+        <p class="eyebrow"><i></i>Styrearbeid og virksomhetsoppfølging for norske AS</p>
+        <h1>Fra styresak til<br /><em>tydelig oppfølging.</em></h1>
+        <p class="lede">Styr.ing gir styreleder, daglig leder og styresekretær ett sted for agenda, vedtak, risiko og neste steg. Se hva som krever beslutning, hvem som eier oppgaven og hvilket grunnlag som dokumenterer den.</p>
+        <div class="actions"><a class="button primary" href="/workspace">Se en illustrert arbeidsflate ↗</a><a class="button secondary" href="mailto:ola@styr.ing?subject=Demo%20av%20Styr.ing">Bestill en gjennomgang</a></div>
+        <div class="proof"><span><b>01</b>For norske AS</span><span><b>02</b>Kilde og ansvar synlig</span><span><b>03</b>Mennesket godkjenner</span></div>
       </div>
 
       <div class="product-stage" aria-label="Illustrasjon av Styr.ing arbeidsflate">
@@ -54,14 +54,14 @@ const audiences = [
       </div>
     </section>
 
-    <section class="audience" aria-label="Hvem bruker Styr.ing"><span class="kicker">Bygget for norske AS</span>{audiences.map(([title, text]) => <div><strong>{title}</strong><span>{text}</span></div>)}<div><strong>Regnskapsfører</strong><span>Få et ryddig beslutnings- og kontrollspor uten å overta kundens ansvar.</span></div></section>
+    <section class="audience" aria-label="Hvem bruker Styr.ing"><span class="kicker">Start med én jobb</span>{audiences.map(([title, text]) => <div><strong>{title}</strong><span>{text}</span></div>)}<div><strong>Regnskapsfører</strong><span>Få et ryddig beslutnings- og kontrollspor uten å overta kundens ansvar.</span></div></section>
 
     <section class="modules" id="produkt">
       <div class="section-intro"><p class="kicker">Én plattform · flere arbeidsflater</p><h2>Alt som holder<br /><em>virksomheten på sporet.</em></h2><p>Start med styret. Koble på økonomi, mennesker, drift og kontroll når dere trenger det – uten å miste kilden, ansvaret eller historikken.</p></div>
       <div class="module-grid">{modules.map(([icon, title, text, href], index) => <a class="module" href={href}><span class="number">{String(index + 1).padStart(2, '0')}</span><span class="icon">{icon}</span><h3>{title}</h3><p>{text}</p><b>Åpne arbeidsflate ↗</b></a>)}</div>
     </section>
 
-    <section class="trust-band"><div><p class="kicker">Trygghet i hver handling</p><h2>Oversikt uten<br /><em>falske løfter.</em></h2></div><div class="trust-copy"><p>Den offentlige flaten bruker kun illustrasjonsdata. Kundeinnlogging er invitasjonsbasert, tilgang styres per styre, og skrivehandlinger krever autorisasjon og blir auditert.</p><a href="/trust">Les om sikkerhet, personvern og datagrunnlag ↗</a></div></section>
+    <section class="trust-band"><div><p class="kicker">Trygghet i hver handling</p><h2>Oversikt uten<br /><em>falske løfter.</em></h2></div><div class="trust-copy"><p>Styr.ing er SaaS for styring og arbeidsflyt — ikke et regnskaps-, lønns- eller myndighetssystem. Den offentlige flaten bruker kun illustrasjonsdata; tilgang styres per styre, og skrivehandlinger krever autorisasjon og blir auditert.</p><a href="/trust">Les om sikkerhet, personvern og datagrunnlag ↗</a></div></section>
 
     <section class="steps"><div><p class="kicker">Slik fungerer det</p><h2>Fra sak til<br /><em>oppfølging.</em></h2><p>Én arbeidsflyt som gjør det tydelig hva som skal skje før, under og etter møtet.</p><a class="button dark" href="/board/board-1">Se et illustrert møteforløp ↗</a></div><div class="step-list"><div><b>01</b><span><strong>Forbered</strong><small>Samle agenda, dokumenter og beslutningsgrunnlag.</small></span></div><div class="active"><b>02</b><span><strong>Beslutt</strong><small>Gjør sak, ansvar og utfall tydelig for alle.</small></span></div><div><b>03</b><span><strong>Følg opp</strong><small>La oppgaver, kontroller og frister leve videre.</small></span></div></div></section>
 
