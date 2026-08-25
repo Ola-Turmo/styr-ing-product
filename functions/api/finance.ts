@@ -21,6 +21,37 @@ async function buildSafT(db: D1Database, boardId: string, from: string, to: stri
   return { xml, checksum: await sha256(xml), rowCount: lines.length };
 }
 
+async function buildAccountingReport(db: D1Database, boardId: string, view: string, from: string, to: string) {
+  const rows = (await db.prepare(`SELECT a.id,a.code,a.name,a.account_type,
+    COALESCE(SUM(CASE WHEN v.period<? THEN l.debit_minor ELSE 0 END),0) AS opening_debit_minor,
+    COALESCE(SUM(CASE WHEN v.period<? THEN l.credit_minor ELSE 0 END),0) AS opening_credit_minor,
+    COALESCE(SUM(CASE WHEN v.period BETWEEN ? AND ? THEN l.debit_minor ELSE 0 END),0) AS debit_minor,
+    COALESCE(SUM(CASE WHEN v.period BETWEEN ? AND ? THEN l.credit_minor ELSE 0 END),0) AS credit_minor,
+    COALESCE(SUM(CASE WHEN v.period<=? THEN l.debit_minor ELSE 0 END),0) AS cumulative_debit_minor,
+    COALESCE(SUM(CASE WHEN v.period<=? THEN l.credit_minor ELSE 0 END),0) AS cumulative_credit_minor
+    FROM ledger_accounts a LEFT JOIN voucher_lines l ON l.account_id=a.id LEFT JOIN vouchers v ON v.id=l.voucher_id AND v.board_id=a.board_id AND v.status='posted'
+    WHERE a.board_id=? AND a.active=1 GROUP BY a.id ORDER BY a.code`).bind(from, from, from, to, from, to, to, to, boardId).all()).results as Record<string, unknown>[];
+  const normalized = rows.map((row) => {
+    const debit = Number(row.debit_minor || 0); const credit = Number(row.credit_minor || 0); const cumulativeDebit = Number(row.cumulative_debit_minor || 0); const cumulativeCredit = Number(row.cumulative_credit_minor || 0); const naturalCredit = ['liability','equity','revenue'].includes(String(row.account_type));
+    return { ...row, openingBalanceMinor: Number(row.opening_debit_minor || 0) - Number(row.opening_credit_minor || 0), debitMinor: debit, creditMinor: credit, periodBalanceMinor: naturalCredit ? credit - debit : debit - credit, closingBalanceMinor: naturalCredit ? cumulativeCredit - cumulativeDebit : cumulativeDebit - cumulativeCredit };
+  });
+  if (view === 'trial-balance') {
+    const data = normalized.filter((row) => row.openingBalanceMinor || row.debitMinor || row.creditMinor || row.closingBalanceMinor); const totals = data.reduce((sum, row) => ({ debitMinor: sum.debitMinor + row.debitMinor, creditMinor: sum.creditMinor + row.creditMinor, rawClosingMinor: sum.rawClosingMinor + Number(row.cumulative_debit_minor || 0) - Number(row.cumulative_credit_minor || 0) }), { debitMinor: 0, creditMinor: 0, rawClosingMinor: 0 });
+    return { rows: data, totals: { ...totals, balanced: totals.debitMinor === totals.creditMinor && totals.rawClosingMinor === 0 } };
+  }
+  if (view === 'profit-loss') {
+    const data = normalized.filter((row) => ['revenue','expense'].includes(String(row.account_type)) && (row.debitMinor || row.creditMinor)); const revenueMinor = data.filter((row) => row.account_type === 'revenue').reduce((sum, row) => sum + row.periodBalanceMinor, 0); const expenseMinor = data.filter((row) => row.account_type === 'expense').reduce((sum, row) => sum + row.periodBalanceMinor, 0);
+    return { rows: data, totals: { revenueMinor, expenseMinor, resultMinor: revenueMinor - expenseMinor } };
+  }
+  if (view === 'balance-sheet') {
+    const data = normalized.filter((row) => ['asset','liability','equity'].includes(String(row.account_type)) && row.closingBalanceMinor); const assetMinor = data.filter((row) => row.account_type === 'asset').reduce((sum, row) => sum + row.closingBalanceMinor, 0); const liabilityMinor = data.filter((row) => row.account_type === 'liability').reduce((sum, row) => sum + row.closingBalanceMinor, 0); const equityMinor = data.filter((row) => row.account_type === 'equity').reduce((sum, row) => sum + row.closingBalanceMinor, 0); const revenueMinor = normalized.filter((row) => row.account_type === 'revenue').reduce((sum, row) => sum + row.closingBalanceMinor, 0); const expenseMinor = normalized.filter((row) => row.account_type === 'expense').reduce((sum, row) => sum + row.closingBalanceMinor, 0); const currentResultMinor = revenueMinor - expenseMinor;
+    return { rows: data, totals: { assetMinor, liabilityMinor, equityMinor, currentResultMinor, liabilitiesAndEquityMinor: liabilityMinor + equityMinor + currentResultMinor, differenceMinor: assetMinor - liabilityMinor - equityMinor - currentResultMinor } };
+  }
+  const ledgerRows = (await db.prepare(`SELECT v.voucher_number,v.voucher_date,v.period,v.description AS voucher_description,v.source,v.external_reference,a.code,a.name,a.account_type,l.description,l.debit_minor,l.credit_minor,l.vat_code
+    FROM vouchers v JOIN voucher_lines l ON l.voucher_id=v.id JOIN ledger_accounts a ON a.id=l.account_id WHERE v.board_id=? AND v.status='posted' AND v.period BETWEEN ? AND ? ORDER BY a.code,v.voucher_date,v.voucher_number,l.id`).bind(boardId, from, to).all()).results;
+  return { rows: ledgerRows, totals: { rowCount: ledgerRows.length } };
+}
+
 async function boardData(env: Env, boardId: string, view: string) {
   const db = requireDb(env);
   if (view === 'accounts') return (await db.prepare('SELECT id,code,name,account_type,vat_code,active FROM ledger_accounts WHERE board_id = ? ORDER BY code').bind(boardId).all()).results;
@@ -58,6 +89,17 @@ export const onRequestGet: PagesFunction<Env> = async ({ env, request }) => {
       if (from > to) return json({ error: 'period_range_invalid', detail: 'from_must_not_be_after_to' }, { status: 400 });
       const result = await buildSafT(db, boardId, from, to);
       return new Response(result.xml, { headers: { 'content-type': 'application/xml; charset=utf-8', 'cache-control': 'no-store', 'x-styr-export': 'SAF-T Financial 1.3 contract', 'x-styr-export-checksum': result.checksum, 'x-styr-export-row-count': String(result.rowCount) } });
+    }
+    if (['trial-balance','profit-loss','balance-sheet','general-ledger'].includes(view)) {
+      const from = url.searchParams.get('from') || `${new Date().getUTCFullYear()}-01`; const to = url.searchParams.get('to') || `${new Date().getUTCFullYear()}-12`;
+      if (!periodPattern.test(from) || !periodPattern.test(to) || from > to) return json({ error: 'period_range_invalid' }, { status: 400 });
+      const report = await buildAccountingReport(db, boardId, view, from, to);
+      if (url.searchParams.get('format') === 'csv') {
+        const columns = view === 'general-ledger' ? ['voucher_number','voucher_date','period','code','name','voucher_description','description','debit_minor','credit_minor','vat_code','source','external_reference'] : ['code','name','account_type','openingBalanceMinor','debitMinor','creditMinor','periodBalanceMinor','closingBalanceMinor'];
+        const csvValue = (value: unknown) => `"${String(value ?? '').replace(/"/g, '""')}"`; const csv = `\uFEFF${columns.join(';')}\n${(report.rows as Record<string, unknown>[]).map((row) => columns.map((column) => csvValue(row[column])).join(';')).join('\n')}`;
+        return new Response(csv, { headers: { 'content-type': 'text/csv; charset=utf-8', 'content-disposition': `attachment; filename="styr-ing-${view}-${from}-${to}.csv"`, 'cache-control': 'no-store' } });
+      }
+      return json({ boardId, view, from, to, data: report, source: 'posted_voucher_lines' });
     }
     return json({ boardId, view, data: await boardData(env, boardId, view) });
   } catch (error) { return json({ error: 'database_unavailable', detail: error instanceof Error ? error.message : 'unknown' }, { status: 503 }); }
