@@ -940,7 +940,7 @@ CREATE INDEX IF NOT EXISTS idx_card_transactions_board ON card_transactions(boar
 CREATE TABLE IF NOT EXISTS bank_accounts (
   id TEXT PRIMARY KEY, board_id TEXT NOT NULL REFERENCES boards(id) ON DELETE CASCADE,
   name TEXT NOT NULL, account_last_four TEXT, currency TEXT NOT NULL DEFAULT 'NOK',
-  provider TEXT, status TEXT NOT NULL DEFAULT 'manual' CHECK(status IN ('manual','not_configured','connected','paused')),
+  provider TEXT, ledger_account_id TEXT, status TEXT NOT NULL DEFAULT 'manual' CHECK(status IN ('manual','not_configured','connected','paused')),
   created_at TEXT NOT NULL DEFAULT (datetime('now')), updated_at TEXT
 );
 CREATE TABLE IF NOT EXISTS bank_transactions (
@@ -951,7 +951,7 @@ CREATE TABLE IF NOT EXISTS bank_transactions (
   external_reference TEXT, status TEXT NOT NULL DEFAULT 'imported' CHECK(status IN ('imported','suggested','approved','rejected')),
   match_entity_type TEXT CHECK(match_entity_type IN ('sales_invoice','supplier_invoice','card_transaction')),
   match_entity_id TEXT, match_confidence TEXT CHECK(match_confidence IN ('exact','strong','weak')),
-  reviewed_by TEXT, reviewed_at TEXT, created_at TEXT NOT NULL DEFAULT (datetime('now')),
+  reviewed_by TEXT, reviewed_at TEXT, posted_voucher_id TEXT, created_at TEXT NOT NULL DEFAULT (datetime('now')),
   UNIQUE(bank_account_id,external_reference)
 );
 CREATE INDEX IF NOT EXISTS idx_bank_accounts_board ON bank_accounts(board_id,status);
