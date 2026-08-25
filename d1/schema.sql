@@ -591,7 +591,7 @@ CREATE TABLE IF NOT EXISTS fx_revaluations (
   closing_nok_minor INTEGER NOT NULL DEFAULT 0, gain_loss_minor INTEGER NOT NULL DEFAULT 0,
   source TEXT NOT NULL DEFAULT 'manual' CHECK(source IN ('manual','norges_bank')),
   status TEXT NOT NULL DEFAULT 'draft' CHECK(status IN ('draft','review','approved','rejected')),
-  approved_by TEXT, approved_at TEXT, created_at TEXT NOT NULL DEFAULT (datetime('now')), updated_at TEXT
+  approved_by TEXT, approved_at TEXT, posted_voucher_id TEXT, created_at TEXT NOT NULL DEFAULT (datetime('now')), updated_at TEXT
 );
 CREATE INDEX IF NOT EXISTS idx_fx_revaluations_board ON fx_revaluations(board_id,period,status);
 CREATE INDEX IF NOT EXISTS idx_statutory_notes_board ON statutory_notes(board_id,period,status);
