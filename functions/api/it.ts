@@ -48,6 +48,21 @@ export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
       await audit('offboarding_case', caseId, { status: 'proposed', tasks: tasks.map(task => task[0]), requiresHumanApproval: true });
       return json({ ok: true, action, caseId, status: 'proposed', tasks: tasks.map(task => task[0]), requiresHumanApproval: true });
     }
+    if (action === 'create_ticket') {
+      const title = String(value?.title || '').trim();
+      const description = String(value?.description || '').trim();
+      const category = String(value?.category || 'general').trim();
+      const priority = String(value?.priority || 'medium').trim();
+      const dueDate = String(value?.dueDate || '').trim() || null;
+      if (!title || title.length > 200) return json({ error: 'title_required_and_max_200' }, { status: 400 });
+      if (description.length > 2000) return json({ error: 'description_max_2000' }, { status: 400 });
+      if (!['general', 'hardware', 'access', 'software', 'facility', 'hr'].includes(category)) return json({ error: 'invalid_category' }, { status: 400 });
+      if (!['critical', 'high', 'medium', 'low'].includes(priority)) return json({ error: 'invalid_priority' }, { status: 400 });
+      const ticketId = id('ticket');
+      await db.prepare('INSERT INTO service_tickets (id,board_id,title,description,category,priority,status,due_date) VALUES (?,?,?,?,?,?,?,?)').bind(ticketId, boardId, title, description || null, category, priority, 'open', dueDate).run();
+      await audit('service_ticket', ticketId, { title, category, priority, status: 'open', requiresHumanApproval: false });
+      return json({ ok: true, action, ticketId, status: 'open' });
+    }
     if (action === 'review_access') {
       const reviewId = String(value?.reviewId || '').trim(); const decision = String(value?.decision || '').trim();
       if (!reviewId || !['retain', 'remove', 'reduce'].includes(decision)) return json({ error: 'reviewId_and_valid_decision_required' }, { status: 400 });
@@ -63,6 +78,6 @@ export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
       await audit('it_lifecycle_task', taskId, { status: 'approved', requiresHumanApproval: true });
       return json({ ok: true, action, taskId, status: 'approved', requiresHumanApproval: true });
     }
-    return json({ error: 'unknown_action', allowed: ['prepare_offboarding', 'review_access', 'approve_lifecycle_task'] }, { status: 400 });
+    return json({ error: 'unknown_action', allowed: ['prepare_offboarding', 'create_ticket', 'review_access', 'approve_lifecycle_task'] }, { status: 400 });
   } catch (error) { return json({ error: 'database_unavailable', detail: error instanceof Error ? error.message : 'unknown' }, { status: 503 }); }
 };

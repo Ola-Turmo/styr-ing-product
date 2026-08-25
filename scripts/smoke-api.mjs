@@ -65,6 +65,7 @@ for (const [label, path, payload] of [
   ['treasury write guard', '/api/treasury', { boardId: 'board-1', action: 'create_liquidity_snapshot' }],
   ['field write guard', '/api/field', { boardId: 'board-1', action: 'approve_time', entryId: 'fixture-not-used' }],
   ['commercial write guard', '/api/commercial', { boardId: 'board-1', action: 'approve_quote', quoteId: 'fixture-not-used' }],
+  ['IT ticket write guard', '/api/it', { boardId: 'board-1', action: 'create_ticket', title: 'Unauthorised' }],
   ['IT write guard', '/api/it', { boardId: 'board-1', action: 'approve_lifecycle_task', taskId: 'fixture-not-used' }],
   ['fixed assets write guard', '/api/assets', { boardId: 'board-1', action: 'approve_depreciation', entryId: 'fixture-not-used' }],
   ['cards write guard', '/api/cards', { boardId: 'board-1', action: 'approve_transaction', transactionId: 'fixture-not-used' }],
