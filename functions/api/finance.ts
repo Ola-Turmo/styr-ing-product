@@ -22,6 +22,7 @@ async function buildSafT(db: D1Database, boardId: string, from: string, to: stri
 }
 
 async function buildAccountingReport(db: D1Database, boardId: string, view: string, from: string, to: string) {
+  type AccountingReportRow = Record<string, unknown> & { account_type?: string; openingBalanceMinor: number; debitMinor: number; creditMinor: number; periodBalanceMinor: number; closingBalanceMinor: number; cumulative_debit_minor?: number; cumulative_credit_minor?: number };
   const rows = (await db.prepare(`SELECT a.id,a.code,a.name,a.account_type,
     COALESCE(SUM(CASE WHEN v.period<? THEN l.debit_minor ELSE 0 END),0) AS opening_debit_minor,
     COALESCE(SUM(CASE WHEN v.period<? THEN l.credit_minor ELSE 0 END),0) AS opening_credit_minor,
@@ -31,9 +32,9 @@ async function buildAccountingReport(db: D1Database, boardId: string, view: stri
     COALESCE(SUM(CASE WHEN v.period<=? THEN l.credit_minor ELSE 0 END),0) AS cumulative_credit_minor
     FROM ledger_accounts a LEFT JOIN voucher_lines l ON l.account_id=a.id LEFT JOIN vouchers v ON v.id=l.voucher_id AND v.board_id=a.board_id AND v.status='posted'
     WHERE a.board_id=? AND a.active=1 GROUP BY a.id ORDER BY a.code`).bind(from, from, from, to, from, to, to, to, boardId).all()).results as Record<string, unknown>[];
-  const normalized = rows.map((row) => {
+  const normalized: AccountingReportRow[] = rows.map((row) => {
     const debit = Number(row.debit_minor || 0); const credit = Number(row.credit_minor || 0); const cumulativeDebit = Number(row.cumulative_debit_minor || 0); const cumulativeCredit = Number(row.cumulative_credit_minor || 0); const naturalCredit = ['liability','equity','revenue'].includes(String(row.account_type));
-    return { ...row, openingBalanceMinor: Number(row.opening_debit_minor || 0) - Number(row.opening_credit_minor || 0), debitMinor: debit, creditMinor: credit, periodBalanceMinor: naturalCredit ? credit - debit : debit - credit, closingBalanceMinor: naturalCredit ? cumulativeCredit - cumulativeDebit : cumulativeDebit - cumulativeCredit };
+    return { ...row, account_type: String(row.account_type || ''), openingBalanceMinor: Number(row.opening_debit_minor || 0) - Number(row.opening_credit_minor || 0), debitMinor: debit, creditMinor: credit, periodBalanceMinor: naturalCredit ? credit - debit : debit - credit, closingBalanceMinor: naturalCredit ? cumulativeCredit - cumulativeDebit : cumulativeDebit - cumulativeCredit };
   });
   if (view === 'trial-balance') {
     const data = normalized.filter((row) => row.openingBalanceMinor || row.debitMinor || row.creditMinor || row.closingBalanceMinor); const totals = data.reduce((sum, row) => ({ debitMinor: sum.debitMinor + row.debitMinor, creditMinor: sum.creditMinor + row.creditMinor, rawClosingMinor: sum.rawClosingMinor + Number(row.cumulative_debit_minor || 0) - Number(row.cumulative_credit_minor || 0) }), { debitMinor: 0, creditMinor: 0, rawClosingMinor: 0 });
@@ -152,7 +153,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
         proposals: { openCount: Number(proposals?.count || 0), clear: Number(proposals?.count || 0) === 0, blocking: Number(proposals?.count || 0) > 0 },
         safT: { present: Boolean(saft?.checksum), checksum: saft?.checksum || null, warning: !saft?.checksum, blocking: false },
       };
-      const blocking = Object.entries(checks).filter(([, check]) => Boolean(check?.blocking)).map(([name]) => name); const warnings = Object.entries(checks).filter(([, check]) => Boolean(check?.warning)).map(([name]) => name);
+      const blocking = Object.entries(checks).filter(([, check]) => Boolean((check as Record<string, unknown>)?.blocking)).map(([name]) => name); const warnings = Object.entries(checks).filter(([, check]) => Boolean((check as Record<string, unknown>)?.warning)).map(([name]) => name);
       const payload = JSON.stringify({ period, checks, blocking, warnings }); const sourceHash = await sha256(payload); const closureId = id('close');
       await db.prepare("INSERT INTO accounting_period_closures (id,board_id,period,status,checks_json,source_hash,prepared_by,updated_at) VALUES (?,?,?,?,?,?,?,datetime('now')) ON CONFLICT(board_id,period) DO UPDATE SET status='review',checks_json=excluded.checks_json,source_hash=excluded.source_hash,prepared_by=excluded.prepared_by,approved_by=NULL,approved_at=NULL,updated_at=datetime('now')").bind(closureId, boardId, period, 'review', payload, sourceHash, authorization.userId || 'service').run();
       await recordAudit(db, { boardId, action: 'accounting_period_close_prepared', entityType: 'accounting_period_closure', entityId: closureId, userId: authorization.userId || undefined, details: { period, blocking, warnings, sourceHash } }); return json({ ok: true, action, closureId, period, status: 'review', checks, blocking, warnings, ready: blocking.length === 0, sourceHash }, { status: 201 });
