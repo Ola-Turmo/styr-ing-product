@@ -899,7 +899,7 @@ CREATE TABLE IF NOT EXISTS goods_receipts (
 );
 CREATE TABLE IF NOT EXISTS supplier_invoices (
   id TEXT PRIMARY KEY, board_id TEXT NOT NULL REFERENCES boards(id) ON DELETE CASCADE, purchase_order_id TEXT REFERENCES purchase_orders(id) ON DELETE SET NULL,
-  invoice_number TEXT NOT NULL, supplier_name TEXT NOT NULL, amount_minor INTEGER NOT NULL DEFAULT 0, currency TEXT NOT NULL DEFAULT 'NOK', due_date TEXT,
+ invoice_number TEXT NOT NULL, supplier_name TEXT NOT NULL, amount_minor INTEGER NOT NULL DEFAULT 0, vat_minor INTEGER NOT NULL DEFAULT 0, currency TEXT NOT NULL DEFAULT 'NOK', due_date TEXT,  
   status TEXT NOT NULL DEFAULT 'received' CHECK(status IN ('received','matched','exception','approved','booked','paid')), match_status TEXT NOT NULL DEFAULT 'unmatched' CHECK(match_status IN ('unmatched','matched','partial','exception')),
   attested_by TEXT, attested_at TEXT, assigned_by TEXT, assigned_at TEXT,
   approved_by TEXT, approved_at TEXT, paid_at TEXT, payment_reference TEXT, paid_minor INTEGER NOT NULL DEFAULT 0, external_reference TEXT, created_at TEXT NOT NULL DEFAULT (datetime('now')), UNIQUE(board_id,invoice_number)
@@ -907,6 +907,16 @@ CREATE TABLE IF NOT EXISTS supplier_invoices (
 CREATE INDEX IF NOT EXISTS idx_purchase_orders_board ON purchase_orders(board_id,status,created_at);
 CREATE INDEX IF NOT EXISTS idx_goods_receipts_board ON goods_receipts(board_id,received_date);
 CREATE INDEX IF NOT EXISTS idx_supplier_invoices_board ON supplier_invoices(board_id,status,due_date);
+CREATE TABLE IF NOT EXISTS supplier_invoice_lines (
+ id TEXT PRIMARY KEY, board_id TEXT NOT NULL REFERENCES boards(id) ON DELETE CASCADE,
+ supplier_invoice_id TEXT NOT NULL REFERENCES supplier_invoices(id) ON DELETE CASCADE,
+ line_number INTEGER NOT NULL, description TEXT NOT NULL, quantity REAL NOT NULL,
+ unit_price_minor INTEGER NOT NULL, vat_rate INTEGER NOT NULL DEFAULT 0 CHECK(vat_rate IN (0,15,25)),
+ vat_code TEXT, net_minor INTEGER NOT NULL, vat_minor INTEGER NOT NULL, total_minor INTEGER NOT NULL,
+ account_id TEXT REFERENCES ledger_accounts(id) ON DELETE SET NULL,
+ created_at TEXT NOT NULL DEFAULT (datetime('now')), UNIQUE(supplier_invoice_id,line_number)
+);
+CREATE INDEX IF NOT EXISTS idx_supplier_invoice_lines_invoice ON supplier_invoice_lines(board_id,supplier_invoice_id,line_number);
 
 -- EHF/PEPPOL invoice inbox. Transport adapters stay disabled; validated documents
 -- can be converted into the existing supplier-invoice approval trail.
