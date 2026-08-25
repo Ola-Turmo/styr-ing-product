@@ -8,6 +8,7 @@ let fileCount = 0;
 const malformedSql = [/\bSELECT\s+FROM\b/i, /\bFROM\s+(?:WHERE|LEFT\s+JOIN|RIGHT\s+JOIN|JOIN|ORDER|GROUP|LIMIT)\b/i, /\bAS\s+FROM\b/i, /\bUPDATE\s+SET\s+WHERE\b/i, /\bJOIN\s+ON\s*(?:WHERE|GROUP|ORDER|LIMIT)\b/i, /\bWHERE\s+AND\b/i, /\bCOUNT\(\s*\*\s*\)\s+AS\s+FROM\b/i];
 const routeContracts = {
   'functions/api/hcm.ts': ['create_offboarding', 'it_lifecycle_tasks', 'lifecycleTasksSynchronized', 'db.batch'],
+  'functions/api/procurement.ts': ['create_order', 'create_receipt', 'create_invoice', 'three_way_match_required', 'approve_invoice', 'requiresHumanApproval'],
 };
 
 async function walk(directory) {
