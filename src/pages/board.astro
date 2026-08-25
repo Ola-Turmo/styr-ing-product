@@ -1,56 +1,22 @@
 ---
-// Board Portal — /board — static mode, demo data only
 import Layout from '../layouts/Layout.astro';
-import { demoBoardsFixed } from '../lib/db';
-
-const boards = demoBoardsFixed;
 ---
-<Layout title="Styreportal" activeNav="boards">
-  <div class="container" style="max-width: 960px; margin: 2rem auto; padding: 0 20px;">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
-      <h1 style="font-size: 2rem; color: var(--ink);">Illustrerte styrer</h1>
-      <span class="btn-primary demo-control">Statisk demo</span>
-    </div>
 
-    <div style="display: grid; gap: 16px;">
-      {boards.map(board => (
-        <a href={`/board/${board.id}`} style="text-decoration: none; color: inherit; display: block; background: white; border: 1px solid rgba(16,36,31,0.10); border-radius: 16px; padding: 24px; transition: all 0.2s;">
-          <div style="display: flex; justify-content: space-between; align-items: start; gap: 16px;">
-            <div>
-              <h2 style="font-size: 1.25rem; margin: 0 0 6px 0;">{board.name}</h2>
-              <p style="font-family: system-ui, sans-serif; font-size: 0.875rem; color: var(--muted); margin: 0;">
-                {board.members_count || 0} medlemmer · Forrige møte: {board.last_meeting || 'Ingen'}
-              </p>
-              <div style="margin-top: 8px;">
-                <span class="status-pill" style="background: {board.status === 'active' ? 'rgba(31,111,91,0.12)' : 'rgba(200,180,30,0.15)'}; color: {board.status === 'active' ? 'var(--accent)' : '#8a7500'}; font-family: system-ui, sans-serif; font-size: 0.75rem; font-weight: 600; padding: 4px 12px; border-radius: 100px;">
-                  {board.status === 'active' ? 'Demoaktiv' : 'Demopilot'}
-                </span>
-              </div>
-            </div>
-            <span style="font-family: system-ui, sans-serif; font-size: 0.875rem; color: var(--muted); white-space: nowrap;">
-              → Vis detaljer
-            </span>
-          </div>
-        </a>
-      ))}
-    </div>
-
-    <div style="margin-top: 2rem; text-align: center;">
-      <p style="font-family: system-ui, sans-serif; color: var(--muted); font-size: 0.9rem;">
-        Dette er statiske demovyer. Ingen konto eller egne styrer opprettes her.
-      </p>
-    </div>
-  </div>
+<Layout title="Styrearbeid — Styr.ing" activeNav="workspace">
+  <main class="board-gateway">
+    <section class="gateway-card">
+      <span class="section-kicker">Styrearbeid</span>
+      <h1>Beslutninger som er lette å følge opp.</h1>
+      <p>Åpne den innloggede arbeidsflaten for møter, fremmøte, habilitet, avstemninger, vedtak og protokollgrunnlag i virksomheten din.</p>
+      <div class="gateway-actions">
+        <a class="primary" href="/app/arbeidsflate?view=governance">Åpne styrearbeid ↗</a>
+        <a class="secondary" href="/login?next=%2Fapp%2Farbeidsflate%3Fview%3Dgovernance">Logg inn</a>
+      </div>
+      <p class="gateway-note">Tilgang styres per virksomhet. Demo- og eksempeldata skal ikke brukes som selskapsdokumentasjon.</p>
+    </section>
+  </main>
 </Layout>
 
 <style>
-  a:hover { text-decoration: none; }
-  a:hover > div { box-shadow: 0 4px 20px rgba(16,36,31,0.10); transform: translateY(-2px); }
-  .btn-primary {
-    background: var(--accent); color: #fff;
-    padding: 10px 24px; border-radius: 100px;
-    font-family: system-ui, sans-serif; font-size: 0.9rem; font-weight: 600;
-    border: none; cursor: pointer;
-  }
-  .demo-control { cursor: default; opacity: 0.72; }
+  .board-gateway{max-width:1180px;margin:0 auto;padding:72px 24px 120px;min-height:58vh;display:grid;place-items:center}.gateway-card{width:min(100%,680px);padding:48px;border:1px solid rgba(16,36,31,.1);border-radius:22px;background:#fff;box-shadow:0 18px 45px rgba(16,36,31,.08)}.gateway-card h1{margin:14px 0;font:500 clamp(2.6rem,6vw,4.5rem)/.94 Georgia,serif;letter-spacing:-.06em;color:var(--ink)}.gateway-card>p{max-width:570px;color:var(--muted);font:.95rem/1.65 system-ui,sans-serif}.gateway-actions{display:flex;flex-wrap:wrap;gap:12px;margin-top:28px}.gateway-actions a{display:inline-flex;align-items:center;border-radius:9px;padding:13px 16px;font:700 .75rem/1 system-ui,sans-serif}.gateway-actions .primary{background:var(--night);color:#fff}.gateway-actions .primary:hover{background:var(--accent)}.gateway-actions .secondary{color:var(--ink);border:1px solid rgba(16,36,31,.12)}.gateway-note{margin-top:30px!important;padding-top:18px;border-top:1px solid rgba(16,36,31,.09);font-size:.72rem!important}@media(max-width:560px){.board-gateway{padding:45px 16px 80px}.gateway-card{padding:30px 23px}}
 </style>
