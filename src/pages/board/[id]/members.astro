@@ -24,7 +24,8 @@ const members = [
     <button id="invite-button" class="btn-primary">Inviter medlem</button>
   </div>
 
-  <div class="member-grid">
+  <div id="member-status" class="member-status" role="status" aria-live="polite"></div>
+  <div id="member-grid" class="member-grid">
     {members.map(m => (
       <div class="member-card">
         <div class="member-avatar" style={'background:' + m.color}>{m.avatar}</div>
@@ -42,7 +43,7 @@ const members = [
           </div>
           <div class="member-activity">Deltok sist: 2026-03-15 · 3 av 3 møter · 100% oppmøte</div>
         </div>
-        <div class="member-actions"><span class="btn-sm demo-control">Redigering · demo</span></div>
+        <div class="member-actions"><span class="btn-sm demo-control">Illustrasjon</span></div>
       </div>
     ))}
   </div>
@@ -70,7 +71,30 @@ const members = [
 <script is:inline>
   const boardId = '${id}';
   const live = document.createElement('div'); live.id = 'live-members'; document.querySelector('.container')?.prepend(live);
-  fetch(`/api/members?boardId=${encodeURIComponent(boardId)}`).then(async (response) => { if (!response.ok) return; const data = await response.json(); live.innerHTML = `<div class="live-panel"><strong>Live tenant-tilgang</strong><span>${data.members.length} innloggede medlemmer · administrasjon vises kun for autoriserte brukere</span></div>`; }).catch(() => {});
+  const status = document.querySelector('#member-status');
+  const esc = (value) => String(value ?? '').replace(/[&<>'"]/g, (char) => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','\"':'&quot;'}[char]));
+  const roleLabel = { owner: 'Eier', editor: 'Redaktør', viewer: 'Leser' };
+  const loadMembers = async () => {
+    const response = await fetch(`/api/members?boardId=${encodeURIComponent(boardId)}`);
+    if (!response.ok) return;
+    const data = await response.json();
+    live.innerHTML = `<div class="live-panel"><strong>Live tenant-tilgang</strong><span>${data.members.length} innloggede medlemmer · handlinger krever eier- eller redaktørtilgang</span></div>`;
+    const grid = document.querySelector('#member-grid');
+    if (!grid || !Array.isArray(data.members)) return;
+    grid.innerHTML = data.members.map((member) => `<article class="member-card live-member-card" data-user-id="${esc(member.id)}"><div class="member-avatar" style="background:#1f6f5b">${member.role === 'owner' ? '👑' : '●'}</div><div class="member-info"><strong>${esc(member.name || member.email)}</strong><span class="member-role">${esc(roleLabel[member.role] || member.role)}</span><span class="member-email">${esc(member.email)}</span><div class="member-perms"><span class="chip active">${esc(member.account_role || 'bruker')}</span><span class="chip active">Tenant-tilgang</span></div></div><div class="member-actions"><label class="sr-only" for="role-${esc(member.id)}">Rolle for ${esc(member.name || member.email)}</label><select id="role-${esc(member.id)}" class="role-select" data-role-user="${esc(member.id)}"><option value="owner" ${member.role === 'owner' ? 'selected' : ''}>Eier</option><option value="editor" ${member.role === 'editor' ? 'selected' : ''}>Redaktør</option><option value="viewer" ${member.role === 'viewer' ? 'selected' : ''}>Leser</option></select><button type="button" class="btn-sm btn-save-role" data-user-id="${esc(member.id)}">Lagre rolle</button><button type="button" class="btn-sm btn-remove" data-remove-user="${esc(member.id)}">Fjern tilgang</button></div></article>`).join('');
+    grid.querySelectorAll('[data-remove-user]').forEach((button) => button.addEventListener('click', () => updateMember(button.dataset.removeUser, 'remove')));
+    grid.querySelectorAll('.btn-save-role').forEach((button) => button.addEventListener('click', () => { const select = grid.querySelector(`#role-${CSS.escape(button.dataset.userId || '')}`); updateMember(button.dataset.userId, 'set_role', select?.value); }));
+  };
+  const updateMember = async (userId, action, role) => {
+    if (!userId) return;
+    if (action === 'remove' && !window.confirm('Fjerne denne brukerens tilgang til styret?')) return;
+    status.textContent = 'Lagrer…';
+    const response = await fetch('/api/members', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ boardId, userId, action, role }) });
+    const data = await response.json().catch(() => ({}));
+    status.textContent = response.ok ? (action === 'remove' ? 'Tilgangen er fjernet.' : 'Rollen er oppdatert.') : (data.error === 'last_owner_must_remain' ? 'Minst én eier må bli igjen.' : 'Kunne ikke lagre endringen.');
+    if (response.ok) loadMembers();
+  };
+  loadMembers().catch(() => {});
 </script>
 <script is:inline>
   const inviteButton = document.querySelector('#invite-button');
@@ -93,6 +117,10 @@ const members = [
 .header p { font-family: system-ui, sans-serif; color: var(--muted); margin: 0; }
 .btn-primary { background: var(--accent); color: white; border: none; padding: 10px 20px; border-radius: 10px; font-family: system-ui, sans-serif; font-size: 0.85rem; font-weight: 600; cursor: pointer; }
 .demo-control { cursor: default; opacity: 0.72; }
+.member-status { min-height: 1.25rem; margin: -1rem 0 1rem; font-family: system-ui, sans-serif; font-size: 0.8rem; color: var(--accent); }
+.live-panel { display: flex; justify-content: space-between; gap: 12px; margin: 0 0 1rem; padding: 12px 14px; border: 1px solid rgba(31,111,91,0.16); border-radius: 10px; background: rgba(31,111,91,0.06); font-family: system-ui, sans-serif; font-size: 0.8rem; }
+.live-panel span { color: var(--muted); text-align: right; }
+.role-select { padding: 5px 8px; border: 1px solid rgba(0,0,0,0.12); border-radius: 6px; background: white; font: 0.76rem system-ui, sans-serif; }
 
 .member-grid { display: flex; flex-direction: column; gap: 12px; }
 .member-card { display: flex; gap: 14px; padding: 18px; background: white; border: 1px solid rgba(16,36,31,0.08); border-radius: 12px; align-items: flex-start; }
@@ -121,6 +149,10 @@ const members = [
 .demo-notice { text-align: center; padding: 1.5rem; margin-top: 2rem; background: rgba(31,111,91,0.06); border-radius: 12px; font-family: system-ui, sans-serif; font-size: 0.85rem; color: var(--muted); }
 
 @media (max-width: 600px) {
+  .live-panel { flex-direction: column; }
+  .live-panel span { text-align: left; }
+  .member-card { flex-wrap: wrap; }
+  .member-actions { width: 100%; }
   .perm-header, .perm-row { grid-template-columns: repeat(7, 1fr); font-size: 0.68rem; }
 }
 </style>
