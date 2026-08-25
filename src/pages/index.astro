@@ -5,38 +5,39 @@ const modules = [
   ['◒', 'Regnskap og lønn', 'Bilag, bankgrunnlag, faktura, MVA, lønn og rapportering i én rolig arbeidsflyt.', '/finance'],
   ['▤', 'Faktura og betaling', 'Lag fakturagrunnlag, følg åpne poster og registrer betaling med tydelig status.', '/finance'],
   ['⌁', 'Bank og avstemming', 'Importer grunnlag, få match-forslag og godkjenn hva som skal bokføres.', '/finance'],
+  ['▥', 'MVA og rapporter', 'Beregn MVA-perioder, kontroller avvik og bruk et oppdatert rapporteringsgrunnlag.', '/finance'],
+  ['▣', 'Innkjøp', 'Bestilling, mottak, leverandørfaktura og treveis kontroll.', '/procurement'],
+  ['⌂', 'Prosjekt og timer', 'Før timer og få et ryddig grunnlag for lønn og faktura.', '/field'],
   ['⌁', 'Styrearbeid', 'Møter, sakspapirer, vedtak og protokoller samlet.', '/board'],
   ['◈', 'Risiko og kontroll', 'Knytt risiko, kontroll, bevis og tiltak til ansvar.', '/risk'],
   ['＋', 'Mennesker og HCM', 'Roller, mål, rekruttering, onboarding og offboarding med godkjenning.', '/people'],
-  ['▣', 'Innkjøp', 'Bestilling, mottak, leverandørfaktura og treveis kontroll.', '/procurement'],
   ['◎', 'Kunder og kommersielt', 'Følg pipeline, tilbud, kundesaker og SLA fra samme kilde.', '/commercial'],
-  ['⌂', 'Prosjekt og felt', 'Timer, kjørelister, vedlikehold og fakturagrunnlag med sporbarhet.', '/field'],
   ['◇', 'IT og drift', 'Eiendeler, SaaS-forbruk, tilgangsrevisjon og offboarding-kø.', '/it'],
   ['§', 'Avtaler og juss', 'Kontraktsgjennomgang, redlines, mandater og styregodkjenning.', '/governance'],
   ['◌', 'Kontrollspor', 'Se hvem som endret hva, når og hvorfor — med kilde og ansvar.', '/audit'],
 ];
 
 const audiences = [
-  ['Styreleder', 'Kom forberedt til møtet og se hva som krever beslutning.'],
-  ['Daglig leder', 'Gjør ansvar, risiko og frister synlige i hverdagen.'],
-  ['Styresekretær', 'Hold dokumenter, vedtak og oppfølging ryddig.'],
+  ['Daglig leder', 'Se hva som er bokført, hva som mangler og hva som haster.'],
+  ['Regnskapsansvarlig', 'Hold bilag, faktura, bank, MVA og lønn i samme flyt.'],
+  ['Regnskapsfører', 'Del et ryddig, sporbar grunnlag med kunden.'],
 ];
 ---
 
 <Layout title="Regnskap for små AS med kontroll" activeNav="home">
   <div class="home">
     <section class="positioning" aria-label="Styr.ing for norske virksomheter">
-      <span>NORSK SAAS FOR SMÅ AS</span><strong>Regnskap, lønn og virksomhetsstyring samlet i én arbeidsflate.</strong><a href="/trust">Sikkerhet og datagrunnlag ↗</a>
+      <span>NORSK SAAS FOR SMÅ AS OG ENK</span><strong>Regnskapet først. Styring når dere trenger det.</strong><a href="/trust">Sikkerhet og datagrunnlag ↗</a>
     </section>
 
     <section class="hero">
       <div class="hero-copy">
-        <p class="eyebrow"><i></i>Norsk regnskapssky for små virksomheter</p>
-        <h1>Full kontroll på<br /><em>regnskapet.</em></h1>
-        <p class="lede">Styr.ing er et komplett regnskapssystem for små norske AS og enkeltpersonforetak: bilag, faktura, MVA, lønn, bankgrunnlag og rapportering samlet på ett sted. Når dere trenger det, kobler dere på styre og oppfølging uten å bytte system.</p>
-        <div class="actions"><a class="button primary" href="/workspace">Se arbeidsflaten med eksempeldata ↗</a><a class="button secondary" href="mailto:ola@styr.ing?subject=Demo%20av%20Styr.ing">Bestill en gjennomgang</a></div>
-        <div class="proof"><span><b>01</b>Før møtet</span><span><b>02</b>I møtet</span><span><b>03</b>Etter møtet</span></div>
-        <p class="hero-note"><span>✓</span> Bygget for få personer, mange hatter og en regnskapshverdag som må fungere.</p>
+        <p class="eyebrow"><i></i>Norsk regnskapsprogram for små virksomheter</p>
+        <h1>Regnskapet først.<br /><em>Styring når dere trenger det.</em></h1>
+        <p class="lede">Styr.ing samler bilag, bokføring, faktura, MVA, lønn, bankgrunnlag og rapportering i ett komplett regnskapssystem for små norske AS og enkeltpersonforetak. Når dere trenger mer, ligger styre, prosjekter og kontroll i samme arbeidsflate.</p>
+        <div class="actions"><a class="button primary" href="/workspace">Se regnskapsflaten med eksempeldata ↗</a><a class="button secondary" href="mailto:ola@styr.ing?subject=Demo%20av%20Styr.ing">Bestill en gjennomgang</a></div>
+        <div class="proof"><span><b>01</b>Bilag og faktura</span><span><b>02</b>Bank og MVA</span><span><b>03</b>Lønn og rapporter</span></div>
+        <p class="hero-note"><span>✓</span> Laget for få personer, mange hatter og en regnskapshverdag som må fungere.</p>
       </div>
 
       <div class="product-stage" aria-label="Illustrasjon av Styr.ing arbeidsflate">
@@ -57,7 +58,7 @@ const audiences = [
       </div>
     </section>
 
-    <section class="audience" aria-label="Hvem bruker Styr.ing"><span class="kicker">For små norske virksomheter</span>{audiences.map(([title, text]) => <div><strong>{title}</strong><span>{text}</span></div>)}<div><strong>Regnskapsfører</strong><span>Få en ryddig arbeidsflate for kunden og et forståelig grunnlag å dele med styret.</span></div></section>
+    <section class="audience" aria-label="Hvem bruker Styr.ing"><span class="kicker">For små norske virksomheter</span>{audiences.map(([title, text]) => <div><strong>{title}</strong><span>{text}</span></div>)}<div><strong>Lønn</strong><span>Få kontroll på lønnsgrunnlaget før rapportering og utbetaling.</span></div></section>
 
     <section class="outcomes" aria-labelledby="outcomes-title">
       <div class="section-intro outcomes-intro"><p class="kicker">Regnskap i hverdagen</p><h2 id="outcomes-title">Alt det viktigste.<br /><em>På ett sted.</em></h2><p>Start med de daglige regnskapsoppgavene. Få en tydelig oversikt over hva som er gjort, hva som mangler og hva som må gjøres før fristen.</p></div>
@@ -65,7 +66,7 @@ const audiences = [
     </section>
 
     <section class="modules" id="produkt">
-      <div class="section-intro"><p class="kicker">Regnskap først · mer når dere trenger det</p><h2>Et komplett regnskapssystem<br /><em>som kan vokse med dere.</em></h2><p>Bilag, faktura, MVA, lønn, bankgrunnlag og rapportering er kjernen. Koble på kunder, prosjekter, styre og kontroll når dere trenger én samlet kilde.</p></div>
+      <div class="section-intro"><p class="kicker">Regnskap først · mer når dere trenger det</p><h2>Alt det vanlige regnskapet.<br /><em>Samlet og forståelig.</em></h2><p>Bilag, faktura, MVA, lønn, bankgrunnlag og rapportering er kjernen. Koble på kunder, prosjekter, styre og kontroll når dere trenger én samlet kilde.</p></div>
       <div class="module-grid">{modules.map(([icon, title, text, href], index) => <a class="module" href={href}><span class="number">{String(index + 1).padStart(2, '0')}</span><span class="icon">{icon}</span><h3>{title}</h3><p>{text}</p><b>Åpne arbeidsflate ↗</b></a>)}</div>
     </section>
 
