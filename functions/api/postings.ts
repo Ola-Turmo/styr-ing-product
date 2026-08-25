@@ -14,6 +14,8 @@ async function accountsExist(db: D1Database, boardId: string, accountIds: string
 }
 
 async function nextVoucher(db: D1Database, boardId: string, voucher: { voucherDate: string; period: string; description: string; source: string; externalReference: string; createdBy: string }, lines: PostingLine[]) {
+  if (!periodPattern.test(voucher.period) || !datePattern.test(voucher.voucherDate) || voucher.voucherDate.slice(0, 7) !== voucher.period) throw new Error('voucher_period_invalid');
+  if (await db.prepare("SELECT 1 FROM accounting_periods WHERE board_id=? AND period=? AND status='locked'").bind(boardId, voucher.period).first()) throw new Error('period_locked');
   const voucherId = id('voucher');
   let debit = 0; let credit = 0;
   for (const line of lines) { debit += line.debitMinor; credit += line.creditMinor; }

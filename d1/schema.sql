@@ -555,6 +555,9 @@ CREATE TABLE IF NOT EXISTS vouchers (
   source TEXT NOT NULL DEFAULT 'manual', status TEXT NOT NULL DEFAULT 'posted', external_reference TEXT, created_by TEXT, created_at TEXT NOT NULL DEFAULT (datetime('now')),
   UNIQUE(board_id, voucher_number)
 );
+CREATE UNIQUE INDEX IF NOT EXISTS idx_vouchers_board_external_reference
+  ON vouchers(board_id, external_reference)
+  WHERE external_reference IS NOT NULL AND trim(external_reference) <> '';
 CREATE TABLE IF NOT EXISTS voucher_sequences (
   board_id TEXT PRIMARY KEY REFERENCES boards(id) ON DELETE CASCADE,
   next_number INTEGER NOT NULL DEFAULT 1 CHECK(next_number >= 1),
