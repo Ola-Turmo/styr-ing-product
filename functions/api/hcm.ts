@@ -16,7 +16,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ env, request }) => {
     if (view === 'candidates') return json({ boardId, view, data: (await db.prepare(`SELECT c.id,c.name,c.email,c.stage,c.score,c.skills,c.consent_status,r.title AS requisition_title,COALESCE((SELECT COUNT(*) FROM interview_scorecards sc WHERE sc.candidate_id=c.id AND sc.board_id=c.board_id AND sc.status='complete'),0) AS completed_scorecards,COALESCE((SELECT MAX(sc.overall_score) FROM interview_scorecards sc WHERE sc.candidate_id=c.id AND sc.board_id=c.board_id AND sc.status='complete'),c.score) AS scorecard_score FROM candidates c LEFT JOIN job_requisitions r ON r.id=c.requisition_id WHERE c.board_id=? ORDER BY c.created_at DESC`).bind(boardId).all()).results });
     if (view === 'handbook') return json({ boardId, view, data: (await db.prepare(`SELECT h.id,h.title,h.category,h.version,h.status,h.requires_ack,h.published_at,COUNT(a.id) AS acknowledgements FROM handbook_documents h LEFT JOIN handbook_acknowledgements a ON a.handbook_id=h.id WHERE h.board_id=? GROUP BY h.id ORDER BY h.published_at DESC`).bind(boardId).all()).results });
     if (view === 'training') return json({ boardId, view, data: (await db.prepare(`SELECT e.id,e.status,e.due_date,e.score,c.title AS course_title,p.name AS person_name FROM training_enrollments e JOIN training_courses c ON c.id=e.course_id JOIN people p ON p.id=e.person_id WHERE e.board_id=? ORDER BY e.due_date`).bind(boardId).all()).results });
-    if (view === 'reviews') return json({ boardId, view, data: (await db.prepare(`SELECT r.id,r.period,r.status,r.rating,r.due_date,p.name AS person_name,rv.name AS reviewer_name FROM performance_reviews r JOIN people p ON p.id=r.person_id LEFT JOIN people rv ON rv.id=r.reviewer_id WHERE r.board_id=? ORDER BY r.due_date`).bind(boardId).all()).results });
+    if (view === 'reviews') return json({ boardId, view, data: (await db.prepare(`SELECT r.id,r.period,r.status,r.summary,r.rating,r.due_date,p.name AS person_name,rv.name AS reviewer_name FROM performance_reviews r JOIN people p ON p.id=r.person_id LEFT JOIN people rv ON rv.id=r.reviewer_id WHERE r.board_id=? ORDER BY r.due_date`).bind(boardId).all()).results });
     if (view === 'offboarding') return json({ boardId, view, data: (await db.prepare(`SELECT o.id,o.person_id,o.last_day,o.status,o.access_revoked,o.assets_returned,o.payroll_reviewed,o.notes,p.name AS person_name,COUNT(l.id) AS lifecycle_tasks,SUM(CASE WHEN l.status='complete' THEN 1 ELSE 0 END) AS completed_tasks FROM offboarding_cases o JOIN people p ON p.id=o.person_id LEFT JOIN it_lifecycle_tasks l ON l.offboarding_case_id=o.id AND l.board_id=o.board_id WHERE o.board_id=? GROUP BY o.id ORDER BY o.last_day`).bind(boardId).all()).results });
     const [people, openCandidates, dueTraining, pendingAck, reviews, offboarding, goals, atRiskGoals] = await Promise.all([
       db.prepare("SELECT COUNT(*) AS count FROM people WHERE board_id=? AND employment_status='active'").bind(boardId).first(),
@@ -98,6 +98,27 @@ export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
       await recordAudit(db, { boardId, action: 'goal_status_changed', entityType: 'goal', entityId: goalId, userId: authorization.userId || undefined, details: { progress, status } });
       return json({ ok: true, action, goalId, progress, status, requiresHumanReview: true });
     }
+    if (action === 'create_review') {
+      const personId = String(value?.personId || '').trim(); const reviewerId = String(value?.reviewerId || '').trim() || null; const period = String(value?.period || '').trim(); const dueDate = String(value?.dueDate || '').trim() || null;
+      if (!personId || !period || period.length > 60 || (dueDate && !datePattern.test(dueDate))) return json({ error: 'review_fields_required' }, { status: 400 });
+      const person = await db.prepare("SELECT id FROM people WHERE id=? AND board_id=? AND employment_status='active'").bind(personId, boardId).first<{ id: string }>();
+      if (!person) return json({ error: 'active_person_not_found' }, { status: 404 });
+      if (reviewerId && !(await db.prepare("SELECT id FROM people WHERE id=? AND board_id=? AND employment_status='active'").bind(reviewerId, boardId).first())) return json({ error: 'reviewer_not_found' }, { status: 404 });
+      const reviewId = id('review');
+      try { await db.prepare("INSERT INTO performance_reviews (id,board_id,person_id,period,reviewer_id,status,due_date) VALUES (?,?,?,?,?,'draft',?)").bind(reviewId, boardId, personId, period, reviewerId, dueDate).run(); }
+      catch (error) { if (error instanceof Error && error.message.includes('UNIQUE')) return json({ error: 'review_for_period_already_exists' }, { status: 409 }); throw error; }
+      await recordAudit(db, { boardId, action: 'performance_review_created', entityType: 'performance_review', entityId: reviewId, userId: authorization.userId || undefined, details: { personId, reviewerId, period, dueDate } });
+      return json({ ok: true, action, reviewId, status: 'draft', requiresHumanReview: true }, { status: 201 });
+    }
+    if (action === 'advance_review') {
+      const reviewId = String(value?.reviewId || '').trim(); const status = String(value?.status || '').trim(); const summary = String(value?.summary || '').trim(); const ratingValue = value?.rating === '' || value?.rating === null || value?.rating === undefined ? null : Number(value.rating);
+      if (!reviewId || !['self_review','manager_review','complete'].includes(status) || summary.length > 5000 || (ratingValue !== null && (!Number.isInteger(ratingValue) || ratingValue < 1 || ratingValue > 5))) return json({ error: 'review_update_invalid' }, { status: 400 });
+      if (status === 'complete' && (ratingValue === null || !summary)) return json({ error: 'completed_review_requires_summary_and_rating' }, { status: 400 });
+      const result = await db.prepare(`UPDATE performance_reviews SET status=?,summary=?,rating=?${status === 'complete' ? ",completed_at=datetime('now')" : ''} WHERE id=? AND board_id=? AND status<>'complete'`).bind(status, summary || null, ratingValue, reviewId, boardId).run();
+      if (!result.meta?.changes) return json({ error: 'review_not_open_or_found' }, { status: 409 });
+      await recordAudit(db, { boardId, action: 'performance_review_advanced', entityType: 'performance_review', entityId: reviewId, userId: authorization.userId || undefined, details: { status, rating: ratingValue, summaryRecorded: Boolean(summary), requiresHumanReview: true } });
+      return json({ ok: true, action, reviewId, status, rating: ratingValue, requiresHumanReview: true });
+    }
     if (action === 'create_offboarding') {
       const personId = String(value?.personId || '').trim(); const lastDay = String(value?.lastDay || '').trim(); const notes = String(value?.notes || '').trim();
       if (!personId || !datePattern.test(lastDay)) return json({ error: 'personId_and_lastDay_required' }, { status: 400 });
@@ -136,6 +157,6 @@ export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
       await recordAudit(db, { boardId, action: 'offboarding_advanced', entityType: 'offboarding_case', entityId: caseId, userId: authorization.userId || undefined, details: { accessRevoked, assetsReturned, payrollReviewed, status: complete ? 'complete' : 'in_progress', lifecycleTasksSynchronized: true } });
       return json({ ok: true, action, caseId, status: complete ? 'complete' : 'in_progress', lifecycleTasksSynchronized: true, requiresHumanApproval: true });
     }
-    return json({ error: 'unknown_action', allowed: ['create_requisition','create_candidate','update_candidate','save_scorecard','acknowledge_handbook','complete_training','create_goal','update_goal','create_offboarding','advance_offboarding'] }, { status: 400 });
+    return json({ error: 'unknown_action', allowed: ['create_requisition','create_candidate','update_candidate','save_scorecard','acknowledge_handbook','complete_training','create_goal','update_goal','create_review','advance_review','create_offboarding','advance_offboarding'] }, { status: 400 });
   } catch (error) { return json({ error: 'database_unavailable', detail: error instanceof Error ? error.message : 'unknown' }, { status: 503 }); }
 };
