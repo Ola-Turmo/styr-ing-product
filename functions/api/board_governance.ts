@@ -69,6 +69,20 @@ export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
       await recordAudit(db, { boardId, action: 'resolution_created', entityType: 'resolution', entityId: resolutionId, userId: authorization.userId || undefined, details: { number, title, meetingId } });
       return json({ ok: true, action, resolutionId, signature: 'not_configured', requiresHumanReview: true }, { status: 201 });
     }
+    if (action === 'update_meeting_status') {
+      const meetingId = String(value?.meetingId || '').trim();
+      const status = String(value?.status || '').trim();
+      if (!meetingId) return json({ error: 'meetingId_required' }, { status: 400 });
+      if (!['ongoing', 'completed', 'cancelled'].includes(status)) return json({ error: 'invalid_meeting_status' }, { status: 400 });
+      const meeting = await db.prepare('SELECT id,status,title FROM meetings WHERE id=? AND board_id=?').bind(meetingId, boardId).first<{ id: string; status: string; title: string }>();
+      if (!meeting) return json({ error: 'meeting_not_found' }, { status: 404 });
+      if (meeting.status === 'cancelled' && status !== 'cancelled') return json({ error: 'cancelled_meeting_immutable' }, { status: 409 });
+      if (meeting.status === 'completed' && status !== 'completed') return json({ error: 'completed_meeting_immutable' }, { status: 409 });
+      const result = await db.prepare("UPDATE meetings SET status=?, updated_at=datetime('now') WHERE id=? AND board_id=?").bind(status, meetingId, boardId).run();
+      if (!result.meta?.changes) return json({ error: 'meeting_not_found' }, { status: 404 });
+      await recordAudit(db, { boardId, action: 'meeting_status_updated', entityType: 'meeting', entityId: meetingId, userId: authorization.userId || undefined, details: { from: meeting.status, to: status, title: meeting.title } });
+      return json({ ok: true, action, meetingId, status, requiresHumanReview: status === 'completed' });
+    }
     if (action === 'record_attendance') {
       const attendanceId = String(value?.attendanceId || '').trim();
       const status = String(value?.attendanceStatus || 'present');
@@ -93,7 +107,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
       await recordAudit(db, { boardId, action: 'resolution_ballot_recorded', entityType: 'resolution_ballot', entityId: ballotId, userId: authorization.userId || undefined, details: { resolutionId, memberId, vote } });
       return json({ ok: true, action, ballotId, vote, signature: 'not_configured', requiresHumanReview: true });
     }
-    return json({ error: 'unknown_action', allowed: ['create_meeting', 'create_resolution', 'record_attendance', 'cast_ballot'] }, { status: 400 });
+    return json({ error: 'unknown_action', allowed: ['create_meeting', 'create_resolution', 'update_meeting_status', 'record_attendance', 'cast_ballot'] }, { status: 400 });
   } catch (error) {
     return json({ error: 'database_unavailable', detail: error instanceof Error ? error.message : 'unknown' }, { status: 503 });
   }
