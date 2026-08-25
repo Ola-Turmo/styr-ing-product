@@ -16,7 +16,7 @@ const members = [
 ];
 ---
 <Layout title="Styremedlemmer" activeNav="boards">
-<div class="container">
+<div class="container" data-board-id={id}>
   <a href={'/board/' + id} class="back-link">← Tilbake</a>
   
   <div class="header">
@@ -69,7 +69,7 @@ const members = [
 </Layout>
 
 <script is:inline>
-  const boardId = '${id}';
+  const boardId = document.querySelector('.container')?.dataset.boardId || '';
   const live = document.createElement('div'); live.id = 'live-members'; document.querySelector('.container')?.prepend(live);
   const status = document.querySelector('#member-status');
   const esc = (value) => String(value ?? '').replace(/[&<>'"]/g, (char) => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','\"':'&quot;'}[char]));
@@ -102,7 +102,7 @@ const members = [
     const email = window.prompt('E-post for den nye brukeren'); if (!email) return;
     const name = window.prompt('Navn'); if (!name) return;
     const role = window.prompt('Rolle: owner, editor eller viewer', 'viewer') || 'viewer';
-    const response = await fetch('/api/auth', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ action: 'invite_user', boardId: '${id}', email, name, role }) });
+    const response = await fetch('/api/auth', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ action: 'invite_user', boardId, email, name, role }) });
     const data = await response.json();
     if (response.ok) window.prompt('Kopier denne engangslenken og send den til brukeren:', `${location.origin}${data.activationUrl}`);
     else window.alert(data.error === 'owner_or_editor_required' ? 'Bare eier eller redaktør kan invitere.' : 'Invitasjonen kunne ikke opprettes.');
