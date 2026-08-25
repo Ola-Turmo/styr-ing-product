@@ -6,13 +6,13 @@ const asMinor = (value: unknown) => Number.isSafeInteger(Number(value)) && Numbe
 
 async function buildSafT(db: D1Database, boardId: string, from: string, to: string) {
   const accounts = (await db.prepare('SELECT code,name,account_type,vat_code FROM ledger_accounts WHERE board_id = ? ORDER BY code').bind(boardId).all()).results as Record<string, unknown>[];
-  const lines = (await db.prepare(`SELECT v.id,v.voucher_number,v.voucher_date,v.period,v.description,l.id line_id,l.debit_minor,l.credit_minor,l.vat_code,a.code,a.name
+  const lines = (await db.prepare(`SELECT v.id AS voucher_id,v.voucher_number,v.voucher_date,v.period,v.description,l.id AS line_id,l.debit_minor,l.credit_minor,l.vat_code,a.code,a.name
     FROM vouchers v JOIN voucher_lines l ON l.voucher_id=v.id JOIN ledger_accounts a ON a.id=l.account_id
-    WHERE v.board_id=? AND v.period BETWEEN ? AND ? ORDER BY v.voucher_number,l.id`).bind(boardId, from, to).all()).results as Record<string, unknown>[];
+    WHERE v.board_id=? AND v.status='posted' AND v.period BETWEEN ? AND ? ORDER BY v.voucher_number,l.id`).bind(boardId, from, to).all()).results as Record<string, unknown>[];
   const esc = (value: unknown) => String(value ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&apos;');
   const amount = (value: unknown) => (Number(value || 0) / 100).toFixed(2);
   const grouped = new Map<string, Record<string, unknown>[]>();
-  for (const line of lines) { const key = String(line.id); const existing = grouped.get(key) || []; existing.push(line); grouped.set(key, existing); }
+  for (const line of lines) { const key = String(line.voucher_id); const existing = grouped.get(key) || []; existing.push(line); grouped.set(key, existing); }
   const transactions = [...grouped.values()].map((voucherLines) => {
     const first = voucherLines[0];
     return `<Transaction><TransactionID>${esc(first.voucher_number)}</TransactionID><TransactionDate>${esc(first.voucher_date)}</TransactionDate><Description>${esc(first.description)}</Description>${voucherLines.map((line) => `<Line><RecordID>${esc(line.line_id)}</RecordID><AccountID>${esc(line.code)}</AccountID><AccountDescription>${esc(line.name)}</AccountDescription><DebitAmount>${amount(line.debit_minor)}</DebitAmount><CreditAmount>${amount(line.credit_minor)}</CreditAmount>${line.vat_code ? `<TaxCode>${esc(line.vat_code)}</TaxCode>` : ''}</Line>`).join('')}</Transaction>`;
