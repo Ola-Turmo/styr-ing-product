@@ -85,6 +85,8 @@ for (const [label, path, payload] of [
   ['IT SaaS register write guard', '/api/it', { boardId: 'board-1', action: 'create_saas_subscription', name: 'Unauthorised', vendor: 'Unauthorised', seats: 1 }],
   ['IT write guard', '/api/it', { boardId: 'board-1', action: 'approve_lifecycle_task', taskId: 'fixture-not-used' }],
   ['fixed assets write guard', '/api/assets', { boardId: 'board-1', action: 'approve_depreciation', entryId: 'fixture-not-used' }],
+  ['fixed asset creation guard', '/api/assets', { boardId: 'board-1', action: 'create_asset', assetNumber: 'AM-INVALID', name: 'Unauthorised', category: 'test', acquisitionDate: '2026-99-99', acquisitionCostMinor: 1000, usefulLifeMonths: 12 }],
+  ['depreciation calculation guard', '/api/assets', { boardId: 'board-1', action: 'calculate_depreciation', assetId: 'fixture-not-used', period: '2026-08' }],
   ['cards write guard', '/api/cards', { boardId: 'board-1', action: 'approve_transaction', transactionId: 'fixture-not-used' }],
   ['revenue write guard', '/api/revenue', { boardId: 'board-1', action: 'approve_schedule_entry', entryId: 'fixture-not-used' }],
   ['revenue schedule preparation guard', '/api/revenue', { boardId: 'board-1', action: 'prepare_schedule', contractId: 'fixture-not-used' }],
