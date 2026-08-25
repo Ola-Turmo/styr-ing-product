@@ -24,7 +24,7 @@ async function buildSafT(db: D1Database, boardId: string, from: string, to: stri
 async function boardData(env: Env, boardId: string, view: string) {
   const db = requireDb(env);
   if (view === 'accounts') return (await db.prepare('SELECT id,code,name,account_type,vat_code,active FROM ledger_accounts WHERE board_id = ? ORDER BY code').bind(boardId).all()).results;
-  if (view === 'periods') return (await db.prepare('SELECT id,period,status,locked_by,locked_at FROM accounting_periods WHERE board_id = ? ORDER BY period DESC').bind(boardId).all()).results;
+  if (view === 'periods') return (await db.prepare('SELECT id,period,status,locked_by,locked_at,seal_checksum FROM accounting_periods WHERE board_id = ? ORDER BY period DESC').bind(boardId).all()).results;
   if (view === 'saf-t-exports') return (await db.prepare('SELECT id,period_from,period_to,status,row_count,checksum,created_by,created_at FROM saf_t_exports WHERE board_id=? ORDER BY created_at DESC LIMIT 50').bind(boardId).all()).results;
   if (view === 'intercompany') return (await db.prepare('SELECT * FROM intercompany_postings WHERE board_id=? ORDER BY period DESC,created_at DESC').bind(boardId).all()).results;
   if (view === 'notes') return (await db.prepare('SELECT * FROM statutory_notes WHERE board_id=? ORDER BY period DESC,created_at DESC').bind(boardId).all()).results;
@@ -67,12 +67,15 @@ export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
     const db = requireDb(env);
     if (action === 'lock_period') {
       const period = String(value?.period || ''); if (!periodPattern.test(period)) return json({ error: 'period_invalid' }, { status: 400 });
-      const existing = await db.prepare('SELECT status FROM accounting_periods WHERE board_id=? AND period=?').bind(boardId, period).first<Record<string, unknown>>();
-      if (existing?.status === 'locked') return json({ error: 'period_already_locked' }, { status: 409 });
+      const existing = await db.prepare('SELECT status,seal_checksum FROM accounting_periods WHERE board_id=? AND period=?').bind(boardId, period).first<Record<string, unknown>>();
+      if (existing?.status === 'locked') return json({ error: 'period_already_locked', period, sealChecksum: existing.seal_checksum || null }, { status: 409 });
+      const rows = (await db.prepare(`SELECT v.voucher_number,v.voucher_date,v.description,l.id AS line_id,l.account_id,l.debit_minor,l.credit_minor,l.vat_code
+        FROM vouchers v JOIN voucher_lines l ON l.voucher_id=v.id WHERE v.board_id=? AND v.period=? ORDER BY v.voucher_number,l.id`).bind(boardId, period).all()).results;
+      const sealChecksum = await sha256(JSON.stringify(rows));
       const lockedBy = authorization.userId || String(value?.lockedBy || 'service');
-      await db.prepare("INSERT INTO accounting_periods (id,board_id,period,status,locked_by,locked_at) VALUES (?,?,?,?,?,datetime('now')) ON CONFLICT(board_id,period) DO UPDATE SET status='locked',locked_by=excluded.locked_by,locked_at=datetime('now')").bind(id('period'), boardId, period, 'locked', lockedBy).run();
-      await recordAudit(db, { boardId, action: 'accounting_period_locked', entityType: 'accounting_period', entityId: period, userId: authorization.userId || undefined, details: { period } });
-      return json({ ok: true, action, boardId, period, status: 'locked', requiresHumanReview: true });
+      await db.prepare("INSERT INTO accounting_periods (id,board_id,period,status,locked_by,locked_at,seal_checksum) VALUES (?,?,?,?,?,datetime('now'),?) ON CONFLICT(board_id,period) DO UPDATE SET status='locked',locked_by=excluded.locked_by,locked_at=datetime('now'),seal_checksum=excluded.seal_checksum").bind(id('period'), boardId, period, 'locked', lockedBy, sealChecksum).run();
+      await recordAudit(db, { boardId, action: 'accounting_period_locked', entityType: 'accounting_period', entityId: period, userId: authorization.userId || undefined, details: { period, sealChecksum, voucherLineCount: rows.length } });
+      return json({ ok: true, action, boardId, period, status: 'locked', sealChecksum, voucherLineCount: rows.length, requiresHumanReview: true });
     }
     if (action === 'record_saf_t_export') {
       const from = String(value?.from || ''); const to = String(value?.to || '');

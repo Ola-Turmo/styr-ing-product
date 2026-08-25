@@ -505,7 +505,7 @@ CREATE TABLE IF NOT EXISTS ledger_accounts (
 );
 CREATE TABLE IF NOT EXISTS accounting_periods (
   id TEXT PRIMARY KEY, board_id TEXT NOT NULL REFERENCES boards(id) ON DELETE CASCADE,
-  period TEXT NOT NULL, status TEXT NOT NULL DEFAULT 'open', locked_by TEXT, locked_at TEXT, created_at TEXT NOT NULL DEFAULT (datetime('now')),
+  period TEXT NOT NULL, status TEXT NOT NULL DEFAULT 'open', locked_by TEXT, locked_at TEXT, seal_checksum TEXT, created_at TEXT NOT NULL DEFAULT (datetime('now')),
   UNIQUE(board_id, period)
 );
 CREATE TABLE IF NOT EXISTS vouchers (
