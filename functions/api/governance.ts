@@ -42,10 +42,14 @@ export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
     }
     if (action === 'activate_mandate') {
       const mandateId = String(value?.mandateId || '').trim(); if (!mandateId) return json({ error: 'mandateId_required' }, { status: 400 });
-      const result = await db.prepare("UPDATE mandates SET status='active' WHERE id=? AND board_id=? AND status='draft'").bind(mandateId, boardId).run();
+      const existing = await db.prepare("SELECT evidence_ref FROM mandates WHERE id=? AND board_id=? AND status='draft'").bind(mandateId, boardId).first<{ evidence_ref: string | null }>();
+      if (!existing) return json({ error: 'mandate_not_draft_or_found' }, { status: 409 });
+      const evidenceRef = String(value?.evidenceRef || existing.evidence_ref || '').trim().slice(0, 240);
+      if (!evidenceRef || /^mangler\b/i.test(evidenceRef)) return json({ error: 'mandate_evidence_required', detail: 'Legg inn vedtaks- eller dokumentreferanse før fullmakten aktiveres.' }, { status: 400 });
+      const result = await db.prepare("UPDATE mandates SET status='active',evidence_ref=? WHERE id=? AND board_id=? AND status='draft'").bind(evidenceRef, mandateId, boardId).run();
       if (!result.meta?.changes) return json({ error: 'mandate_not_draft_or_found' }, { status: 409 });
-      await recordAudit(db, { boardId, action: 'mandate_activated', entityType: 'mandate', entityId: mandateId, userId: authorization.userId || undefined, details: { requiresEvidence: true } });
-      return json({ ok: true, action, mandateId, status: 'active', requiresEvidence: true });
+      await recordAudit(db, { boardId, action: 'mandate_activated', entityType: 'mandate', entityId: mandateId, userId: authorization.userId || undefined, details: { evidenceRef, requiresEvidence: true } });
+      return json({ ok: true, action, mandateId, status: 'active', evidenceRef, requiresEvidence: true });
     }
     if (action === 'create_contract_review') {
       const contractId = String(value?.contractId || '').trim(); if (!contractId) return json({ error: 'contractId_required' }, { status: 400 });
