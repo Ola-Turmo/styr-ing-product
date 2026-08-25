@@ -131,7 +131,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
       const period = String(value?.period || '').trim(); if (!periodPattern.test(period)) return json({ error: 'period_invalid' }, { status: 400 });
       const existingPeriod = await db.prepare('SELECT status,seal_checksum FROM accounting_periods WHERE board_id=? AND period=?').bind(boardId, period).first<Record<string, unknown>>();
       if (existingPeriod?.status === 'locked') return json({ error: 'period_already_locked', period }, { status: 409 });
-      const [vouchers, balance, bank, sales, purchases, vat, payroll, proposals, saft] = await Promise.all([
+      const [vouchers, balance, bank, sales, purchases, vat, payroll, proposals, depreciation, saft] = await Promise.all([
         db.prepare('SELECT COUNT(*) AS count FROM vouchers WHERE board_id=? AND period=?').bind(boardId, period).first<Record<string, unknown>>(),
         db.prepare('SELECT COALESCE(SUM(l.debit_minor),0) AS debit_minor,COALESCE(SUM(l.credit_minor),0) AS credit_minor FROM vouchers v JOIN voucher_lines l ON l.voucher_id=v.id WHERE v.board_id=? AND v.period=?').bind(boardId, period).first<Record<string, unknown>>(),
         db.prepare("SELECT COUNT(*) AS count FROM bank_transactions WHERE board_id=? AND substr(transaction_date,1,7)=? AND status IN ('imported','suggested','approved')").bind(boardId, period).first<Record<string, unknown>>(),
@@ -140,6 +140,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
         db.prepare('SELECT status,source_count,unmapped_count,submission_id,source_hash FROM vat_periods WHERE board_id=? AND period=?').bind(boardId, period).first<Record<string, unknown>>(),
         db.prepare("SELECT COUNT(*) AS count FROM payroll_runs WHERE board_id=? AND period=? AND status NOT IN ('approved','submitted','closed')").bind(boardId, period).first<Record<string, unknown>>(),
         db.prepare("SELECT COUNT(*) AS count FROM (SELECT id FROM posting_proposals WHERE board_id=? AND period=? AND status IN ('review','approved') UNION ALL SELECT id FROM payroll_posting_proposals WHERE board_id=? AND period=? AND status IN ('review','approved'))").bind(boardId, period, boardId, period).first<Record<string, unknown>>(),
+        db.prepare("SELECT COUNT(*) AS count FROM depreciation_entries WHERE board_id=? AND period=? AND ledger_type='financial' AND status IN ('calculated','review','approved')").bind(boardId, period).first<Record<string, unknown>>(),
         db.prepare('SELECT id,row_count,checksum FROM saf_t_exports WHERE board_id=? AND period_from<=? AND period_to>=? ORDER BY created_at DESC LIMIT 1').bind(boardId, period, period).first<Record<string, unknown>>(),
       ]);
       const debit = Number(balance?.debit_minor || 0); const credit = Number(balance?.credit_minor || 0); const vatStatus = String(vat?.status || 'missing'); const vatBlocking = vatStatus !== 'missing' && (!['approved','prepared'].includes(vatStatus) || Number(vat?.unmapped_count || 0) > 0); const checks = {
@@ -151,6 +152,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
         vat: { status: vatStatus, unmappedCount: Number(vat?.unmapped_count || 0), ready: vatStatus === 'missing' || (['approved','prepared'].includes(vatStatus) && Number(vat?.unmapped_count || 0) === 0), blocking: vatBlocking },
         payroll: { openCount: Number(payroll?.count || 0), clear: Number(payroll?.count || 0) === 0, blocking: Number(payroll?.count || 0) > 0 },
         proposals: { openCount: Number(proposals?.count || 0), clear: Number(proposals?.count || 0) === 0, blocking: Number(proposals?.count || 0) > 0 },
+        depreciation: { openCount: Number(depreciation?.count || 0), clear: Number(depreciation?.count || 0) === 0, blocking: Number(depreciation?.count || 0) > 0 },
         safT: { present: Boolean(saft?.checksum), checksum: saft?.checksum || null, warning: !saft?.checksum, blocking: false },
       };
       const blocking = Object.entries(checks).filter(([, check]) => Boolean((check as Record<string, unknown>)?.blocking)).map(([name]) => name); const warnings = Object.entries(checks).filter(([, check]) => Boolean((check as Record<string, unknown>)?.warning)).map(([name]) => name);
