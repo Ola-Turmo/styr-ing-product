@@ -801,6 +801,7 @@ CREATE TABLE IF NOT EXISTS supplier_invoices (
   id TEXT PRIMARY KEY, board_id TEXT NOT NULL REFERENCES boards(id) ON DELETE CASCADE, purchase_order_id TEXT REFERENCES purchase_orders(id) ON DELETE SET NULL,
   invoice_number TEXT NOT NULL, supplier_name TEXT NOT NULL, amount_minor INTEGER NOT NULL DEFAULT 0, currency TEXT NOT NULL DEFAULT 'NOK', due_date TEXT,
   status TEXT NOT NULL DEFAULT 'received' CHECK(status IN ('received','matched','exception','approved','booked','paid')), match_status TEXT NOT NULL DEFAULT 'unmatched' CHECK(match_status IN ('unmatched','matched','partial','exception')),
+  attested_by TEXT, attested_at TEXT, assigned_by TEXT, assigned_at TEXT,
   approved_by TEXT, approved_at TEXT, external_reference TEXT, created_at TEXT NOT NULL DEFAULT (datetime('now')), UNIQUE(board_id,invoice_number)
 );
 CREATE INDEX IF NOT EXISTS idx_purchase_orders_board ON purchase_orders(board_id,status,created_at);
