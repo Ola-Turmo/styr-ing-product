@@ -2,6 +2,7 @@
 import Layout from '../../layouts/Layout.astro';
 import PostingQueueQuick from '../../components/PostingQueueQuick.astro';
 import VatPeriodQuick from '../../components/VatPeriodQuick.astro';
+import BankReconciliationQuick from '../../components/BankReconciliationQuick.astro';
 ---
 <Layout title="Økonomi og flyt — Styr.ing" activeNav="workspace">
   <div class="finance-shell">
@@ -11,6 +12,7 @@ import VatPeriodQuick from '../../components/VatPeriodQuick.astro';
       <header class="finance-header"><div><a id="finance-back" href="/app">← Kundeområde</a><span class="section-kicker">Regnskap og økonomi</span><h1>Fra kilde til kontroll.</h1><p>Bilag, faktura, bankgrunnlag, lønn og innkjøp samlet i ett spor — med tydelig menneskelig godkjenning før bokføring eller eksterne steg.</p></div><div class="finance-identity"><strong id="finance-board">—</strong><span id="finance-role">—</span></div></header>
       <PostingQueueQuick />
       <VatPeriodQuick />
+      <BankReconciliationQuick />
       <nav id="finance-tabs" class="finance-tabs" aria-label="Økonomi-visninger"></nav>
       <section class="finance-summary"><article><small>Eiendeler</small><strong id="metric-assets">—</strong><span>aktive registrerte</span></article><article><small>Bankgrunnlag</small><strong id="metric-bank">—</strong><span>åpne transaksjoner</span></article><article><small>Innkjøp</small><strong id="metric-orders">—</strong><span>åpne ordre</span></article><article><small>Inntekt</small><strong id="metric-revenue">—</strong><span>aktive kontrakter</span></article></section>
       <section class="finance-card"><div class="card-head"><div><span id="finance-kicker" class="section-kicker">Kontrollspor</span><h2 id="finance-title">—</h2></div><span id="finance-count">—</span></div><div id="finance-list" class="finance-list"><p class="empty">Henter data…</p></div></section>
