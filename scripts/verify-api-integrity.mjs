@@ -11,6 +11,7 @@ const routeContracts = {
   'functions/api/procurement.ts': ['create_order', 'create_receipt', 'create_invoice', 'three_way_match_required', 'approve_invoice', 'requiresHumanApproval'],
   'functions/api/payroll.ts': ['calculate_compliance', 'prepare_submission', 'payloadHash', 'externalSubmission'],
   'functions/api/field.ts': ['classify_trip', 'complete_maintenance', 'prepare_invoice', 'approve_time', 'requiresHumanApproval'],
+  'functions/api/commercial.ts': ['approve_quote', 'send_quote', 'create_case', 'record_case_response', 'update_case_status'],
 };
 
 async function walk(directory) {
