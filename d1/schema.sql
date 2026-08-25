@@ -1029,10 +1029,13 @@ CREATE TABLE IF NOT EXISTS card_transactions (
   id TEXT PRIMARY KEY, board_id TEXT NOT NULL REFERENCES boards(id) ON DELETE CASCADE, card_id TEXT REFERENCES corporate_cards(id) ON DELETE SET NULL,
   transaction_date TEXT NOT NULL, merchant TEXT NOT NULL, amount_minor INTEGER NOT NULL DEFAULT 0, currency TEXT NOT NULL DEFAULT 'NOK',
   category TEXT, status TEXT NOT NULL DEFAULT 'needs_receipt' CHECK(status IN ('needs_receipt','ready_for_review','approved','rejected','reconciled')),
-  receipt_ref TEXT, reviewed_by TEXT, reviewed_at TEXT, external_reference TEXT, created_at TEXT NOT NULL DEFAULT (datetime('now'))
+  receipt_ref TEXT, reviewed_by TEXT, reviewed_at TEXT, external_reference TEXT, posted_voucher_id TEXT, created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 CREATE INDEX IF NOT EXISTS idx_corporate_cards_board ON corporate_cards(board_id,status);
 CREATE INDEX IF NOT EXISTS idx_card_transactions_board ON card_transactions(board_id,status,transaction_date);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_card_transactions_board_external_reference
+  ON card_transactions(board_id, external_reference)
+  WHERE external_reference IS NOT NULL AND trim(external_reference) <> '';
 
 -- Bank statement import and reconciliation control trail. Bank connectivity and
 -- payment execution stay disabled until a provider contract and credentials exist.
