@@ -1,6 +1,7 @@
 ---
 import Layout from '../../layouts/Layout.astro';
 import PostingQueueQuick from '../../components/PostingQueueQuick.astro';
+import VatPeriodQuick from '../../components/VatPeriodQuick.astro';
 ---
 <Layout title="Økonomi og flyt — Styr.ing" activeNav="workspace">
   <div class="finance-shell">
@@ -9,6 +10,7 @@ import PostingQueueQuick from '../../components/PostingQueueQuick.astro';
     <div id="finance-content" hidden>
       <header class="finance-header"><div><a id="finance-back" href="/app">← Kundeområde</a><span class="section-kicker">Regnskap og økonomi</span><h1>Fra kilde til kontroll.</h1><p>Bilag, faktura, bankgrunnlag, lønn og innkjøp samlet i ett spor — med tydelig menneskelig godkjenning før bokføring eller eksterne steg.</p></div><div class="finance-identity"><strong id="finance-board">—</strong><span id="finance-role">—</span></div></header>
       <PostingQueueQuick />
+      <VatPeriodQuick />
       <nav id="finance-tabs" class="finance-tabs" aria-label="Økonomi-visninger"></nav>
       <section class="finance-summary"><article><small>Eiendeler</small><strong id="metric-assets">—</strong><span>aktive registrerte</span></article><article><small>Bankgrunnlag</small><strong id="metric-bank">—</strong><span>åpne transaksjoner</span></article><article><small>Innkjøp</small><strong id="metric-orders">—</strong><span>åpne ordre</span></article><article><small>Inntekt</small><strong id="metric-revenue">—</strong><span>aktive kontrakter</span></article></section>
       <section class="finance-card"><div class="card-head"><div><span id="finance-kicker" class="section-kicker">Kontrollspor</span><h2 id="finance-title">—</h2></div><span id="finance-count">—</span></div><div id="finance-list" class="finance-list"><p class="empty">Henter data…</p></div></section>
@@ -18,10 +20,10 @@ import PostingQueueQuick from '../../components/PostingQueueQuick.astro';
 </Layout>
 <script is:inline>
   const qs=s=>document.querySelector(s); const esc=v=>String(v??'').replace(/[&<>'\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','\"':'&quot;'}[c]));
-  const tabs={summary:['Oversikt','Økonomisk kontroll'],bank:['Bank','Import og avstemming'],assets:['Eiendeler','Anlegg og avskrivning'],depreciation:['Avskrivning','Poster til godkjenning'],cards:['Firmakort','Kort og bilag'],transactions:['Transaksjoner','Kvitteringer og avstemming'],contracts:['Inntekter','Kontrakter'],obligations:['Ytelser','Leveranseforpliktelser'],schedule:['Plan','Inntektsplan'],orders:['Ordre','Innkjøpsordre'],receipts:['Mottak','Varemottak'],invoices:['Leverandørfaktura','Match og avvik']};
-  const source={assets:['/api/assets',['summary','assets','depreciation']],cards:['/api/cards',['summary','cards','transactions']],revenue:['/api/revenue',['summary','contracts','obligations','schedule']],procurement:['/api/procurement',['summary','orders','receipts','invoices']],bank:['/api/bank',['summary','accounts','transactions','suggestions']]};
+  const tabs={summary:['Oversikt','Økonomisk kontroll'],bank:['Bank','Import og avstemming'],mva:['MVA','MVA-perioder'],assets:['Eiendeler','Anlegg og avskrivning'],depreciation:['Avskrivning','Poster til godkjenning'],cards:['Firmakort','Kort og bilag'],transactions:['Transaksjoner','Kvitteringer og avstemming'],contracts:['Inntekter','Kontrakter'],obligations:['Ytelser','Leveranseforpliktelser'],schedule:['Plan','Inntektsplan'],orders:['Ordre','Innkjøpsordre'],receipts:['Mottak','Varemottak'],invoices:['Leverandørfaktura','Match og avvik']};
+  const source={assets:['/api/assets',['summary','assets','depreciation']],cards:['/api/cards',['summary','cards','transactions']],revenue:['/api/revenue',['summary','contracts','obligations','schedule']],procurement:['/api/procurement',['summary','orders','receipts','invoices']],bank:['/api/bank',['summary','accounts','transactions','suggestions']],mva:['/api/mva',['summary','periods']]};
   const params=new URLSearchParams(location.search); let boardId=''; let current=params.get('view')&&tabs[params.get('view')]?params.get('view'):'summary';
-  const apiView=v=>v==='bank'?['bank','summary']:v==='assets'||v==='depreciation'?['assets',v]:v==='cards'||v==='transactions'?['cards',v]:v==='contracts'||v==='obligations'||v==='schedule'?['revenue',v]:v==='orders'||v==='receipts'||v==='invoices'?['procurement',v]:['assets','summary'];
+  const apiView=v=>v==='bank'?['bank','summary']:v==='mva'?['mva','periods']:v==='assets'||v==='depreciation'?['assets',v]:v==='cards'||v==='transactions'?['cards',v]:v==='contracts'||v==='obligations'||v==='schedule'?['revenue',v]:v==='orders'||v==='receipts'||v==='invoices'?['procurement',v]:['assets','summary'];
   const get=async(v)=>{const [key,view]=apiView(v);const r=await fetch(`${source[key][0]}?boardId=${encodeURIComponent(boardId)}&view=${view}`);const d=await r.json();if(!r.ok)throw new Error(d.error||'finance_load_failed');return d;};
   const bankRows=data=>Array.isArray(data)?data.map(x=>row(`${x.transaction_date||'Dato'} · ${x.description||'Transaksjon'}`,`${x.account_name||'Konto'} · ${x.external_reference||'referanse mangler'}`,x.status==='suggested'?'Matchforslag':x.status,x.status==='suggested'?'warn':'')):[];
   const row=(title,meta,state,tone='')=>`<div class="finance-row"><i class="${tone}"></i><span><strong>${esc(title)}</strong><small>${esc(meta)}</small></span><em>${esc(state||'—')}</em></div>`;
