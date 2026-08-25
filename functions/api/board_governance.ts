@@ -1,6 +1,6 @@
 import { authorizeBoardRead, authorizeBoardWrite, body, id, json, recordAudit, requireDb, type Env } from './_lib';
 
-const views = new Set(['summary', 'meetings', 'attendance', 'ballots']);
+const views = new Set(['summary', 'meetings', 'attendance', 'ballots', 'dissents']);
 
 export const onRequestGet: PagesFunction<Env> = async ({ env, request }) => {
   const url = new URL(request.url);
@@ -15,6 +15,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ env, request }) => {
       meetings: `SELECT m.*, COALESCE(SUM(CASE WHEN a.attendance_status='present' THEN 1 ELSE 0 END),0) AS present_count, COUNT(a.id) AS invited_count FROM meetings m LEFT JOIN meeting_attendance a ON a.meeting_id=m.id WHERE m.board_id=? GROUP BY m.id ORDER BY m.date DESC`,
       attendance: `SELECT a.*, m.title AS meeting_title, m.date, p.name AS member_name, p.role FROM meeting_attendance a JOIN meetings m ON m.id=a.meeting_id JOIN board_members p ON p.id=a.member_id WHERE a.board_id=? ORDER BY m.date DESC, p.name`,
       ballots: `SELECT COALESCE(b.id, r.id || '-' || m.id) AS id, r.id AS resolution_id, m.id AS member_id, b.vote, b.note, b.cast_at, r.number, r.title, m.name AS member_name, m.role FROM resolutions r JOIN board_members m ON m.board_id=r.board_id LEFT JOIN resolution_ballots b ON b.resolution_id=r.id AND b.member_id=m.id WHERE r.board_id=? ORDER BY r.created_at DESC, m.name`,
+      dissents: `SELECT d.id,d.resolution_id,d.member_id,d.statement,d.status,d.signature_status,d.approved_by,d.approved_at,d.created_at,d.updated_at,r.number,r.title,m.name AS member_name,m.role FROM resolution_dissents d JOIN resolutions r ON r.id=d.resolution_id JOIN board_members m ON m.id=d.member_id WHERE d.board_id=? ORDER BY d.created_at DESC`,
     };
     if (view !== 'summary') return json({ boardId, view, data: (await db.prepare(queries[view]).bind(boardId).all()).results });
     const [meetings, upcoming, present, ballots] = await Promise.all([
@@ -107,7 +108,29 @@ export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
       await recordAudit(db, { boardId, action: 'resolution_ballot_recorded', entityType: 'resolution_ballot', entityId: ballotId, userId: authorization.userId || undefined, details: { resolutionId, memberId, vote } });
       return json({ ok: true, action, ballotId, vote, signature: 'not_configured', requiresHumanReview: true });
     }
-    return json({ error: 'unknown_action', allowed: ['create_meeting', 'create_resolution', 'update_meeting_status', 'record_attendance', 'cast_ballot'] }, { status: 400 });
+    if (action === 'record_dissent') {
+      const resolutionId = String(value?.resolutionId || '').trim();
+      const memberId = String(value?.memberId || '').trim();
+      const statement = String(value?.statement || '').trim();
+      if (!resolutionId || !memberId || !statement || statement.length > 5000) return json({ error: 'dissent_fields_invalid' }, { status: 400 });
+      const valid = await db.prepare('SELECT r.number,r.title FROM resolutions r JOIN board_members m ON m.board_id=r.board_id WHERE r.id=? AND m.id=? AND r.board_id=?').bind(resolutionId, memberId, boardId).first<{ number: string; title: string }>();
+      if (!valid) return json({ error: 'resolution_or_member_not_found' }, { status: 404 });
+      const existing = await db.prepare('SELECT id FROM resolution_dissents WHERE resolution_id=? AND member_id=? AND board_id=?').bind(resolutionId, memberId, boardId).first<{ id: string }>();
+      const dissentId = existing?.id || id('dissent');
+      if (existing) await db.prepare("UPDATE resolution_dissents SET statement=?,status='review',signature_status='not_configured',approved_by=NULL,approved_at=NULL,updated_at=datetime('now') WHERE id=? AND board_id=?").bind(statement, dissentId, boardId).run();
+      else await db.prepare("INSERT INTO resolution_dissents (id,board_id,resolution_id,member_id,statement,status,signature_status) VALUES (?,?,?,?,?,'review','not_configured')").bind(dissentId, boardId, resolutionId, memberId, statement).run();
+      await recordAudit(db, { boardId, action: existing ? 'resolution_dissent_refreshed' : 'resolution_dissent_recorded', entityType: 'resolution_dissent', entityId: dissentId, userId: authorization.userId || undefined, details: { resolutionId, memberId, statementLength: statement.length, signature: 'not_configured', altinn: 'not_configured' } });
+      return json({ ok: true, action, dissentId, resolutionId, memberId, status: 'review', signature: 'not_configured', altinn: 'not_configured' }, { status: existing ? 200 : 201 });
+    }
+    if (action === 'approve_dissent') {
+      const dissentId = String(value?.dissentId || '').trim();
+      if (!dissentId) return json({ error: 'dissentId_required' }, { status: 400 });
+      const result = await db.prepare("UPDATE resolution_dissents SET status='approved',approved_by=?,approved_at=datetime('now'),updated_at=datetime('now') WHERE id=? AND board_id=? AND status IN ('draft','review')").bind(authorization.userId || 'service', dissentId, boardId).run();
+      if (!result.meta?.changes) return json({ error: 'dissent_not_open_or_found' }, { status: 409 });
+      await recordAudit(db, { boardId, action: 'resolution_dissent_approved', entityType: 'resolution_dissent', entityId: dissentId, userId: authorization.userId || undefined, details: { signature: 'not_configured', altinn: 'not_configured' } });
+      return json({ ok: true, action, dissentId, status: 'approved', signature: 'not_configured', altinn: 'not_configured' });
+    }
+    return json({ error: 'unknown_action', allowed: ['create_meeting', 'create_resolution', 'update_meeting_status', 'record_attendance', 'cast_ballot', 'record_dissent', 'approve_dissent'] }, { status: 400 });
   } catch (error) {
     return json({ error: 'database_unavailable', detail: error instanceof Error ? error.message : 'unknown' }, { status: 503 });
   }

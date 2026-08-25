@@ -72,6 +72,7 @@ for (const [label, path, payload] of [
   ['HCM scorecard write guard', '/api/hcm', { boardId: 'board-1', action: 'save_scorecard', candidateId: 'fixture-not-used', overallScore: 80, recommendation: 'yes' }],
   ['governance write guard', '/api/governance', { boardId: 'board-1', action: 'review_contract', reviewId: 'fixture-not-used', decision: 'approved' }],
   ['board governance write guard', '/api/board_governance', { boardId: 'board-1', action: 'record_attendance', attendanceId: 'fixture-not-used', attendanceStatus: 'present' }],
+  ['board dissent write guard', '/api/board_governance', { boardId: 'board-1', action: 'record_dissent', resolutionId: 'fixture-not-used', memberId: 'fixture-not-used', statement: 'fixture' }],
   ['finance period write guard', '/api/finance', { boardId: 'board-1', action: 'lock_period', period: '2026-99' }],
   ['finance period reseal guard', '/api/finance', { boardId: 'board-1', action: 'reseal_period', period: '2026-07' }],
   ['finance note preparation guard', '/api/finance', { boardId: 'board-1', action: 'prepare_note', noteType: 'remuneration', period: '2026' }],
