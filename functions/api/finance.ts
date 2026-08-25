@@ -107,6 +107,25 @@ export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
     if (action === 'approve_note') {
       const noteId=String(value?.noteId||''); const result=await db.prepare("UPDATE statutory_notes SET status='approved',approved_by=?,approved_at=datetime('now') WHERE id=? AND board_id=? AND status IN ('draft','review')").bind(value?.approvedBy||'api',noteId,boardId).run(); if(!result.meta?.changes)return json({error:'note_not_open_or_found'},{status:409}); return json({ok:true,action,noteId,status:'approved',externalFiling:'not_configured'});
     }
+    if (action === 'prepare_note') {
+      const period = String(value?.period || '').trim(); const noteType = String(value?.noteType || 'remuneration').trim();
+      if (!/^\d{4}(?:-(0[1-9]|1[0-2]))?$/.test(period) || !['remuneration','fte','related_party_loans'].includes(noteType)) return json({ error: 'note_fields_invalid' }, { status: 400 });
+      const payrollPeriod = period.length === 7 ? period : `${period}%`;
+      const [people, payroll, equity, grants] = await Promise.all([
+        db.prepare("SELECT COUNT(*) AS count FROM people WHERE board_id=? AND employment_status='active'").bind(boardId).first<Record<string, unknown>>(),
+        db.prepare("SELECT COUNT(*) AS count,COALESCE(SUM(gross_minor),0) AS gross_minor,COALESCE(SUM(employer_cost_minor),0) AS employer_cost_minor FROM payroll_runs WHERE board_id=? AND period LIKE ?").bind(boardId, payrollPeriod).first<Record<string, unknown>>(),
+        db.prepare("SELECT COUNT(*) AS holders,COALESCE(SUM(shares),0) AS shares FROM equity_holders WHERE board_id=?").bind(boardId).first<Record<string, unknown>>(),
+        db.prepare("SELECT COUNT(*) AS count,COALESCE(SUM(granted_shares),0) AS granted_shares FROM equity_grants WHERE board_id=? AND (grant_date IS NULL OR substr(grant_date,1,4)<=?)").bind(boardId, period.slice(0, 4)).first<Record<string, unknown>>(),
+      ]);
+      const payload = { noteType, period, fte: Number(people?.count || 0), payrollGrossMinor: Number(payroll?.gross_minor || 0), employerCostMinor: Number(payroll?.employer_cost_minor || 0), equityShares: Number(equity?.shares || 0), equityHolderCount: Number(equity?.holders || 0), grantedSharesToDate: Number(grants?.granted_shares || 0), relatedPartyLoansMinor: 0, relatedPartyLoansSource: 'not_configured', generatedBy: 'styr.ing-rules', externalFiling: 'not_configured' };
+      const evidence = [{ source: 'people', period, rows: Number(people?.count || 0) }, { source: 'payroll_runs', period: period.length === 4 ? `through-${period}` : period, rows: Number(payroll?.count || 0) }, { source: 'equity_holders', period: 'all_current', rows: Number(equity?.holders || 0) }, { source: 'equity_grants', period: `through-${period.slice(0, 4)}`, rows: Number(grants?.count || 0) }, ...(noteType === 'related_party_loans' ? [{ source: 'related_party_loans', period, rows: 0, status: 'not_configured' }] : [])];
+      const existing = await db.prepare("SELECT id FROM statutory_notes WHERE board_id=? AND note_type=? AND period=? AND status IN ('draft','review') ORDER BY created_at DESC LIMIT 1").bind(boardId, noteType, period).first<{ id: string }>();
+      const noteId = existing?.id || id('note');
+      if (existing) await db.prepare("UPDATE statutory_notes SET status='review',payload=?,evidence_refs=?,approved_by=NULL,approved_at=NULL WHERE id=? AND board_id=?").bind(JSON.stringify(payload), JSON.stringify(evidence), noteId, boardId).run();
+      else await db.prepare("INSERT INTO statutory_notes (id,board_id,note_type,period,status,payload,evidence_refs) VALUES (?,?,?,?,?,?,?)").bind(noteId, boardId, noteType, period, 'review', JSON.stringify(payload), JSON.stringify(evidence)).run();
+      await recordAudit(db, { boardId, action: existing ? 'statutory_note_refreshed' : 'statutory_note_prepared', entityType: 'statutory_note', entityId: noteId, userId: authorization.userId || undefined, details: { noteType, period, evidenceSources: evidence.map((item) => item.source), externalFiling: 'not_configured' } });
+      return json({ ok: true, action, noteId, noteType, period, status: 'review', payload, evidence, externalFiling: 'not_configured' }, { status: existing ? 200 : 201 });
+    }
     const voucher = (value?.voucher && typeof value.voucher === 'object') ? value.voucher as Record<string, unknown> : value || {};
     const voucherDate = String(voucher.voucherDate || voucher.voucher_date || ''); const period = String(voucher.period || voucherDate.slice(0, 7)); const description = String(voucher.description || '').trim();
     const lines = Array.isArray(voucher.lines) ? voucher.lines as Record<string, unknown>[] : [];
