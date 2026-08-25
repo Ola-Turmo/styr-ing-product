@@ -114,6 +114,7 @@ for (const [label, path, payload] of [
   ['governance redline guard', '/api/governance', { boardId: 'board-1', action: 'accept_redline', redlineId: 'fixture-not-used' }],
   ['governance mandate guard', '/api/governance', { boardId: 'board-1', action: 'activate_mandate', mandateId: 'fixture-not-used' }],
   ['billing checkout guard', '/api/billing-checkout', { boardId: 'board-1', plan: 'paid' }],
+  ['SAF-T export record guard', '/api/finance', { boardId: 'board-1', action: 'record_saf_t_export', from: '2026-01', to: '2026-12' }],
   ['privacy request guard', '/api/privacy', { boardId: 'board-1', requestType: 'access' }],
   ['invite guard', '/api/auth', { action: 'invite_user', boardId: 'board-1', email: 'invite@example.invalid', name: 'Invite User' }],
 ]) {

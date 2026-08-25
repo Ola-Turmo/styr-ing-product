@@ -4,6 +4,23 @@ const periodPattern = /^\d{4}-(0[1-9]|1[0-2])$/;
 const datePattern = /^\d{4}-\d{2}-\d{2}$/;
 const asMinor = (value: unknown) => Number.isSafeInteger(Number(value)) && Number(value) >= 0 ? Number(value) : null;
 
+async function buildSafT(db: D1Database, boardId: string, from: string, to: string) {
+  const accounts = (await db.prepare('SELECT code,name,account_type,vat_code FROM ledger_accounts WHERE board_id = ? ORDER BY code').bind(boardId).all()).results as Record<string, unknown>[];
+  const lines = (await db.prepare(`SELECT v.id,v.voucher_number,v.voucher_date,v.period,v.description,l.id line_id,l.debit_minor,l.credit_minor,l.vat_code,a.code,a.name
+    FROM vouchers v JOIN voucher_lines l ON l.voucher_id=v.id JOIN ledger_accounts a ON a.id=l.account_id
+    WHERE v.board_id=? AND v.period BETWEEN ? AND ? ORDER BY v.voucher_number,l.id`).bind(boardId, from, to).all()).results as Record<string, unknown>[];
+  const esc = (value: unknown) => String(value ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&apos;');
+  const amount = (value: unknown) => (Number(value || 0) / 100).toFixed(2);
+  const grouped = new Map<string, Record<string, unknown>[]>();
+  for (const line of lines) { const key = String(line.id); const existing = grouped.get(key) || []; existing.push(line); grouped.set(key, existing); }
+  const transactions = [...grouped.values()].map((voucherLines) => {
+    const first = voucherLines[0];
+    return `<Transaction><TransactionID>${esc(first.voucher_number)}</TransactionID><TransactionDate>${esc(first.voucher_date)}</TransactionDate><Description>${esc(first.description)}</Description>${voucherLines.map((line) => `<Line><RecordID>${esc(line.line_id)}</RecordID><AccountID>${esc(line.code)}</AccountID><AccountDescription>${esc(line.name)}</AccountDescription><DebitAmount>${amount(line.debit_minor)}</DebitAmount><CreditAmount>${amount(line.credit_minor)}</CreditAmount>${line.vat_code ? `<TaxCode>${esc(line.vat_code)}</TaxCode>` : ''}</Line>`).join('')}</Transaction>`;
+  }).join('');
+  const xml = `<?xml version="1.0" encoding="UTF-8"?><AuditFile xmlns="urn:StandardAuditFile-Taxation-Financial:NO"><Header><FileVersion>1.3</FileVersion><AuditFileVersion>1.0</AuditFileVersion><PeriodStart>${esc(from)}</PeriodStart><PeriodEnd>${esc(to)}</PeriodEnd><CurrencyCode>NOK</CurrencyCode><SelectionCriteria>${esc(`${from}:${to}`)}</SelectionCriteria></Header><MasterFiles><GeneralLedgerAccounts>${accounts.map((a) => `<Account><AccountID>${esc(a.code)}</AccountID><AccountDescription>${esc(a.name)}</AccountDescription><AccountType>${esc(a.account_type)}</AccountType>${a.vat_code ? `<TaxCode>${esc(a.vat_code)}</TaxCode>` : ''}</Account>`).join('')}</GeneralLedgerAccounts></MasterFiles><GeneralLedgerEntries><Journal><JournalID>GENERAL</JournalID>${transactions}</Journal></GeneralLedgerEntries></AuditFile>`;
+  return { xml, checksum: await sha256(xml), rowCount: lines.length };
+}
+
 async function boardData(env: Env, boardId: string, view: string) {
   const db = requireDb(env);
   if (view === 'accounts') return (await db.prepare('SELECT id,code,name,account_type,vat_code,active FROM ledger_accounts WHERE board_id = ? ORDER BY code').bind(boardId).all()).results;
@@ -34,22 +51,8 @@ export const onRequestGet: PagesFunction<Env> = async ({ env, request }) => {
       const from = url.searchParams.get('from') || '1900-01'; const to = url.searchParams.get('to') || '2999-12';
       if (!periodPattern.test(from) || !periodPattern.test(to)) return json({ error: 'period_range_invalid' }, { status: 400 });
       if (from > to) return json({ error: 'period_range_invalid', detail: 'from_must_not_be_after_to' }, { status: 400 });
-      const accounts = (await db.prepare('SELECT code,name,account_type,vat_code FROM ledger_accounts WHERE board_id = ? ORDER BY code').bind(boardId).all()).results as Record<string, unknown>[];
-      const lines = (await db.prepare(`SELECT v.id,v.voucher_number,v.voucher_date,v.period,v.description,l.id line_id,l.debit_minor,l.credit_minor,l.vat_code,a.code,a.name
-        FROM vouchers v JOIN voucher_lines l ON l.voucher_id=v.id JOIN ledger_accounts a ON a.id=l.account_id
-        WHERE v.board_id=? AND v.period BETWEEN ? AND ? ORDER BY v.voucher_number,l.id`).bind(boardId, from, to).all()).results as Record<string, unknown>[];
-      const esc = (value: unknown) => String(value ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&apos;');
-      const amount = (value: unknown) => (Number(value || 0) / 100).toFixed(2);
-      const grouped = new Map<string, Record<string, unknown>[]>();
-      for (const line of lines) { const key = String(line.id); const existing = grouped.get(key) || []; existing.push(line); grouped.set(key, existing); }
-      const transactions = [...grouped.values()].map((voucherLines) => {
-        const first = voucherLines[0];
-        return `<Transaction><TransactionID>${esc(first.voucher_number)}</TransactionID><TransactionDate>${esc(first.voucher_date)}</TransactionDate><Description>${esc(first.description)}</Description>${voucherLines.map((line) => `<Line><RecordID>${esc(line.line_id)}</RecordID><AccountID>${esc(line.code)}</AccountID><AccountDescription>${esc(line.name)}</AccountDescription><DebitAmount>${amount(line.debit_minor)}</DebitAmount><CreditAmount>${amount(line.credit_minor)}</CreditAmount>${line.vat_code ? `<TaxCode>${esc(line.vat_code)}</TaxCode>` : ''}</Line>`).join('')}</Transaction>`;
-      }).join('');
-      const xml = `<?xml version="1.0" encoding="UTF-8"?><AuditFile xmlns="urn:StandardAuditFile-Taxation-Financial:NO"><Header><FileVersion>1.3</FileVersion><AuditFileVersion>1.0</AuditFileVersion><PeriodStart>${esc(from)}</PeriodStart><PeriodEnd>${esc(to)}</PeriodEnd><CurrencyCode>NOK</CurrencyCode><SelectionCriteria>${esc(`${from}:${to}`)}</SelectionCriteria></Header><MasterFiles><GeneralLedgerAccounts>${accounts.map((a) => `<Account><AccountID>${esc(a.code)}</AccountID><AccountDescription>${esc(a.name)}</AccountDescription><AccountType>${esc(a.account_type)}</AccountType>${a.vat_code ? `<TaxCode>${esc(a.vat_code)}</TaxCode>` : ''}</Account>`).join('')}</GeneralLedgerAccounts></MasterFiles><GeneralLedgerEntries><Journal><JournalID>GENERAL</JournalID>${transactions}</Journal></GeneralLedgerEntries></AuditFile>`;
-      const checksum = await sha256(xml);
-      await db.prepare('INSERT INTO saf_t_exports (id,board_id,period_from,period_to,status,row_count,checksum,created_by) VALUES (?,?,?,?,?,?,?,?)').bind(id('saft'), boardId, from, to, 'prepared', lines.length, checksum, 'preview-read').run();
-      return new Response(xml, { headers: { 'content-type': 'application/xml; charset=utf-8', 'cache-control': 'no-store', 'x-styr-export': 'SAF-T Financial 1.3 contract', 'x-styr-export-checksum': checksum, 'x-styr-export-row-count': String(lines.length) } });
+      const result = await buildSafT(db, boardId, from, to);
+      return new Response(result.xml, { headers: { 'content-type': 'application/xml; charset=utf-8', 'cache-control': 'no-store', 'x-styr-export': 'SAF-T Financial 1.3 contract', 'x-styr-export-checksum': result.checksum, 'x-styr-export-row-count': String(result.rowCount) } });
     }
     return json({ boardId, view, data: await boardData(env, boardId, view) });
   } catch (error) { return json({ error: 'database_unavailable', detail: error instanceof Error ? error.message : 'unknown' }, { status: 503 }); }
@@ -70,6 +73,15 @@ export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
       await db.prepare("INSERT INTO accounting_periods (id,board_id,period,status,locked_by,locked_at) VALUES (?,?,?,?,?,datetime('now')) ON CONFLICT(board_id,period) DO UPDATE SET status='locked',locked_by=excluded.locked_by,locked_at=datetime('now')").bind(id('period'), boardId, period, 'locked', lockedBy).run();
       await recordAudit(db, { boardId, action: 'accounting_period_locked', entityType: 'accounting_period', entityId: period, userId: authorization.userId || undefined, details: { period } });
       return json({ ok: true, action, boardId, period, status: 'locked', requiresHumanReview: true });
+    }
+    if (action === 'record_saf_t_export') {
+      const from = String(value?.from || ''); const to = String(value?.to || '');
+      if (!periodPattern.test(from) || !periodPattern.test(to) || from > to) return json({ error: 'period_range_invalid' }, { status: 400 });
+      const result = await buildSafT(db, boardId, from, to);
+      const exportId = id('saft');
+      await db.prepare('INSERT INTO saf_t_exports (id,board_id,period_from,period_to,status,row_count,checksum,created_by) VALUES (?,?,?,?,?,?,?,?)').bind(exportId, boardId, from, to, 'prepared', result.rowCount, result.checksum, authorization.userId || 'authorized-user').run();
+      await recordAudit(db, { boardId, action: 'saf_t_export_prepared', entityType: 'saf_t_export', entityId: exportId, userId: authorization.userId || undefined, details: { from, to, rowCount: result.rowCount, checksum: result.checksum } });
+      return json({ ok: true, action, exportId, from, to, rowCount: result.rowCount, checksum: result.checksum, status: 'prepared', downloadUrl: `/api/finance?boardId=${encodeURIComponent(boardId)}&view=saf-t&from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}` }, { status: 201 });
     }
     if (action === 'prepare_intercompany') {
       const sourceEntity=String(value?.sourceEntity||'').trim(), targetEntity=String(value?.targetEntity||'').trim(), reference=String(value?.reference||'').trim(), period=String(value?.period||'');
