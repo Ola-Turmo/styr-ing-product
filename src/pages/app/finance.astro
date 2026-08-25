@@ -3,7 +3,7 @@ import Layout from '../../layouts/Layout.astro';
 import PostingQueueQuick from '../../components/PostingQueueQuick.astro';
 ---
 <Layout title="Økonomi og flyt — Styr.ing" activeNav="workspace">
-  <main class="finance-shell">
+  <div class="finance-shell">
     <section id="finance-loading" class="finance-state"><span class="section-kicker">Økonomi og flyt</span><h1>Henter kontrollsporet.</h1><p>Kontrollerer tilgang og laster eiendeler, kort, inntekter og innkjøp.</p></section>
     <section id="finance-error" class="finance-state" hidden><span class="section-kicker">Tilgang</span><h1 id="finance-error-title">Kunne ikke åpne økonomiflaten.</h1><p id="finance-error-copy">Prøv å logge inn på nytt.</p><a class="primary" href="/login">Gå til innlogging ↗</a></section>
     <div id="finance-content" hidden>
@@ -14,7 +14,7 @@ import PostingQueueQuick from '../../components/PostingQueueQuick.astro';
       <section class="finance-card"><div class="card-head"><div><span id="finance-kicker" class="section-kicker">Kontrollspor</span><h2 id="finance-title">—</h2></div><span id="finance-count">—</span></div><div id="finance-list" class="finance-list"><p class="empty">Henter data…</p></div></section>
       <p class="boundary">Styr.ing bokfører ikke automatisk, belaster ikke kort, sender ikke bestillinger og kobler ikke til bank eller betalingsleverandør uten konfigurert avtale. Godkjenning, dokumentasjon og leverandørsteg må fortsatt gjøres av riktig person.</p>
     </div>
-  </main>
+  </div>
 </Layout>
 <script is:inline>
   const qs=s=>document.querySelector(s); const esc=v=>String(v??'').replace(/[&<>'\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','\"':'&quot;'}[c]));
