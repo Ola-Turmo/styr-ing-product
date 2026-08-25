@@ -19,18 +19,18 @@ import CreditNotePostingQuick from '../../components/CreditNotePostingQuick.astr
     <section id="finance-error" class="finance-state" hidden><span class="section-kicker">Tilgang</span><h1 id="finance-error-title">Kunne ikke åpne økonomiflaten.</h1><p id="finance-error-copy">Prøv å logge inn på nytt.</p><a class="primary" href="/login">Gå til innlogging ↗</a></section>
     <div id="finance-content" hidden>
       <header class="finance-header"><div><a id="finance-back" href="/app">← Kundeområde</a><span class="section-kicker">Regnskap og økonomi</span><h1>Fra kilde til kontroll.</h1><p>Bilag, faktura, bankgrunnlag, lønn og innkjøp samlet i ett spor — med tydelig menneskelig godkjenning før bokføring eller eksterne steg.</p></div><div class="finance-identity"><strong id="finance-board">—</strong><span id="finance-role">—</span></div></header>
-      <PostingQueueQuick />
       <ManualVoucherQuick />
-      <CreditNotePostingQuick />
-      <VatPeriodQuick />
-      <BankReconciliationQuick />
       <SalesInvoiceQuick />
       <SupplierInvoiceQuick />
-      <EHFInboxQuick />
+      <BankReconciliationQuick />
+      <ReceivablesPayablesQuick />
+      <VatPeriodQuick />
       <PayrollQuick />
       <PeriodCloseQuick />
       <AccountingReportsQuick />
-      <ReceivablesPayablesQuick />
+      <PostingQueueQuick />
+      <CreditNotePostingQuick />
+      <EHFInboxQuick />
       <nav id="finance-tabs" class="finance-tabs" aria-label="Økonomi-visninger"></nav>
       <section class="finance-summary"><article><small>Eiendeler</small><strong id="metric-assets">—</strong><span>aktive registrerte</span></article><article><small>Bankgrunnlag</small><strong id="metric-bank">—</strong><span>åpne transaksjoner</span></article><article><small>Innkjøp</small><strong id="metric-orders">—</strong><span>åpne ordre</span></article><article><small>Inntekt</small><strong id="metric-revenue">—</strong><span>aktive kontrakter</span></article></section>
       <section class="finance-card"><div class="card-head"><div><span id="finance-kicker" class="section-kicker">Kontrollspor</span><h2 id="finance-title">—</h2></div><span id="finance-count">—</span></div><div id="finance-list" class="finance-list"><p class="empty">Henter data…</p></div></section>
