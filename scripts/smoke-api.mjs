@@ -63,6 +63,7 @@ for (const [label, path, payload] of [
   ['compliance write guard', '/api/compliance', { boardId: 'board-1', eventId: 'fixture-not-used', status: 'pending' }],
   ['controls write guard', '/api/controls', { boardId: 'board-1', controlId: 'fixture-not-used', status: 'green' }],
   ['HMS and ESG write guard', '/api/sustainability', { boardId: 'board-1', action: 'close_item', itemId: 'fixture-not-used' }],
+  ['carbon calculation guard', '/api/sustainability', { boardId: 'board-1', action: 'calculate_carbon', title: 'Unauthorised', scope: 'scope_2', activityNumeric: 1, emissionFactor: 0.1 }],
   ['risk write guard', '/api/risk', { boardId: 'board-1', action: 'update_risk', riskId: 'fixture-not-used', status: 'monitoring' }],
   ['risk create guard', '/api/risk', { boardId: 'board-1', action: 'create_risk', title: 'Unauthorised risk', level: 'high' }],
   ['risk action completion guard', '/api/risk', { boardId: 'board-1', action: 'complete_action', actionId: 'fixture-not-used' }],
