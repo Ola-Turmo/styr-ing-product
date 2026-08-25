@@ -924,7 +924,7 @@ CREATE TABLE IF NOT EXISTS ehf_documents (
   id TEXT PRIMARY KEY, board_id TEXT NOT NULL REFERENCES boards(id) ON DELETE CASCADE,
   document_ref TEXT NOT NULL, standard TEXT NOT NULL DEFAULT 'EHF 3.0', profile TEXT,
   supplier_name TEXT NOT NULL, supplier_org_number TEXT, invoice_number TEXT NOT NULL,
-  issue_date TEXT NOT NULL, due_date TEXT NOT NULL, amount_minor INTEGER NOT NULL,
+  issue_date TEXT NOT NULL, due_date TEXT NOT NULL, amount_minor INTEGER NOT NULL, vat_minor INTEGER NOT NULL DEFAULT 0,
   currency TEXT NOT NULL DEFAULT 'NOK', source TEXT NOT NULL DEFAULT 'manual' CHECK(source IN ('manual','peppol','upload')),
   status TEXT NOT NULL DEFAULT 'received' CHECK(status IN ('received','validated','rejected','linked')),
   validation_errors TEXT, supplier_invoice_id TEXT REFERENCES supplier_invoices(id) ON DELETE SET NULL,
@@ -933,6 +933,16 @@ CREATE TABLE IF NOT EXISTS ehf_documents (
   UNIQUE(board_id,document_ref)
 );
 CREATE INDEX IF NOT EXISTS idx_ehf_documents_board ON ehf_documents(board_id,status,created_at);
+CREATE TABLE IF NOT EXISTS ehf_document_lines (
+ id TEXT PRIMARY KEY, board_id TEXT NOT NULL REFERENCES boards(id) ON DELETE CASCADE,
+ ehf_document_id TEXT NOT NULL REFERENCES ehf_documents(id) ON DELETE CASCADE,
+ line_number INTEGER NOT NULL, description TEXT NOT NULL, quantity REAL NOT NULL,
+ unit_price_minor INTEGER NOT NULL, vat_rate INTEGER NOT NULL DEFAULT 0 CHECK(vat_rate IN (0,15,25)),
+ vat_code TEXT, net_minor INTEGER NOT NULL, vat_minor INTEGER NOT NULL, total_minor INTEGER NOT NULL,
+ account_id TEXT REFERENCES ledger_accounts(id) ON DELETE SET NULL,
+ created_at TEXT NOT NULL DEFAULT (datetime('now')), UNIQUE(ehf_document_id,line_number)
+);
+CREATE INDEX IF NOT EXISTS idx_ehf_document_lines_document ON ehf_document_lines(board_id,ehf_document_id,line_number);
 
 -- Sales invoices and receivables control. External delivery/payment adapters stay disabled.
 CREATE TABLE IF NOT EXISTS sales_invoices (
