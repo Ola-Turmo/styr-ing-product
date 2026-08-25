@@ -119,6 +119,8 @@ const faqSchema = {
       background: rgba(246,242,234,0.92);
       backdrop-filter: blur(12px);
       border-bottom: 1px solid rgba(16,36,31,0.08);
+      min-height: 62px;
+      overflow: visible;
     }
     .logo { display: inline-flex; flex: 0 0 auto; align-items: center; gap: 9px; min-width: max-content; white-space: nowrap; font-size: 1.25rem; font-weight: 700; letter-spacing: -0.02em; color: var(--ink); }
     .logo > span:last-child { color: var(--ink); white-space: nowrap; }
@@ -154,7 +156,9 @@ const faqSchema = {
       .nav-links { gap: 13px; font-size: .77rem; }
       .nav-cta { padding-inline: 13px; }
     }
-    @media (max-width: 1040px) {
+    /* Keep the public first impression readable on laptops and small tablets.
+       The previous desktop-only menu could squeeze labels into single letters. */
+    @media (max-width: 1180px) {
       .site-nav { align-items: center; gap: 12px; flex-wrap: wrap; }
       .mobile-nav-toggle { display: inline-flex; margin-left: auto; }
       .nav-links { display: none; width: 100%; gap: 12px 14px; flex-wrap: wrap; padding-top: 4px; white-space: normal; }
