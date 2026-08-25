@@ -16,7 +16,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ env, request }) => {
     if (view === 'handbook') return json({ boardId, view, data: (await db.prepare(`SELECT h.id,h.title,h.category,h.version,h.status,h.requires_ack,h.published_at,COUNT(a.id) AS acknowledgements FROM handbook_documents h LEFT JOIN handbook_acknowledgements a ON a.handbook_id=h.id WHERE h.board_id=? GROUP BY h.id ORDER BY h.published_at DESC`).bind(boardId).all()).results });
     if (view === 'training') return json({ boardId, view, data: (await db.prepare(`SELECT e.id,e.status,e.due_date,e.score,c.title AS course_title,p.name AS person_name FROM training_enrollments e JOIN training_courses c ON c.id=e.course_id JOIN people p ON p.id=e.person_id WHERE e.board_id=? ORDER BY e.due_date`).bind(boardId).all()).results });
     if (view === 'reviews') return json({ boardId, view, data: (await db.prepare(`SELECT r.id,r.period,r.status,r.rating,r.due_date,p.name AS person_name,rv.name AS reviewer_name FROM performance_reviews r JOIN people p ON p.id=r.person_id LEFT JOIN people rv ON rv.id=r.reviewer_id WHERE r.board_id=? ORDER BY r.due_date`).bind(boardId).all()).results });
-    if (view === 'offboarding') return json({ boardId, view, data: (await db.prepare(`SELECT o.id,o.last_day,o.status,o.access_revoked,o.assets_returned,o.payroll_reviewed,o.notes,p.name AS person_name FROM offboarding_cases o JOIN people p ON p.id=o.person_id WHERE o.board_id=? ORDER BY o.last_day`).bind(boardId).all()).results });
+    if (view === 'offboarding') return json({ boardId, view, data: (await db.prepare(`SELECT o.id,o.person_id,o.last_day,o.status,o.access_revoked,o.assets_returned,o.payroll_reviewed,o.notes,p.name AS person_name,COUNT(l.id) AS lifecycle_tasks,SUM(CASE WHEN l.status='complete' THEN 1 ELSE 0 END) AS completed_tasks FROM offboarding_cases o JOIN people p ON p.id=o.person_id LEFT JOIN it_lifecycle_tasks l ON l.offboarding_case_id=o.id AND l.board_id=o.board_id WHERE o.board_id=? GROUP BY o.id ORDER BY o.last_day`).bind(boardId).all()).results });
     const [people, openCandidates, dueTraining, pendingAck, reviews, offboarding, goals, atRiskGoals] = await Promise.all([
       db.prepare("SELECT COUNT(*) AS count FROM people WHERE board_id=? AND employment_status='active'").bind(boardId).first(),
       db.prepare("SELECT COUNT(*) AS count FROM candidates WHERE board_id=? AND stage NOT IN ('hired','rejected')").bind(boardId).first(),
@@ -86,12 +86,42 @@ export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
       return json({ ok: true, action, goalId, progress, status, requiresHumanReview: true });
     }
     if (action === 'create_offboarding') {
-      const personId = String(value?.personId || ''); const lastDay = String(value?.lastDay || ''); if (!personId || !datePattern.test(lastDay)) return json({ error: 'personId_and_lastDay_required' }, { status: 400 });
-      const caseId = id('offboard'); await db.prepare("INSERT INTO offboarding_cases (id,board_id,person_id,last_day,status,notes) VALUES (?,?,?,?,'planned',?)").bind(caseId, boardId, personId, lastDay, String(value?.notes || '')).run(); await recordAudit(db, { boardId, action: 'offboarding_created', entityType: 'offboarding_case', entityId: caseId, userId: authorization.userId || undefined, details: { personId, lastDay } }); return json({ ok: true, action, id: caseId, status: 'planned', requiresHumanApproval: true });
+      const personId = String(value?.personId || '').trim(); const lastDay = String(value?.lastDay || '').trim(); const notes = String(value?.notes || '').trim();
+      if (!personId || !datePattern.test(lastDay)) return json({ error: 'personId_and_lastDay_required' }, { status: 400 });
+      if (notes.length > 2000) return json({ error: 'notes_max_2000' }, { status: 400 });
+      const person = await db.prepare("SELECT id,name FROM people WHERE id=? AND board_id=? AND employment_status='active'").bind(personId, boardId).first<{ id: string; name: string }>();
+      if (!person) return json({ error: 'active_person_not_found' }, { status: 404 });
+      const existing = await db.prepare("SELECT id FROM offboarding_cases WHERE board_id=? AND person_id=? AND status IN ('planned','in_progress')").bind(boardId, personId).first<{ id: string }>();
+      if (existing) return json({ error: 'active_offboarding_already_exists', id: existing.id }, { status: 409 });
+      const caseId = id('offboard');
+      const tasks = [
+        { id: id('life'), type: 'access', title: `Gjennomgå og foreslå fjerning av tilganger for ${person.name}` },
+        { id: id('life'), type: 'asset', title: `Avtal retur av utstyr fra ${person.name}` },
+        { id: id('life'), type: 'payroll', title: `Kontroller sluttlønn og feriepenger for ${person.name}` },
+      ];
+      await db.batch([
+        db.prepare("INSERT INTO offboarding_cases (id,board_id,person_id,last_day,status,notes) VALUES (?,?,?,?,'planned',?)").bind(caseId, boardId, personId, lastDay, notes || null),
+        ...tasks.map(task => db.prepare("INSERT INTO it_lifecycle_tasks (id,board_id,offboarding_case_id,task_type,title,status,requires_approval,due_date) VALUES (?,?,?,?,?,'proposed',1,?)").bind(task.id, boardId, caseId, task.type, task.title, lastDay)),
+      ]);
+      await recordAudit(db, { boardId, action: 'offboarding_created', entityType: 'offboarding_case', entityId: caseId, userId: authorization.userId || undefined, details: { personId, lastDay, proposedTasks: tasks.map(task => task.type), requiresHumanApproval: true } });
+      return json({ ok: true, action, id: caseId, status: 'planned', proposedTasks: tasks.map(task => ({ id: task.id, type: task.type })), requiresHumanApproval: true }, { status: 201 });
     }
     if (action === 'advance_offboarding') {
       const caseId = String(value?.caseId || ''); const accessRevoked = value?.accessRevoked ? 1 : 0; const assetsReturned = value?.assetsReturned ? 1 : 0; const payrollReviewed = value?.payrollReviewed ? 1 : 0; if (!caseId) return json({ error: 'caseId_required' }, { status: 400 });
-      const complete = accessRevoked && assetsReturned && payrollReviewed; const result = await db.prepare(`UPDATE offboarding_cases SET access_revoked=?,assets_returned=?,payroll_reviewed=?,status=?${complete ? ",completed_at=datetime('now')" : ''} WHERE id=? AND board_id=?`).bind(accessRevoked, assetsReturned, payrollReviewed, complete ? 'complete' : 'in_progress', caseId, boardId).run(); if (!result.meta?.changes) return json({ error: 'offboarding_case_not_found' }, { status: 404 }); await recordAudit(db, { boardId, action: 'offboarding_advanced', entityType: 'offboarding_case', entityId: caseId, userId: authorization.userId || undefined, details: { accessRevoked, assetsReturned, payrollReviewed, status: complete ? 'complete' : 'in_progress' } }); return json({ ok: true, action, caseId, status: complete ? 'complete' : 'in_progress', requiresHumanApproval: true });
+      const current = await db.prepare("SELECT id,status FROM offboarding_cases WHERE id=? AND board_id=? AND status IN ('planned','in_progress')").bind(caseId, boardId).first<{ id: string; status: string }>();
+      if (!current) return json({ error: 'offboarding_case_not_open_or_found' }, { status: 409 });
+      const complete = accessRevoked && assetsReturned && payrollReviewed;
+      const taskUpdates = [
+        accessRevoked ? db.prepare("UPDATE it_lifecycle_tasks SET status='complete',completed_at=COALESCE(completed_at,datetime('now')) WHERE offboarding_case_id=? AND board_id=? AND task_type='access' AND status<>'rejected'").bind(caseId, boardId) : null,
+        assetsReturned ? db.prepare("UPDATE it_lifecycle_tasks SET status='complete',completed_at=COALESCE(completed_at,datetime('now')) WHERE offboarding_case_id=? AND board_id=? AND task_type='asset' AND status<>'rejected'").bind(caseId, boardId) : null,
+        payrollReviewed ? db.prepare("UPDATE it_lifecycle_tasks SET status='complete',completed_at=COALESCE(completed_at,datetime('now')) WHERE offboarding_case_id=? AND board_id=? AND task_type='payroll' AND status<>'rejected'").bind(caseId, boardId) : null,
+      ].filter(Boolean) as D1PreparedStatement[];
+      await db.batch([
+        db.prepare(`UPDATE offboarding_cases SET access_revoked=?,assets_returned=?,payroll_reviewed=?,status=?${complete ? ",completed_at=datetime('now')" : ''} WHERE id=? AND board_id=?`).bind(accessRevoked, assetsReturned, payrollReviewed, complete ? 'complete' : 'in_progress', caseId, boardId),
+        ...taskUpdates,
+      ]);
+      await recordAudit(db, { boardId, action: 'offboarding_advanced', entityType: 'offboarding_case', entityId: caseId, userId: authorization.userId || undefined, details: { accessRevoked, assetsReturned, payrollReviewed, status: complete ? 'complete' : 'in_progress', lifecycleTasksSynchronized: true } });
+      return json({ ok: true, action, caseId, status: complete ? 'complete' : 'in_progress', lifecycleTasksSynchronized: true, requiresHumanApproval: true });
     }
     return json({ error: 'unknown_action', allowed: ['create_candidate','update_candidate','save_scorecard','acknowledge_handbook','complete_training','create_goal','update_goal','create_offboarding','advance_offboarding'] }, { status: 400 });
   } catch (error) { return json({ error: 'database_unavailable', detail: error instanceof Error ? error.message : 'unknown' }, { status: 503 }); }

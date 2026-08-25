@@ -6,6 +6,9 @@ const root = resolve('functions/api');
 const failures = [];
 let fileCount = 0;
 const malformedSql = [/\bSELECT\s+FROM\b/i, /\bFROM\s+(?:WHERE|LEFT\s+JOIN|RIGHT\s+JOIN|JOIN|ORDER|GROUP|LIMIT)\b/i, /\bAS\s+FROM\b/i, /\bUPDATE\s+SET\s+WHERE\b/i, /\bJOIN\s+ON\s*(?:WHERE|GROUP|ORDER|LIMIT)\b/i, /\bWHERE\s+AND\b/i, /\bCOUNT\(\s*\*\s*\)\s+AS\s+FROM\b/i];
+const routeContracts = {
+  'functions/api/hcm.ts': ['create_offboarding', 'it_lifecycle_tasks', 'lifecycleTasksSynchronized', 'db.batch'],
+};
 
 async function walk(directory) {
   for (const entry of await readdir(directory, { withFileTypes: true })) {
@@ -19,6 +22,8 @@ async function walk(directory) {
     catch (error) { failures.push(`${label}: kan ikke transpileres (${error.message.split('\n')[0]})`); }
     for (const pattern of malformedSql) if (pattern.test(source)) failures.push(`${label}: malformed SQL pattern ${pattern}`);
     if (/\.prepare\(\s*`[^`]*\b(?:SELECT|INSERT|UPDATE|DELETE)\b/i.test(source) && !source.includes('requireDb')) failures.push(`${label}: database route prepares SQL without requireDb guard`);
+    const required = routeContracts[label];
+    if (required) for (const token of required) if (!source.includes(token)) failures.push(`${label}: missing required workflow contract ${token}`);
   }
 }
 
