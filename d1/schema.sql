@@ -414,7 +414,7 @@ CREATE TABLE IF NOT EXISTS people (
 );
 CREATE TABLE IF NOT EXISTS goals (
   id TEXT PRIMARY KEY, board_id TEXT NOT NULL REFERENCES boards(id) ON DELETE CASCADE,
-  owner_id TEXT REFERENCES people(id) ON DELETE SET NULL, title TEXT NOT NULL, period TEXT, status TEXT NOT NULL DEFAULT 'on_track' CHECK(status IN ('on_track','at_risk','complete','draft')), progress INTEGER NOT NULL DEFAULT 0 CHECK(progress BETWEEN 0 AND 100), created_at TEXT NOT NULL DEFAULT (datetime('now')), updated_at TEXT
+  owner_id TEXT REFERENCES people(id) ON DELETE SET NULL, parent_goal_id TEXT REFERENCES goals(id) ON DELETE SET NULL, title TEXT NOT NULL, period TEXT, status TEXT NOT NULL DEFAULT 'on_track' CHECK(status IN ('on_track','at_risk','complete','draft')), progress INTEGER NOT NULL DEFAULT 0 CHECK(progress BETWEEN 0 AND 100), created_at TEXT NOT NULL DEFAULT (datetime('now')), updated_at TEXT
 );
 CREATE TABLE IF NOT EXISTS it_assets (
   id TEXT PRIMARY KEY, board_id TEXT NOT NULL REFERENCES boards(id) ON DELETE CASCADE,
