@@ -80,6 +80,7 @@ for (const [label, path, payload] of [
   ['field invoice approval guard', '/api/field', { boardId: 'board-1', action: 'approve_invoice_draft', draftId: 'fixture-not-used' }],
   ['commercial write guard', '/api/commercial', { boardId: 'board-1', action: 'approve_quote', quoteId: 'fixture-not-used' }],
   ['IT ticket write guard', '/api/it', { boardId: 'board-1', action: 'create_ticket', title: 'Unauthorised' }],
+  ['IT SaaS register write guard', '/api/it', { boardId: 'board-1', action: 'create_saas_subscription', name: 'Unauthorised', vendor: 'Unauthorised', seats: 1 }],
   ['IT write guard', '/api/it', { boardId: 'board-1', action: 'approve_lifecycle_task', taskId: 'fixture-not-used' }],
   ['fixed assets write guard', '/api/assets', { boardId: 'board-1', action: 'approve_depreciation', entryId: 'fixture-not-used' }],
   ['cards write guard', '/api/cards', { boardId: 'board-1', action: 'approve_transaction', transactionId: 'fixture-not-used' }],

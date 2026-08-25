@@ -39,6 +39,27 @@ export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
     if (!boardId || !action) return json({ error: 'boardId_and_action_required' }, { status: 400 });
     const authorization = await authorizeBoardWrite(request, env, boardId); if (!authorization.allowed) return json({ error: 'write_not_authorized' }, { status: 401 });
     const db = requireDb(env); const audit = (entityType: string, entityId: string, details: Record<string, unknown> = {}) => recordAudit(db, { boardId, action: `it_${action}`, entityType, entityId, userId: authorization.userId || undefined, details });
+    if (action === 'create_saas_subscription') {
+      const name = String(value?.name || '').trim(); const vendor = String(value?.vendor || '').trim();
+      const seats = Number(value?.seats); const monthlyMinor = value?.monthlyMinor === '' || value?.monthlyMinor === undefined ? null : Number(value.monthlyMinor);
+      const renewalDate = String(value?.renewalDate || '').trim() || null; const utilization = value?.utilizationPercent === '' || value?.utilizationPercent === undefined ? null : Number(value.utilizationPercent);
+      if (!name || name.length > 160 || !vendor || vendor.length > 120 || !Number.isInteger(seats) || seats < 1 || seats > 100000) return json({ error: 'subscription_name_vendor_and_valid_seats_required' }, { status: 400 });
+      if (monthlyMinor !== null && (!Number.isInteger(monthlyMinor) || monthlyMinor < 0 || monthlyMinor > 1000000000)) return json({ error: 'monthly_minor_invalid' }, { status: 400 });
+      if (utilization !== null && (!Number.isInteger(utilization) || utilization < 0 || utilization > 100)) return json({ error: 'utilization_percent_invalid' }, { status: 400 });
+      if (renewalDate && !/^\d{4}-\d{2}-\d{2}$/.test(renewalDate)) return json({ error: 'renewal_date_invalid' }, { status: 400 });
+      const subscriptionId = id('saas');
+      await db.prepare("INSERT INTO saas_subscriptions (id,board_id,name,vendor,seats,monthly_minor,currency,status,renewal_date,utilization_percent,source) VALUES (?,?,?,?,?,?, 'NOK','active',?,?, 'manual')").bind(subscriptionId, boardId, name, vendor, seats, monthlyMinor, renewalDate, utilization).run();
+      await audit('saas_subscription', subscriptionId, { name, vendor, seats, monthlyMinor, renewalDate, utilization, status: 'active', source: 'manual' });
+      return json({ ok: true, action, subscriptionId, status: 'active' }, { status: 201 });
+    }
+    if (action === 'update_saas_subscription') {
+      const subscriptionId = String(value?.subscriptionId || '').trim(); const status = String(value?.status || '').trim();
+      if (!subscriptionId || !['active', 'trial', 'cancel_pending', 'cancelled'].includes(status)) return json({ error: 'subscription_id_and_valid_status_required' }, { status: 400 });
+      const result = await db.prepare('UPDATE saas_subscriptions SET status=?,updated_at=datetime(\'now\') WHERE id=? AND board_id=?').bind(status, subscriptionId, boardId).run();
+      if (!result.meta?.changes) return json({ error: 'subscription_not_found' }, { status: 404 });
+      await audit('saas_subscription', subscriptionId, { status, requiresHumanApproval: status === 'cancelled' || status === 'cancel_pending' });
+      return json({ ok: true, action, subscriptionId, status, requiresHumanApproval: status === 'cancelled' || status === 'cancel_pending' });
+    }
     if (action === 'prepare_offboarding') {
       const caseId = String(value?.caseId || '').trim(); if (!caseId) return json({ error: 'caseId_required' }, { status: 400 });
       const person = await db.prepare('SELECT p.name FROM offboarding_cases o JOIN people p ON p.id=o.person_id WHERE o.id=? AND o.board_id=?').bind(caseId, boardId).first<{ name: string }>();
@@ -78,6 +99,6 @@ export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
       await audit('it_lifecycle_task', taskId, { status: 'approved', requiresHumanApproval: true });
       return json({ ok: true, action, taskId, status: 'approved', requiresHumanApproval: true });
     }
-    return json({ error: 'unknown_action', allowed: ['prepare_offboarding', 'create_ticket', 'review_access', 'approve_lifecycle_task'] }, { status: 400 });
+    return json({ error: 'unknown_action', allowed: ['prepare_offboarding', 'create_ticket', 'review_access', 'approve_lifecycle_task', 'create_saas_subscription', 'update_saas_subscription'] }, { status: 400 });
   } catch (error) { return json({ error: 'database_unavailable', detail: error instanceof Error ? error.message : 'unknown' }, { status: 503 }); }
 };
