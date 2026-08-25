@@ -25,21 +25,21 @@ const audiences = [
 
     <section class="hero">
       <div class="hero-copy">
-        <p class="eyebrow"><i></i>Styre, risiko og oppfølging i én arbeidsflate</p>
-        <h1>Gjør styring<br /><em>lettere å følge opp.</em></h1>
-        <p class="lede">Styr.ing gir styreleder, daglig leder og styresekretær ett rolig sted for saker, vedtak, risiko, internkontroll og frister. Begynn med styret. Utvid når dere trenger det.</p>
-        <div class="actions"><a class="button primary" href="/workspace">Se den illustrerte arbeidsflaten ↗</a><a class="button secondary" href="/login">Jeg har kundetilgang</a></div>
+        <p class="eyebrow"><i></i>Norsk SaaS for styre og virksomhetsstyring</p>
+        <h1>Fra beslutning<br /><em>til oppfølging.</em></h1>
+        <p class="lede">Styr.ing samler styresaker, vedtak, risiko, internkontroll og oppgaver i én arbeidsflate. Et tydelig utgangspunkt for norske AS – med full oversikt over hva som må gjøres før, under og etter møtet.</p>
+        <div class="actions"><a class="button primary" href="/workspace">Se hvordan det fungerer ↗</a><a class="button secondary" href="/login">Logg inn</a></div>
         <div class="proof"><span><b>01</b>Norsk arbeidsflyt</span><span><b>02</b>Kilde og ansvar synlig</span><span><b>03</b>Mennesket godkjenner</span></div>
       </div>
 
       <div class="product-stage" aria-label="Illustrasjon av Styr.ing arbeidsflate">
         <div class="glow"></div>
         <div class="app-card">
-          <div class="app-bar"><span class="brand"><i>s</i> styr.ing</span><span>Illustrasjon AS · Styremøte</span></div>
+          <div class="app-bar"><span class="brand"><i>s</i> styr.ing</span><span>Illustrasjonsdata · styreportal</span></div>
           <div class="app-body">
             <aside><b>⌁ Oversikt</b><span>◈ Risiko</span><span>✓ Kontroll</span><span>＋ Oppgaver</span><span>⌂ Dokumenter</span></aside>
             <div class="dashboard">
-              <div class="dashboard-head"><div><small>Neste styremøte</small><h2>Her er det viktigste nå.</h2></div><b class="avatar">AS</b></div>
+              <div class="dashboard-head"><div><small>Styrets arbeidsflate</small><h2>Dette krever oppmerksomhet.</h2></div><b class="avatar">AS</b></div>
               <div class="stats"><div><small>Saker til behandling</small><strong>8</strong><em>2 krever vedtak</em></div><div><small>Åpne oppgaver</small><strong>6</strong><em class="warn">2 høy prioritet</em></div><div><small>Kontrollstatus</small><strong>94%</strong><em>Oppdatert i dag</em></div></div>
               <div class="chart"><div><b>Kontroll og oppfølging</b><span>Siste 6 måneder ↗</span></div><section class="bars" aria-hidden="true"><i style="height:42%"></i><i style="height:55%"></i><i style="height:50%"></i><i style="height:70%"></i><i style="height:65%"></i><i style="height:84%"></i><i style="height:94%"></i></section><small>Jan　 Feb　 Mar　 Apr　 Mai　 Jun　 Nå</small></div>
               <div class="task"><i></i><div><b>Budsjett H2 2026 er klart for behandling</b><small>Økonomiansvarlig · Frist 30. mai</small></div><span>Til behandling</span></div>
@@ -50,10 +50,10 @@ const audiences = [
       </div>
     </section>
 
-    <section class="audience" aria-label="Hvem bruker Styr.ing"><span class="kicker">Én felles arbeidsflate</span>{audiences.map(([title, text]) => <div><strong>{title}</strong><span>{text}</span></div>)}</section>
+    <section class="audience" aria-label="Hvem bruker Styr.ing"><span class="kicker">Bygget for norske AS</span>{audiences.map(([title, text]) => <div><strong>{title}</strong><span>{text}</span></div>)}</section>
 
     <section class="modules" id="produkt">
-      <div class="section-intro"><p class="kicker">Bygg videre når dere trenger det</p><h2>Fra styrebordet til<br /><em>hverdagen etter møtet.</em></h2><p>Beslutninger blir først verdifulle når de får en eier, en frist og et kontrollspor. Styr.ing holder tråden samlet.</p></div>
+      <div class="section-intro"><p class="kicker">Én plattform · flere arbeidsflater</p><h2>Alt som holder<br /><em>virksomheten på sporet.</em></h2><p>Start med styret. Koble på økonomi, mennesker, drift og kontroll når dere trenger det – uten å miste kilden, ansvaret eller historikken.</p></div>
       <div class="module-grid">{modules.map(([icon, title, text, href], index) => <a class="module" href={href}><span class="number">0{index + 1}</span><span class="icon">{icon}</span><h3>{title}</h3><p>{text}</p><b>Åpne arbeidsflate ↗</b></a>)}</div>
     </section>
 

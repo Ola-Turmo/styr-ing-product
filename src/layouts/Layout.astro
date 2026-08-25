@@ -124,8 +124,8 @@ const faqSchema = {
     .logo > span:last-child { color: var(--ink); white-space: nowrap; }
     .logo-mark { width: 30px; height: 30px; border-radius: 10px; display: grid; place-items: center; background: var(--night); color: var(--glow); font: 700 1.05rem/1 Georgia, serif; box-shadow: 0 5px 14px rgba(16,36,31,.15); }
     .logo-dot { color: var(--accent); }
-    .nav-links { display: flex; flex: 0 1 auto; gap: clamp(12px,2vw,24px); list-style: none; font-family: system-ui, sans-serif; font-size: 0.83rem; align-items: center; justify-content: flex-end; min-width: 0; white-space: nowrap; }
-    .nav-links li { flex: 0 0 auto; min-width: max-content; white-space: nowrap; }
+    .nav-links { display: flex; flex: 1 1 auto; gap: clamp(12px,2vw,24px); list-style: none; font-family: system-ui, sans-serif; font-size: 0.83rem; align-items: center; justify-content: flex-end; min-width: 0; white-space: nowrap; }
+    .nav-links li { display: block; flex: 0 0 auto; width: auto; min-width: max-content; white-space: nowrap; }
     .nav-links a { color: var(--muted); font-weight: 500; }
     .nav-links a:hover { color: var(--accent); }
     .nav-links a.active { color: var(--accent); font-weight: 600; }
@@ -193,7 +193,7 @@ const faqSchema = {
       <li><a href="/trust" class={activeNav === 'trust' ? 'active' : ''}>Tillit og sikkerhet</a></li>
       <li><a href="/abonnement" class={activeNav === 'abonnement' ? 'active' : ''}>Abonnement</a></li>
       <li><a id="auth-link" href="/login" class={activeNav === 'login' ? 'active' : ''}>Logg inn</a></li>
-      <li><a href="/workspace" class="nav-cta">Se demoen <span aria-hidden="true">↗</span></a></li>
+      <li><a href="/workspace" class="nav-cta">Se demo <span aria-hidden="true">↗</span></a></li>
     </ul>
   </nav>
 
