@@ -24,6 +24,7 @@ const specs: SearchSpec[] = [
   { table: 'action_items', type: 'Oppgave', title: 'title', snippet: "coalesce(priority,'') || ' · ' || coalesce(status,'') || ' · Ansvarlig: ' || coalesce(assigned_to,'')", source: 'Oppfølging' },
   { table: 'resolutions', type: 'Vedtak', title: "number || ' · ' || title", snippet: "coalesce(status,'') || ' · ' || coalesce(signature_status,'')", source: 'Styrevedtak' },
   { table: 'board_documents', type: 'Dokument', title: 'title', snippet: "coalesce(category,'') || ' · v' || coalesce(version,'') || ' · ' || coalesce(status,'')", source: 'Dokumentarkiv' },
+  { table: 'accounting_documents', type: 'Bilag', title: 'file_name', snippet: "coalesce(entity_type,'') || ' · ' || coalesce(content_type,'') || ' · ' || coalesce(content_hash,'')", source: 'Bilagsarkiv' },
   { table: 'meetings', type: 'Møte', title: 'title', snippet: "coalesce(date,'') || ' · ' || coalesce(status,'')", source: 'Møter' },
   { table: 'meeting_attendance', type: 'Fremmøte', title: "'Fremmøte · ' || meeting_id || ' · ' || member_id", snippet: "coalesce(attendance_status,'') || ' · Habilitet: ' || coalesce(conflict_flag,'')", source: 'Møte og habilitet' },
   { table: 'resolution_ballots', type: 'Stemme', title: "'Stemme · ' || resolution_id || ' · ' || member_id", snippet: "coalesce(vote,'') || ' · ' || coalesce(note,'')", source: 'Avstemninger' },
