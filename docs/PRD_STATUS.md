@@ -42,6 +42,7 @@ CRM/revenue, styre/govenance, HCM, IT, felt, HMS/ESG, treasury, kort, risiko, co
 - `git diff --check` — PASS
 - Produksjon `https://styr.ing/`: landing, `/finance/`, `/app/finance/`, `/login`, `/api/health` — HTTP 200
 - Produksjonssammendrag: balanserte bilag, perioder, bank-/innkjøps-/lønnskontroller returnerer JSON fra D1
+- Siste deploy: Cloudflare Pages `https://ae9f8e2b.styr-ing.pages.dev` (produksjonsdomene `https://styr.ing/`), commit `4642f36`
 
 ## Neste leveranse før reell kunde
 
