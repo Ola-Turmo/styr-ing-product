@@ -1,6 +1,6 @@
-# Styr.ing Board Portal
+# Styr.ing
 
-Norwegian governance concept demo — board portal, deadline tracking, and internal-control workflows for SMB and mid-market boards.
+Norwegian SaaS accounting software for small businesses, with invoicing, bookkeeping, bank reconciliation, VAT, payroll, reporting and supporting governance workflows.
 
 **Stack:** Astro 4 static frontend + Cloudflare Pages Functions + Cloudflare D1 (EEUR)
 **Offer status:** Styr.ing is SaaS-only. Production activation, billing, subscription terms, and customer onboarding are not enabled on this public preview.
