@@ -79,11 +79,12 @@ Betalinger kan kobles til åpne kunde-/leverandørposter fra samme regnskapsflat
 - Manuelle salgsfakturaer kan nå opprettes uten at en liten virksomhet må gjette neste nummer. D1-sekvensen `sales_invoice_sequences` reserverer neste nummer atomisk per virksomhet og år, returnerer nummeret i API-responsen og skriver nummeret til kontrollsporet. Eksisterende fakturanummer kan fortsatt oppgis eksplisitt.
 - Produksjonsmigrasjon `20260912_sales_invoice_sequences.sql` er kjørt på `styr-ing-db` og verifisert med `sqlite_master`.
 
-- Deploy: `https://12d13e5e.styr-ing.pages.dev` → `https://styr.ing/`.
+- Deploy: `https://c89ccd25.styr-ing.pages.dev` → `https://styr.ing/` (Cloudflare Pages `main`).
+- Commit: `5e28ed1`.
 - Commit: `bb8d13a`.
 - Fakturadato, forfallsdato og kreditnotadato valideres som faktiske kalenderdatoer og i riktig kronologisk rekkefølge. Prosjektfaktura følger samme kontroll.
 - Fakturaskjemaet bruker dynamisk dagens dato og foreslår 14 dagers forfall, også etter at skjemaet nullstilles.
-- Verifisert med `npx tsc --noEmit`, `npm run verify:api`, `npm run verify:source`, `npm run build`, `git diff --check` og `LIVE API SMOKE: PASS (119 checks against https://styr.ing)`.
+- Verifisert med `npx tsc --noEmit`, `npm run verify:api`, `npm run verify:source`, `npm run build`, `git diff --check` og `LIVE API SMOKE: PASS (120 checks against https://styr.ing)`.
 
 ## Siste kontoaktiveringsforbedring (2026-08-26)
 
