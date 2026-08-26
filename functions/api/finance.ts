@@ -319,7 +319,7 @@ async function boardData(
   if (view === "recurring-templates")
     return (await db.prepare(`SELECT t.*,a.company_name,(SELECT COUNT(*) FROM recurring_invoice_generations g WHERE g.template_id=t.id AND g.board_id=t.board_id) AS generated_count,(SELECT MAX(g.issue_date) FROM recurring_invoice_generations g WHERE g.template_id=t.id AND g.board_id=t.board_id) AS last_generated_date FROM recurring_invoice_templates t JOIN crm_accounts a ON a.id=t.account_id AND a.board_id=t.board_id WHERE t.board_id=? ORDER BY CASE t.status WHEN 'active' THEN 0 WHEN 'paused' THEN 1 ELSE 2 END,t.next_issue_date`).bind(boardId).all()).results;
   if (view === "recurring-generations")
-    return (await db.prepare(`SELECT g.*,t.name template_name,t.interval,a.company_name,i.invoice_number,i.status invoice_status FROM recurring_invoice_generations g JOIN recurring_invoice_templates t ON t.id=g.template_id AND t.board_id=g.board_id JOIN sales_invoices i ON i.id=g.sales_invoice_id AND i.board_id=g.board_id JOIN crm_accounts a ON a.id=i.account_id AND a.board_id=i.board_id WHERE g.board_id=? ORDER BY g.issue_date DESC,g.created_at DESC LIMIT 100`).bind(boardId).all()).results;
+    return (await db.prepare(`SELECT g.*,t.name template_name,t.interval,a.company_name,i.invoice_number,i.status invoice_status,i.total_minor FROM recurring_invoice_generations g JOIN recurring_invoice_templates t ON t.id=g.template_id AND t.board_id=g.board_id JOIN sales_invoices i ON i.id=g.sales_invoice_id AND i.board_id=g.board_id JOIN crm_accounts a ON a.id=i.account_id AND a.board_id=i.board_id WHERE g.board_id=? ORDER BY g.issue_date DESC,g.created_at DESC LIMIT 100`).bind(boardId).all()).results;
   if (view === "invoice-lines")
     return (
       await db
