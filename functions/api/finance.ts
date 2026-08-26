@@ -2160,6 +2160,29 @@ export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
         (dueDate && (!validIsoDate(dueDate) || dueDate < issueDate))
       )
         return json({ error: "invoice_fields_invalid" }, { status: 400 });
+      if (invoiceNumber && (invoiceNumber.length > 60 || /[\r\n]/.test(invoiceNumber)))
+        return json(
+          { error: "invoice_number_invalid", detail: "Fakturanummeret kan ikke inneholde linjeskift og kan være opptil 60 tegn." },
+          { status: 400 },
+        );
+      if (invoiceNumber) {
+        const duplicate = await db
+          .prepare(
+            "SELECT id,status FROM sales_invoices WHERE board_id=? AND invoice_number=? LIMIT 1",
+          )
+          .bind(boardId, invoiceNumber)
+          .first<{ id: string; status: string }>();
+        if (duplicate)
+          return json(
+            {
+              error: "invoice_number_exists",
+              detail: `Fakturanummeret er allerede brukt (${invoiceNumber}). Velg et annet nummer eller la feltet stå tomt for automatisk nummerering.`,
+              invoiceId: duplicate.id,
+              status: duplicate.status,
+            },
+            { status: 409 },
+          );
+      }
       if (
         !(await db
           .prepare(
