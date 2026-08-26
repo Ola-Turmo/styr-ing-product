@@ -3447,6 +3447,73 @@ export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
     ).results;
     if (accountRows.length !== accountIds.length)
       return json({ error: "account_not_found" }, { status: 400 });
+    const canonicalLines = (
+      rows: Record<string, unknown>[] | typeof normalized,
+    ) =>
+      rows
+        .map((line) =>
+          [
+            String(line.account_id ?? line.accountId ?? ""),
+            String(line.description ?? ""),
+            Number(line.debit_minor ?? line.debit ?? 0),
+            Number(line.credit_minor ?? line.credit ?? 0),
+            String(line.vat_code ?? line.vatCode ?? ""),
+          ].join("\u001f"),
+        )
+        .sort()
+        .join("\u001e");
+    const findExistingReference = async () =>
+      externalReference
+        ? db
+            .prepare(
+              "SELECT id,voucher_number,voucher_date,period,description,status FROM vouchers WHERE board_id=? AND external_reference=?",
+            )
+            .bind(boardId, externalReference)
+            .first<Record<string, unknown>>()
+        : null;
+    const existingReferenceResponse = async (
+      existing: Record<string, unknown>,
+    ) => {
+      const existingLines = (
+        await db
+          .prepare(
+            "SELECT account_id,description,debit_minor,credit_minor,vat_code FROM voucher_lines WHERE voucher_id=? ORDER BY id",
+          )
+          .bind(String(existing.id))
+          .all()
+      ).results as Record<string, unknown>[];
+      const matches =
+        String(existing.status || "") === "posted" &&
+        String(existing.voucher_date || "") === voucherDate &&
+        String(existing.period || "") === period &&
+        String(existing.description || "") === description &&
+        canonicalLines(existingLines) === canonicalLines(normalized);
+      if (!matches)
+        return json(
+          {
+            error: "external_reference_conflict",
+            detail:
+              "externalReference is already used for a different voucher; use a new reference or retry the original request unchanged",
+            externalReference,
+            existingVoucherId: existing.id,
+            existingVoucherNumber: Number(existing.voucher_number),
+          },
+          { status: 409 },
+        );
+      return json({
+        ok: true,
+        action: "create_voucher",
+        boardId,
+        voucherId: existing.id,
+        voucherNumber: Number(existing.voucher_number),
+        period: existing.period,
+        debitMinor: debit,
+        creditMinor: credit,
+        idempotent: true,
+      });
+    };
+    const existingReference = await findExistingReference();
+    if (existingReference) return existingReferenceResponse(existingReference);
     // Allocate and consume the per-board sequence in the same D1 batch as the
     // voucher and its lines. A failed batch rolls back the sequence increment,
     // so successful vouchers keep a gapless, collision-free number trail.
@@ -3496,7 +3563,21 @@ export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
           ),
       ),
     );
-    await db.batch(statements);
+    try {
+      await db.batch(statements);
+    } catch (error) {
+      // Another request may have won the unique external-reference race. Resolve
+      // that winner as an idempotent retry instead of exposing a generic 503.
+      if (
+        error instanceof Error &&
+        error.message.toLowerCase().includes("unique") &&
+        externalReference
+      ) {
+        const raced = await findExistingReference();
+        if (raced) return existingReferenceResponse(raced);
+      }
+      throw error;
+    }
     const created = await db
       .prepare("SELECT voucher_number FROM vouchers WHERE id=? AND board_id=?")
       .bind(voucherId, boardId)
@@ -3528,6 +3609,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
         period,
         debitMinor: debit,
         creditMinor: credit,
+        idempotent: false,
       },
       { status: 201 },
     );
