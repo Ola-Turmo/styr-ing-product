@@ -234,11 +234,25 @@ export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
       ];
       lines.forEach((line) => statements.push(db.prepare('INSERT INTO voucher_lines (id,voucher_id,account_id,description,debit_minor,credit_minor,vat_code) VALUES (?,?,?,?,?,?,?)').bind(id('line'), voucherId, line.accountId, line.description, line.debit, line.credit, null)));
       statements.push(...settlementStatements(voucherId));
-      await db.batch(statements);
+      try {
+        await db.batch(statements);
+      } catch (error) {
+        // A second approved tab may have posted the same bank line between the
+        // preflight lookup and this batch. Resolve the winner as an idempotent
+        // retry instead of exposing a generic database error.
+        if (error instanceof Error && error.message.toLowerCase().includes('unique')) {
+          const raced = await db.prepare('SELECT id,voucher_number,period FROM vouchers WHERE board_id=? AND external_reference=?').bind(boardId, externalReference).first<{ id: string; voucher_number: number; period: string }>();
+          if (raced) {
+            await db.batch(settlementStatements(raced.id));
+            return json({ ok: true, action, transactionId, status: 'posted', voucherId: raced.id, voucherNumber: Number(raced.voucher_number), period: raced.period, idempotent: true }, { status: 200 });
+          }
+        }
+        throw error;
+      }
       const created = await db.prepare('SELECT voucher_number FROM vouchers WHERE id=? AND board_id=?').bind(voucherId, boardId).first<{ voucher_number: number }>();
       if (!created) return json({ error: 'voucher_created_without_number' }, { status: 503 });
       await recordAudit(db, { boardId, action: 'bank_match_posted', entityType: 'bank_transaction', entityId: transactionId, userId: authorization.userId || undefined, details: { voucherId, voucherNumber: created.voucher_number, matchEntityType: entityType, matchEntityId: entityId, bankAccountId, counterAccountId } });
-      return json({ ok: true, action, transactionId, status: 'posted', voucherId, voucherNumber: Number(created.voucher_number), period, sourceType: entityType }, { status: 201 });
+      return json({ ok: true, action, transactionId, status: 'posted', voucherId, voucherNumber: Number(created.voucher_number), period, sourceType: entityType, idempotent: false }, { status: 201 });
     }
     return json({ error: 'unknown_action', allowed: ['create_account', 'import_transaction', 'suggest_match', 'approve_match', 'link_payment', 'post_match', 'reject_match'] }, { status: 400 });
   } catch (error) { return json({ error: 'database_unavailable', detail: error instanceof Error ? error.message : 'unknown' }, { status: 503 }); }
