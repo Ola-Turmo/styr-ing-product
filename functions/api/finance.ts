@@ -770,6 +770,62 @@ export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
         { status: 201 },
       );
     }
+    if (action === "create_fiscal_year") {
+      const year = Number(value?.year);
+      if (!Number.isInteger(year) || year < 2000 || year > 2100)
+        return json({ error: "fiscal_year_invalid" }, { status: 400 });
+      const periods = Array.from(
+        { length: 12 },
+        (_, index) => `${year}-${String(index + 1).padStart(2, "0")}`,
+      );
+      const existing = (
+        await db
+          .prepare(
+            "SELECT period,status FROM accounting_periods WHERE board_id=? AND period BETWEEN ? AND ? ORDER BY period",
+          )
+          .bind(boardId, `${year}-01`, `${year}-12`)
+          .all()
+      ).results as Record<string, unknown>[];
+      const existingPeriods = new Set(existing.map((row) => String(row.period)));
+      const missing = periods.filter((period) => !existingPeriods.has(period));
+      if (missing.length) {
+        await db.batch(
+          missing.map((period) =>
+            db
+              .prepare(
+                "INSERT INTO accounting_periods (id,board_id,period,status) VALUES (?,?,?,'open')",
+              )
+              .bind(id("period"), boardId, period),
+          ),
+        );
+      }
+      await recordAudit(db, {
+        boardId,
+        action,
+        entityType: "accounting_fiscal_year",
+        entityId: String(year),
+        userId: authorization.userId || undefined,
+        details: {
+          year,
+          createdPeriods: missing.length,
+          existingPeriods: existing.length,
+          periods,
+        },
+      });
+      return json(
+        {
+          ok: true,
+          action,
+          year,
+          periods,
+          created: missing.length,
+          existing: existing.length,
+          idempotent: missing.length === 0,
+          status: "open",
+        },
+        { status: missing.length ? 201 : 200 },
+      );
+    }
     if (action === "save_accounting_profile") {
       const legalName = String(value?.legalName || "").trim(),
         orgNumber = String(value?.orgNumber || "").replace(/\s/g, ""),
