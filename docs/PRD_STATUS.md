@@ -45,7 +45,7 @@ CRM/revenue, styre/govenance, HCM, IT, felt, HMS/ESG, treasury, kort, risiko, co
 - Produksjon `https://styr.ing/`: landing, `/finance/`, `/app/finance/`, `/login`, `/api/health` — HTTP 200
 - Produksjonssammendrag: balanserte bilag, perioder, bank-/innkjøps-/lønnskontroller returnerer JSON fra D1
 - Produksjonssmoke: `LIVE API SMOKE: PASS (112 checks against https://styr.ing)` etter siste deploy
-- Siste deploy: Cloudflare Pages `https://1f7f73b9.styr-ing.pages.dev` (produksjonsdomene `https://styr.ing/`), commit `TBD` (hash-verifiserbar audit-kjede og audit-UI)
+- Siste deploy: Cloudflare Pages `https://1f7f73b9.styr-ing.pages.dev` (produksjonsdomene `https://styr.ing/`), commit `b3e62f8` (hash-verifiserbar audit-kjede og audit-UI)
 
 ## Brukerflyt — månedsavslutning
 
