@@ -2680,6 +2680,30 @@ export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
           },
           { status: 409 },
         );
+      if (number.length > 60 || /[\r\n]/.test(number))
+        return json(
+          {
+            error: "credit_note_number_invalid",
+            detail: "Kreditnotanummeret kan ikke inneholde linjeskift og kan være opptil 60 tegn.",
+          },
+          { status: 400 },
+        );
+      const duplicateCreditNote = await db
+        .prepare(
+          "SELECT id,status FROM sales_credit_notes WHERE board_id=? AND credit_note_number=? LIMIT 1",
+        )
+        .bind(boardId, number)
+        .first<{ id: string; status: string }>();
+      if (duplicateCreditNote)
+        return json(
+          {
+            error: "credit_note_number_exists",
+            detail: `Kreditnotanummeret er allerede brukt (${number}). Velg et annet nummer.`,
+            creditNoteId: duplicateCreditNote.id,
+            status: duplicateCreditNote.status,
+          },
+          { status: 409 },
+        );
       const creditId = id("credit");
       const inserted = await db
         .prepare(
