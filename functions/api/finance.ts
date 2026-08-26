@@ -323,6 +323,15 @@ async function boardData(
         .bind(boardId)
         .all()
     ).results;
+  if (view === "customer-register")
+    return (
+      await db
+        .prepare(
+          "SELECT a.id,a.company_name,a.org_number,a.stage,a.currency,COALESCE(p.org_number,a.org_number) customer_org_number,COALESCE(p.customer_type,'business') customer_type,p.address_line1,p.postal_code,p.city,p.country_code,p.email,CASE WHEN p.account_id IS NULL THEN 0 WHEN p.address_line1 IS NOT NULL AND p.postal_code IS NOT NULL AND p.city IS NOT NULL AND (COALESCE(p.customer_type,'business')='private' OR COALESCE(p.org_number,a.org_number) IS NOT NULL) THEN 1 ELSE 0 END profile_complete FROM crm_accounts a LEFT JOIN customer_invoice_profiles p ON p.board_id=a.board_id AND p.account_id=a.id WHERE a.board_id=? AND a.stage NOT IN ('lost') ORDER BY a.company_name",
+        )
+        .bind(boardId)
+        .all()
+    ).results;
   if (view === "invoice-setup") {
     const [seller, customers] = await Promise.all([
       db
@@ -1055,6 +1064,35 @@ export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
         { status: missing.length ? 201 : 200 },
       );
     }
+    if (action === "create_customer") {
+      const companyName = String(value?.companyName || "").trim();
+      const customerType = ["business", "private"].includes(String(value?.customerType || ""))
+        ? String(value?.customerType)
+        : "business";
+      const orgNumber = String(value?.orgNumber || "").replace(/\s/g, "");
+      const addressLine1 = String(value?.addressLine1 || "").trim();
+      const postalCode = String(value?.postalCode || "").trim();
+      const city = String(value?.city || "").trim();
+      const email = String(value?.email || "").trim() || null;
+      if (
+        !companyName || companyName.length > 200 ||
+        (customerType === "business" && !validOrgNumber(orgNumber)) ||
+        (customerType === "private" && orgNumber && !validOrgNumber(orgNumber)) ||
+        !addressLine1 || addressLine1.length > 200 || !/^[0-9]{4}$/.test(postalCode) ||
+        !city || city.length > 100 || (email && (!email.includes("@") || email.length > 200))
+      ) return json({ error: "customer_fields_invalid", required: ["companyName", "customerType", "addressLine1", "postalCode", "city"] }, { status: 400 });
+      if (orgNumber) {
+        const duplicate = await db.prepare("SELECT a.id FROM crm_accounts a LEFT JOIN customer_invoice_profiles p ON p.board_id=a.board_id AND p.account_id=a.id WHERE a.board_id=? AND COALESCE(p.org_number,a.org_number)=? AND a.stage NOT IN ('lost') LIMIT 1").bind(boardId, orgNumber).first();
+        if (duplicate) return json({ error: "customer_org_number_exists", detail: "Det finnes allerede en aktiv kunde med dette organisasjonsnummeret." }, { status: 409 });
+      }
+      const accountId = id("cust");
+      await db.batch([
+        db.prepare("INSERT INTO crm_accounts (id,board_id,company_name,org_number,stage,currency) VALUES (?,?,?,?,'prospect','NOK')").bind(accountId, boardId, companyName, orgNumber || null),
+        db.prepare("INSERT INTO customer_invoice_profiles (board_id,account_id,org_number,customer_type,address_line1,postal_code,city,country_code,email,updated_by,updated_at) VALUES (?,?,?, ?,?,?,?,'NO',?,?,datetime('now'))").bind(boardId, accountId, orgNumber || null, customerType, addressLine1, postalCode, city, email, authorization.userId || "service"),
+      ]);
+      await recordAudit(db, { boardId, action, entityType: "crm_account", entityId: accountId, userId: authorization.userId || undefined, details: { companyName, customerType, hasOrgNumber: Boolean(orgNumber), profileComplete: true } });
+      return json({ ok: true, action, status: "created", id: accountId, accountId, companyName, customerType }, { status: 201 });
+    }
     if (action === "save_accounting_profile") {
       const legalName = String(value?.legalName || "").trim(),
         orgNumber = String(value?.orgNumber || "").replace(/\s/g, ""),
@@ -1118,6 +1156,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
     }
     if (action === "save_customer_invoice_profile") {
       const accountId = String(value?.accountId || "").trim(),
+        companyName = String(value?.companyName || "").trim(),
         customerType = ["business", "private"].includes(
           String(value?.customerType || ""),
         )
@@ -1130,6 +1169,8 @@ export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
         email = String(value?.email || "").trim() || null;
       if (
         !accountId ||
+        !companyName ||
+        companyName.length > 200 ||
         (customerType === "business" && !validOrgNumber(orgNumber)) ||
         (customerType === "private" &&
           orgNumber &&
@@ -1146,6 +1187,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
             error: "customer_invoice_profile_fields_invalid",
             required: [
               "accountId",
+              "companyName",
               "customerType",
               "addressLine1",
               "postalCode",
@@ -1163,29 +1205,21 @@ export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
           .first())
       )
         return json({ error: "customer_not_found" }, { status: 400 });
-      await db
-        .prepare(
-          "INSERT INTO customer_invoice_profiles (board_id,account_id,org_number,customer_type,address_line1,postal_code,city,country_code,email,updated_by,updated_at) VALUES (?,?,?, ?,? ,? ,?,'NO',?,?,datetime('now')) ON CONFLICT(board_id,account_id) DO UPDATE SET org_number=excluded.org_number,customer_type=excluded.customer_type,address_line1=excluded.address_line1,postal_code=excluded.postal_code,city=excluded.city,country_code=excluded.country_code,email=excluded.email,updated_by=excluded.updated_by,updated_at=datetime('now')",
-        )
-        .bind(
-          boardId,
-          accountId,
-          orgNumber || null,
-          customerType,
-          addressLine1,
-          postalCode,
-          city,
-          email,
-          authorization.userId || "service",
-        )
-        .run();
+      if (orgNumber) {
+        const duplicate = await db.prepare("SELECT a.id FROM crm_accounts a LEFT JOIN customer_invoice_profiles p ON p.board_id=a.board_id AND p.account_id=a.id WHERE a.board_id=? AND a.id<>? AND COALESCE(p.org_number,a.org_number)=? AND a.stage NOT IN ('lost') LIMIT 1").bind(boardId, accountId, orgNumber).first();
+        if (duplicate) return json({ error: "customer_org_number_exists", detail: "Det finnes allerede en annen aktiv kunde med dette organisasjonsnummeret." }, { status: 409 });
+      }
+      await db.batch([
+        db.prepare("UPDATE crm_accounts SET company_name=?,org_number=?,updated_at=datetime('now') WHERE id=? AND board_id=?").bind(companyName, orgNumber || null, accountId, boardId),
+        db.prepare("INSERT INTO customer_invoice_profiles (board_id,account_id,org_number,customer_type,address_line1,postal_code,city,country_code,email,updated_by,updated_at) VALUES (?,?,?, ?,? ,? ,?,'NO',?,?,datetime('now')) ON CONFLICT(board_id,account_id) DO UPDATE SET org_number=excluded.org_number,customer_type=excluded.customer_type,address_line1=excluded.address_line1,postal_code=excluded.postal_code,city=excluded.city,country_code=excluded.country_code,email=excluded.email,updated_by=excluded.updated_by,updated_at=datetime('now')").bind(boardId, accountId, orgNumber || null, customerType, addressLine1, postalCode, city, email, authorization.userId || "service"),
+      ]);
       await recordAudit(db, {
         boardId,
         action,
         entityType: "customer_invoice_profile",
         entityId: accountId,
         userId: authorization.userId || undefined,
-        details: { countryCode: "NO", customerType },
+        details: { companyName, countryCode: "NO", customerType },
       });
       return json({
         ok: true,
