@@ -1453,7 +1453,9 @@ export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
         },
         vat: {
           status: vatStatus,
+          sourceCount: Number(vat?.source_count || 0),
           unmappedCount: Number(vat?.unmapped_count || 0),
+          sourceHash: vat?.source_hash || null,
           ready:
             vatStatus === "missing" ||
             (["approved", "prepared"].includes(vatStatus) &&
@@ -1509,11 +1511,16 @@ export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
           authorization.userId || "service",
         )
         .run();
+      const savedClosure = await db
+        .prepare("SELECT id FROM accounting_period_closures WHERE board_id=? AND period=?")
+        .bind(boardId, period)
+        .first<{ id: string }>();
+      const persistedClosureId = String(savedClosure?.id || closureId);
       await recordAudit(db, {
         boardId,
         action: "accounting_period_close_prepared",
         entityType: "accounting_period_closure",
-        entityId: closureId,
+        entityId: persistedClosureId,
         userId: authorization.userId || undefined,
         details: { period, blocking, warnings, sourceHash },
       });
@@ -1521,7 +1528,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
         {
           ok: true,
           action,
-          closureId,
+          closureId: persistedClosureId,
           period,
           status: "review",
           checks,
@@ -1546,6 +1553,32 @@ export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
       if (!closure)
         return json({ error: "period_close_not_in_review" }, { status: 409 });
       const checks = JSON.parse(String(closure.checks_json || "{}"));
+      const [currentVouchers, currentBalance, currentBank, currentSales, currentPurchases, currentVat, currentPayroll, currentProposals, currentDepreciation, currentSafT] = await Promise.all([
+        db.prepare("SELECT COUNT(*) AS count FROM vouchers WHERE board_id=? AND period=?").bind(boardId, period).first<Record<string, unknown>>(),
+        db.prepare("SELECT COALESCE(SUM(l.debit_minor),0) AS debit_minor,COALESCE(SUM(l.credit_minor),0) AS credit_minor FROM vouchers v JOIN voucher_lines l ON l.voucher_id=v.id WHERE v.board_id=? AND v.period=?").bind(boardId, period).first<Record<string, unknown>>(),
+        db.prepare("SELECT COUNT(*) AS count FROM bank_transactions WHERE board_id=? AND substr(transaction_date,1,7)=? AND status IN ('imported','suggested','approved')").bind(boardId, period).first<Record<string, unknown>>(),
+        db.prepare("SELECT COUNT(*) AS count FROM sales_invoices WHERE board_id=? AND substr(issue_date,1,7)=? AND status IN ('draft','review','approved','sent','overdue')").bind(boardId, period).first<Record<string, unknown>>(),
+        db.prepare("SELECT COUNT(*) AS count FROM supplier_invoices WHERE board_id=? AND substr(due_date,1,7)=? AND status IN ('received','matched','exception','approved')").bind(boardId, period).first<Record<string, unknown>>(),
+        db.prepare("SELECT status,source_count,unmapped_count,source_hash FROM vat_periods WHERE board_id=? AND period=?").bind(boardId, period).first<Record<string, unknown>>(),
+        db.prepare("SELECT COUNT(*) AS count FROM payroll_runs WHERE board_id=? AND period=? AND status NOT IN ('approved','submitted','closed')").bind(boardId, period).first<Record<string, unknown>>(),
+        db.prepare("SELECT COUNT(*) AS count FROM (SELECT id FROM posting_proposals WHERE board_id=? AND period=? AND status IN ('review','approved') UNION ALL SELECT id FROM payroll_posting_proposals WHERE board_id=? AND period=? AND status IN ('review','approved'))").bind(boardId, period, boardId, period).first<Record<string, unknown>>(),
+        db.prepare("SELECT COUNT(*) AS count FROM depreciation_entries WHERE board_id=? AND period=? AND ledger_type='financial' AND status IN ('calculated','review','approved')").bind(boardId, period).first<Record<string, unknown>>(),
+        db.prepare("SELECT checksum FROM saf_t_exports WHERE board_id=? AND period_from<=? AND period_to>=? ORDER BY created_at DESC LIMIT 1").bind(boardId, period, period).first<Record<string, unknown>>(),
+      ]);
+      const currentSnapshot = {
+        vouchers: { count: Number(currentVouchers?.count || 0) },
+        balance: { debitMinor: Number(currentBalance?.debit_minor || 0), creditMinor: Number(currentBalance?.credit_minor || 0) },
+        bank: { openCount: Number(currentBank?.count || 0) },
+        sales: { openCount: Number(currentSales?.count || 0) },
+        purchases: { openCount: Number(currentPurchases?.count || 0) },
+        vat: { status: String(currentVat?.status || 'missing'), sourceCount: Number(currentVat?.source_count || 0), unmappedCount: Number(currentVat?.unmapped_count || 0), sourceHash: currentVat?.source_hash || null },
+        payroll: { openCount: Number(currentPayroll?.count || 0) },
+        proposals: { openCount: Number(currentProposals?.count || 0) },
+        depreciation: { openCount: Number(currentDepreciation?.count || 0) },
+        safT: { checksum: currentSafT?.checksum || null },
+      };
+      const snapshotChanged = Number(checks.vouchers?.count || 0) !== currentSnapshot.vouchers.count || Number(checks.balance?.debitMinor || 0) !== currentSnapshot.balance.debitMinor || Number(checks.balance?.creditMinor || 0) !== currentSnapshot.balance.creditMinor || Number(checks.bank?.openCount || 0) !== currentSnapshot.bank.openCount || Number(checks.sales?.openCount || 0) !== currentSnapshot.sales.openCount || Number(checks.purchases?.openCount || 0) !== currentSnapshot.purchases.openCount || String(checks.vat?.status || 'missing') !== currentSnapshot.vat.status || Number(checks.vat?.sourceCount || 0) !== currentSnapshot.vat.sourceCount || Number(checks.vat?.unmappedCount || 0) !== currentSnapshot.vat.unmappedCount || String(checks.vat?.sourceHash || '') !== String(currentSnapshot.vat.sourceHash || '') || Number(checks.payroll?.openCount || 0) !== currentSnapshot.payroll.openCount || Number(checks.proposals?.openCount || 0) !== currentSnapshot.proposals.openCount || Number(checks.depreciation?.openCount || 0) !== currentSnapshot.depreciation.openCount || String(checks.safT?.checksum || '') !== String(currentSnapshot.safT.checksum || '');
+      if (snapshotChanged) return json({ error: "period_close_snapshot_stale", period, detail: "Det er kommet til eller endret regnskapsdata etter kontrollen. Kjør kontrollen på nytt før godkjenning.", currentSnapshot }, { status: 409 });
       const blocking = Object.entries(checks)
         .filter(([, check]) =>
           Boolean((check as Record<string, unknown>)?.blocking),
