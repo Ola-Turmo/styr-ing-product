@@ -79,3 +79,8 @@ Betalinger kan kobles til åpne kunde-/leverandørposter fra samme regnskapsflat
 - Fakturadato, forfallsdato og kreditnotadato valideres som faktiske kalenderdatoer og i riktig kronologisk rekkefølge. Prosjektfaktura følger samme kontroll.
 - Fakturaskjemaet bruker dynamisk dagens dato og foreslår 14 dagers forfall, også etter at skjemaet nullstilles.
 - Verifisert med `npx tsc --noEmit`, `npm run verify:api`, `npm run verify:source`, `npm run build`, `git diff --check` og `LIVE API SMOKE: PASS (119 checks against https://styr.ing)`.
+
+## Siste SMB-forbedring (2026-08-26)
+
+- CSV-importen i førstegangsoppsettet støtter nå quoted-felter, semikolon/komma som skilletegn og norske tall med tusenskilletegn/desimalkomma. Dette gjør åpningsbalanse og historikkimport mer robust for små norske virksomheter uten å gjette konto eller MVA.
+- Verifisert med `npx tsc --noEmit`, `npm run verify:api`, `npm run verify:source`, `npm run build` og `git diff --check`.
