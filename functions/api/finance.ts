@@ -142,8 +142,10 @@ export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
         ['3000', 'Salgsinntekt', 'revenue', '3'],
         ['4000', 'Varekjøp', 'expense', '1'],
         ['5000', 'Lønn', 'expense', null],
+        ['5400', 'Arbeidsgiveravgift', 'expense', null],
         ['6300', 'Leiekostnad', 'expense', '1'],
         ['6800', 'Kontorrekvisita', 'expense', '1'],
+        ['2930', 'Skyldig lønn', 'liability', null],
         ['8050', 'Renteinntekt', 'revenue', null],
       ] as const;
       const existing = (await db.prepare('SELECT code FROM ledger_accounts WHERE board_id=?').bind(boardId).all()).results as Array<{ code?: unknown }>;
