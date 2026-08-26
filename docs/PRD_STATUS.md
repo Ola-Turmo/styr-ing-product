@@ -90,3 +90,10 @@ Betalinger kan kobles til åpne kunde-/leverandørposter fra samme regnskapsflat
 - Norsk 12 % MVA støttes nå gjennom hele den interne regnskapsflyten: salgsfaktura, leverandørfaktura, EHF-grunnlag, gjentakende faktura, prosjektfakturering, manuelle bilag og CSV-import.
 - Inngående og utgående MVA bruker separate koder, slik at salg ikke feilklassifiseres som kjøp i MVA-grunnlaget.
 - Gjeldende satser er kontrollert mot Skatteetatens publiserte satsoversikt. Ekstern innsending av MVA-melding er fortsatt ikke konfigurert.
+
+## Produksjonsdatabase — MVA-skjema (2026-08-26)
+
+- D1-migrasjon `20260911_norwegian_vat_12_percent.sql` er kjørt på database `styr-ing-db` (`745ab44e-8069-489d-8333-d1fd4049ae1d`).
+- `supplier_invoice_lines` og `ehf_document_lines` har nå databasebegrensningen `vat_rate IN (0,12,15,25)`; eksisterende rader ble kopiert og indeksene gjenopprettet.
+- Produksjonskontroll etter migrering: begge tabeller har 0 rader tapt og inneholder den nye 12 %-begrensningen.
+- Migreringen er kjørt idempotent etter en kontrollert retry; gjeldende produksjonsskjema er bekreftet med `CHECK(vat_rate IN (0,12,15,25))`.
