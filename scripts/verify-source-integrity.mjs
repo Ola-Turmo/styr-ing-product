@@ -6,6 +6,9 @@ const root = resolve('src/pages');
 const failures = [];
 let pageCount = 0;
 let scriptCount = 0;
+const componentContracts = {
+  'src/components/EHFInboxQuick.astro': ['name="currency"', 'value="NOK"', 'name="documentRef"', 'name="supplierName"'],
+};
 
 async function walk(directory) {
   for (const entry of await readdir(directory, { withFileTypes: true })) {
@@ -15,6 +18,7 @@ async function walk(directory) {
     pageCount += 1;
     const source = await readFile(path, 'utf8');
     const label = relative(process.cwd(), path);
+    for (const token of componentContracts[label] || []) if (!source.includes(token)) failures.push(`${label}: mangler nødvendig brukerfelt (${token})`);
     if (!source.startsWith('---\n') && !source.startsWith('---\r\n')) failures.push(`${label}: mangler gyldig Astro-frontmatter`);
     for (const match of source.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/g)) {
       scriptCount += 1;
