@@ -44,11 +44,15 @@ CRM/revenue, styre/govenance, HCM, IT, felt, HMS/ESG, treasury, kort, risiko, co
 - Produksjon `https://styr.ing/`: landing, `/finance/`, `/app/finance/`, `/login`, `/api/health` — HTTP 200
 - Produksjonssammendrag: balanserte bilag, perioder, bank-/innkjøps-/lønnskontroller returnerer JSON fra D1
 - Produksjonssmoke: `LIVE API SMOKE: PASS (112 checks against https://styr.ing)` etter siste deploy
-- Siste deploy: Cloudflare Pages `https://e808be49.styr-ing.pages.dev` (produksjonsdomene `https://styr.ing/`), commit `4becc76`
+- Siste deploy: Cloudflare Pages `https://3cefb66b.styr-ing.pages.dev` (produksjonsdomene `https://styr.ing/`), commit `8e4b89b`
 
 ## Brukerflyt — månedsavslutning
 
 Periodeavslutning ligger nå i den daglige regnskapsflyten i `app/finance`: kontroller åpne bankposter, fakturaer, MVA, lønn, bilagsforslag, avskrivning, balanse og SAF-T-grunnlag før godkjenning og låsing. Kontrollene lagres med hash og audit-spor; en låst periode avvises av bokføringsendepunktene.
+
+## Brukerflyt — betaling og åpne poster
+
+Betalinger kan kobles til åpne kunde-/leverandørposter fra samme regnskapsflate. `ReceivablesPayablesQuick` krever retning og eksakt beløp, oppretter en kontrollert betalingskobling i bank-API-et og sender deretter brukeren til bankavstemming for endelig bokføring. `functions/api/bank.ts` håndterer matchforslag, godkjenning, idempotent postering og oppdatering av fakturastatus. Direkte banktilkoblinger og automatisk betaling er fortsatt ikke konfigurert.
 
 ## Neste leveranse før reell kunde
 
