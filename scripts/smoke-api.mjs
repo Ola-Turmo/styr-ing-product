@@ -21,7 +21,7 @@ const checks = [
   ['board governance attendance', '/api/board_governance?boardId=board-1&view=attendance', 200],
   ['board governance ballots', '/api/board_governance?boardId=board-1&view=ballots', 200],
   ['operations cockpit', '/api/operations?boardId=board-1', 200],
-  ['audit trail', '/api/audit?boardId=board-1', 200], ['SAF-T export history', '/api/finance?boardId=board-1&view=saf-t-exports', 200], ['SAF-T export', '/api/finance?boardId=board-1&view=saf-t', 200],
+  ['audit trail', '/api/audit?boardId=board-1', 200], ['audit integrity', '/api/audit?boardId=board-1&limit=50', 200], ['SAF-T export history', '/api/finance?boardId=board-1&view=saf-t-exports', 200], ['SAF-T export', '/api/finance?boardId=board-1&view=saf-t', 200],
   ['accounting periods', '/api/finance?boardId=board-1&view=periods', 200], ['MVA summary', '/api/mva?boardId=board-1&view=summary', 200], ['MVA periods', '/api/mva?boardId=board-1&view=periods', 200], ['chart of accounts', '/api/finance?boardId=board-1&view=accounts', 200], ['finance customers', '/api/finance?boardId=board-1&view=customers', 200], ['sales invoices', '/api/finance?boardId=board-1&view=invoices', 200],
   ['posting summary', '/api/postings?boardId=board-1&view=summary', 200], ['posting proposals', '/api/postings?boardId=board-1&view=proposals', 200],
   ['bank summary', '/api/bank?boardId=board-1&view=summary', 200], ['bank accounts', '/api/bank?boardId=board-1&view=accounts', 200], ['bank transactions', '/api/bank?boardId=board-1&view=transactions', 200], ['bank suggestions', '/api/bank?boardId=board-1&view=suggestions', 200],
@@ -57,6 +57,10 @@ for (const [label, path, expected] of checks) {
   if (label === 'boards') {
     const payload = await response.json();
     if (!Array.isArray(payload.data) || payload.data.some((board) => board.id !== 'board-1')) failures.push(`${label}: unauthenticated response must be limited to fictional board-1`);
+  }
+  if (label === 'audit integrity') {
+    const payload = await response.json();
+    if (!payload.integrity || payload.integrity.valid !== true) failures.push(`${label}: expected valid audit integrity`);
   }
 }
 for (const [label, path, payload] of [
