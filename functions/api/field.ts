@@ -34,15 +34,20 @@ export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
       const accountId = txt(draft.customer_account_id, 120); if (!accountId || !(await db.prepare("SELECT id FROM crm_accounts WHERE id=? AND board_id=? AND stage NOT IN ('lost')").bind(accountId, boardId).first())) return json({ error: 'project_customer_required' }, { status: 409 });
       const invoiceNumber = requestedNumber || `PROS-${String(draft.period || '').replace('-', '')}-${draftId.slice(-6).toUpperCase()}`; const netMinor = Number(draft.amount_minor || 0); if (!Number.isSafeInteger(netMinor) || netMinor <= 0) return json({ error: 'invoice_draft_amount_invalid' }, { status: 409 });
       const revenueAccount = await db.prepare("SELECT id FROM ledger_accounts WHERE board_id=? AND active=1 AND account_type='revenue' ORDER BY CASE WHEN code='3000' THEN 0 ELSE 1 END,code LIMIT 1").bind(boardId).first<{ id: string }>(); if (!revenueAccount?.id) return json({ error: 'revenue_account_required' }, { status: 409 });
-      const invoiceId = id('sinv'); const vatMinor = Math.round(netMinor * vatRate / 100); const totalMinor = netMinor + vatMinor; const description = `${txt(draft.project_code, 60)} · ${txt(draft.period, 20)} · ${txt(draft.project_name, 120)}`; const externalReference = `sales_invoice:${invoiceId}`;
+      const invoiceId = `sinv-${draftId}`; const vatMinor = Math.round(netMinor * vatRate / 100); const totalMinor = netMinor + vatMinor; const description = `${txt(draft.project_code, 60)} · ${txt(draft.period, 20)} · ${txt(draft.project_name, 120)}`; const externalReference = `sales_invoice:${invoiceId}`;
+      const claim = await db.prepare("UPDATE project_invoice_drafts SET external_reference=? WHERE id=? AND board_id=? AND status='approved' AND (external_reference IS NULL OR external_reference='')").bind(externalReference, draftId, boardId).run();
+      if (!claim.meta?.changes) {
+        const claimed = await db.prepare('SELECT external_reference FROM project_invoice_drafts WHERE id=? AND board_id=?').bind(draftId, boardId).first<{ external_reference: string | null }>();
+        const reference = txt(claimed?.external_reference, 160); if (reference.startsWith('sales_invoice:')) return json({ ok: true, action, draftId, invoiceId: reference.slice('sales_invoice:'.length), status: 'already_converted', externalDelivery: 'not_configured' });
+        return json({ error: 'invoice_draft_claim_failed' }, { status: 409 });
+      }
       try {
         await db.batch([
           db.prepare("INSERT INTO sales_invoices (id,board_id,account_id,invoice_number,issue_date,due_date,description,amount_minor,vat_minor,total_minor,currency,status,source,external_status) VALUES (?,?,?,?,?,?,?,?,?,?,?,'NOK','draft','project','not_configured')").bind(invoiceId, boardId, accountId, invoiceNumber, issueDate, dueDate, description, netMinor, vatMinor, totalMinor),
           db.prepare("INSERT INTO sales_invoice_lines (id,board_id,sales_invoice_id,line_number,description,quantity,unit_price_minor,vat_rate,vat_code,net_minor,vat_minor,total_minor,account_id) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)").bind(id('sinvline'), boardId, invoiceId, 1, description, 1, netMinor, vatRate, vatRate === 25 ? '1' : vatRate === 15 ? '1_15' : null, netMinor, vatMinor, totalMinor, revenueAccount.id),
-          db.prepare("UPDATE project_invoice_drafts SET external_reference=? WHERE id=? AND board_id=? AND status='approved' AND (external_reference IS NULL OR external_reference='')").bind(externalReference, draftId, boardId),
           db.prepare("UPDATE time_entries SET status='invoiced' WHERE board_id=? AND invoice_draft_id=? AND billable=1 AND status IN ('submitted','approved')").bind(boardId, draftId),
         ]);
-      } catch (error) { return json({ error: 'invoice_conversion_failed', detail: error instanceof Error ? error.message : 'invoice_number_may_already_exist' }, { status: 409 }); }
+      } catch (error) { await db.prepare("UPDATE project_invoice_drafts SET external_reference=NULL WHERE id=? AND board_id=? AND external_reference=?").bind(draftId, boardId, externalReference).run(); return json({ error: 'invoice_conversion_failed', detail: error instanceof Error ? error.message : 'invoice_number_may_already_exist' }, { status: 409 }); }
       await audit('project_invoice_draft', draftId, { status: 'converted', invoiceId, invoiceNumber, vatRate, amountMinor: netMinor, totalMinor, externalDelivery: 'not_configured' });
       return json({ ok: true, action, draftId, invoiceId, invoiceNumber, status: 'draft', amountMinor: netMinor, vatMinor, totalMinor, externalDelivery: 'not_configured', requiresReview: true }, { status: 201 });
     }
