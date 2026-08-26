@@ -46,6 +46,10 @@ CRM/revenue, styre/govenance, HCM, IT, felt, HMS/ESG, treasury, kort, risiko, co
 - Produksjonssmoke: `LIVE API SMOKE: PASS (112 checks against https://styr.ing)` etter siste deploy
 - Siste deploy: Cloudflare Pages `https://e808be49.styr-ing.pages.dev` (produksjonsdomene `https://styr.ing/`), commit `4becc76`
 
+## Brukerflyt — månedsavslutning
+
+Periodeavslutning ligger nå i den daglige regnskapsflyten i `app/finance`: kontroller åpne bankposter, fakturaer, MVA, lønn, bilagsforslag, avskrivning, balanse og SAF-T-grunnlag før godkjenning og låsing. Kontrollene lagres med hash og audit-spor; en låst periode avvises av bokføringsendepunktene.
+
 ## Neste leveranse før reell kunde
 
 1. Koble og godkjenne én konkret innloggings-/e-postleverandør med engangslenker som testes med klokke, replay og utløp.
