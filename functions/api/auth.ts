@@ -5,6 +5,19 @@ function publicUser(user: { id: string; email: string; name: string; role: strin
 }
 
 export const onRequestGet: PagesFunction<Env> = async ({ env, request }) => {
+  const url = new URL(request.url);
+  if (url.searchParams.get('action') === 'invite_status') {
+    const token = (url.searchParams.get('token') || '').trim();
+    if (!token) return json({ error: 'token_required' }, { status: 400 });
+    try {
+      const db = requireDb(env);
+      const invite = await db.prepare('SELECT expires_at,used_at FROM invite_tokens WHERE token_hash=?').bind(await sha256(token)).first<{ expires_at: string; used_at: string | null }>();
+      if (!invite) return json({ valid: false, reason: 'invalid' }, { status: 410 });
+      if (invite.used_at) return json({ valid: false, reason: 'used' }, { status: 410 });
+      if (invite.expires_at <= new Date().toISOString().replace('T', ' ').slice(0, 19)) return json({ valid: false, reason: 'expired' }, { status: 410 });
+      return json({ valid: true, expiresAt: invite.expires_at });
+    } catch (error) { return json({ error: 'invite_status_unavailable', detail: error instanceof Error ? error.message : 'unknown' }, { status: 503 }); }
+  }
   const session = await getSession(request, env);
   if (!session) return json({ authenticated: false, user: null });
   const boards = env.DB ? (await env.DB.prepare('SELECT b.id,b.name,ub.role FROM user_boards ub JOIN boards b ON b.id=ub.board_id WHERE ub.user_id=? AND b.status=? ORDER BY b.name').bind(session.userId, 'active').all()).results : [];
@@ -30,7 +43,10 @@ export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
       const token = bytesToBase64(crypto.getRandomValues(new Uint8Array(32))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
       const inviteId = `invite-${crypto.randomUUID()}`; const role = String(value?.role || 'viewer');
       if (!['owner','editor','viewer'].includes(role)) return json({ error: 'valid_role_required' }, { status: 400 });
-      await db.prepare("INSERT INTO invite_tokens (id,board_id,email,name,role,token_hash,expires_at,created_by) VALUES (?,?,?,?,?,?,datetime('now','+24 hours'),?)").bind(inviteId, boardId, email, name, role, await sha256(token), boardAuthorization.userId).run();
+      await db.batch([
+        db.prepare("UPDATE invite_tokens SET used_at=datetime('now') WHERE board_id=? AND lower(email)=? AND used_at IS NULL AND expires_at>datetime('now')").bind(boardId, email),
+        db.prepare("INSERT INTO invite_tokens (id,board_id,email,name,role,token_hash,expires_at,created_by) VALUES (?,?,?,?,?,?,datetime('now','+24 hours'),?)").bind(inviteId, boardId, email, name, role, await sha256(token), boardAuthorization.userId),
+      ]);
       return json({ ok: true, inviteId, boardId, activationUrl: `/activate?token=${encodeURIComponent(token)}`, expiresIn: '24h' }, { status: 201 });
     } catch (error) { return json({ error: 'user_creation_failed', detail: error instanceof Error ? error.message : 'unknown' }, { status: 400 }); }
   }
