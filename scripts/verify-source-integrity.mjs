@@ -8,6 +8,7 @@ let pageCount = 0;
 let scriptCount = 0;
 const componentContracts = {
   'src/components/EHFInboxQuick.astro': ['name="currency"', 'value="NOK"', 'name="documentRef"', 'name="supplierName"'],
+  'src/components/ReceivablesPayablesQuick.astro': ['<section class="cash-control"', 'id="cash-payment-form"', 'id="collection-case-form"', '<script is:inline>', '</script>', '<style>', '</style>'],
 };
 
 async function walk(directory) {

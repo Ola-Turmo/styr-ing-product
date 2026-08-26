@@ -86,6 +86,12 @@ Betalinger kan kobles til åpne kunde-/leverandørposter fra samme regnskapsflat
 - CSV-importen i førstegangsoppsettet støtter nå quoted-felter, semikolon/komma som skilletegn og norske tall med tusenskilletegn/desimalkomma. Dette gjør åpningsbalanse og historikkimport mer robust for små norske virksomheter uten å gjette konto eller MVA.
 - Verifisert med `npx tsc --noEmit`, `npm run verify:api`, `npm run verify:source`, `npm run build` og `git diff --check`.
 
+## Siste regnskapsflyt-forbedring (2026-08-26)
+
+- Åpne kunde- og leverandørposter har fått en ny, ryddig komponent med tydelige restbeløp, norske statusetiketter, delbetaling, godkjent bankkobling og kontrollert purringsutkast. Flyten skiller mellom registrering og endelig bokføring, og viser ingen automatisk ekstern utsending.
+- La til kildeintegritetskontrakt for `ReceivablesPayablesQuick.astro`, slik at manglende seksjon, skjema, script eller style stopper verifikasjonen før bygg/deploy.
+- Verifisert med `npx tsc --noEmit`, `npm run verify:api`, `npm run verify:source`, `npm run build` og `git diff --check`.
+
 ## Siste MVA-forbedring (2026-08-26)
 
 - Norsk 12 % MVA støttes nå gjennom hele den interne regnskapsflyten: salgsfaktura, leverandørfaktura, EHF-grunnlag, gjentakende faktura, prosjektfakturering, manuelle bilag og CSV-import.
