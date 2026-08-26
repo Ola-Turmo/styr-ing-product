@@ -102,6 +102,12 @@ Betalinger kan kobles til åpne kunde-/leverandørposter fra samme regnskapsflat
 - Deploy: `https://e61c3636.styr-ing.pages.dev` → `https://styr.ing/` (Cloudflare Pages `main`).
 - Verifisert med `npm run verify:live` (120 kontroller), HTTP 200 på landing, `/finance/` og `/api/health`.
 
+## Siste fakturabetalingsforbedring (2026-08-27)
+
+- Manuell kunde- og leverandørbetaling håndterer nå samtidige retries på samme betalingsreferanse uten 503-feil eller dobbeltføring. Vinnerens betalings-ID leses tilbake; annet beløp gir `payment_reference_conflict`.
+- Deploy: `https://79e3e4a0.styr-ing.pages.dev` → `https://styr.ing/` (Cloudflare Pages `main`).
+- Verifisert med `npm run verify:live` (120 kontroller), HTTP 200 på landing, `/finance/` og `/api/health`.
+
 ## Siste kontoaktiveringsforbedring (2026-08-26)
 
 - Invitasjon på styremedlemsiden bruker nå et inline-skjema med e-post, navn, rolle, tydelig 24-timers utløp og kopieringsknapp. Nettleserens flertrinns `prompt`-dialoger er fjernet.
