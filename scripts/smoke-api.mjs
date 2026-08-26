@@ -113,6 +113,7 @@ for (const [label, path, payload] of [
   ['field write guard', '/api/field', { boardId: 'board-1', action: 'approve_time', entryId: 'fixture-not-used' }],
   ['field invoice preparation guard', '/api/field', { boardId: 'board-1', action: 'prepare_invoice', projectId: 'fixture-not-used', period: '2026-08' }],
   ['field invoice approval guard', '/api/field', { boardId: 'board-1', action: 'approve_invoice_draft', draftId: 'fixture-not-used' }],
+  ['field invoice conversion guard', '/api/field', { boardId: 'board-1', action: 'convert_invoice_draft', draftId: 'fixture-not-used', dueDate: '2026-09-30' }],
   ['commercial write guard', '/api/commercial', { boardId: 'board-1', action: 'approve_quote', quoteId: 'fixture-not-used' }],
   ['IT ticket write guard', '/api/it', { boardId: 'board-1', action: 'create_ticket', title: 'Unauthorised' }],
   ['IT SaaS register write guard', '/api/it', { boardId: 'board-1', action: 'create_saas_subscription', name: 'Unauthorised', vendor: 'Unauthorised', seats: 1 }],
