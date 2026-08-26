@@ -13,7 +13,7 @@ Dette er en implementasjonsstatus, ikke en påstand om regulatorisk godkjenning.
 | Globalt søk i bilagsarkiv | Intern | `functions/api/search.ts` søker nå i `accounting_documents` på filnavn, type og kontrollsum |
 | Bilag, balanserte linjer og gapless sekvens | Intern | `functions/api/finance.ts`, `voucher_sequences`, atomisk validering |
 | Periodelåsing og kontrollspor | Intern | `finance.ts`, period close-komponentene, audit-logg |
-| Faktura, kreditnota, åpne poster og betaling | Intern | `finance.ts`, `SalesInvoiceQuick`, `ReceivablesPayablesQuick`; faktura, kreditnota og manuell betaling avviser kalender-ugyldige datoer server-side, og betalingsreferanser er idempotente |
+| Faktura, kreditnota, åpne poster og betaling | Intern | `finance.ts`, `SalesInvoiceQuick`, `ReceivablesPayablesQuick`; faktura, kreditnota og bilag avviser kalender-ugyldige datoer server-side, faktura/EHF krever forfall på eller etter fakturadato, kreditnota kan ikke tilbakedateres før originalfaktura, og betalingsreferanser er idempotente |
 | Kontrollert purringsutkast for forfalte fakturaer | Intern klargjøring | `functions/api/collections.ts`, `CollectionReminderQuick`; bygger norsk tekst med kunde, fakturanummer, forfall, restsaldo og SHA-256-checksum, med eksplisitt menneskelig godkjenning. Renter, gebyrer og ekstern utsending er deaktivert. |
 | Gjentakende fakturering for faste leveranser | Intern | `recurring_invoice_templates`/`recurring_invoice_generations`, `finance.ts`, `RecurringInvoiceQuick`; månedlig, kvartalsvis og årlig mal lager idempotente fakturautkast med neste kjøredato. Utsending og bokføring krever fortsatt separat kontroll. |
 | Norsk fakturadokument med profil, kontrollert godkjenning og utskrift | Intern | `finance.ts` (`invoice-setup`, `invoice-document`, `approve_invoice`), `SalesInvoiceQuick`; selger-/kundeadresse, kundetype (bedrift eller privatkunde), org.nr. når det kreves, bankkonto, linjer og summer fryses i et versjonert SHA-256-snapshot før godkjenning |
@@ -47,7 +47,7 @@ CRM/revenue, styre/govenance, HCM, IT, felt, HMS/ESG, treasury, kort, risiko, co
 ## Verifikasjon utført
 
 - `npm run verify:source` — PASS (54 sider, 46 nettleserskript)
-- `npm run verify:api` — PASS (42 API-moduler)
+- `npm run verify:api` — PASS (43 API-moduler)
 - `npx tsc --noEmit` — PASS
 - `npm run build` — PASS (63 sider)
 - `git diff --check` — PASS
@@ -71,3 +71,11 @@ Betalinger kan kobles til åpne kunde-/leverandørposter fra samme regnskapsflat
 3. Velg én bank- og én EHF-partner; implementer adapterkontrakter i sandbox før produksjon.
 4. Fullfør juridisk godkjenning av personvern, DPA, vilkår, retention og DPIA.
 5. Kjør tenant-isolasjon, rolle, eksport/sletting og hendelsesreplay som automatiserte ende-til-ende-tester.
+
+## Siste regnskapsforbedring (2026-08-26)
+
+- Deploy: `https://12d13e5e.styr-ing.pages.dev` → `https://styr.ing/`.
+- Commit: `bb8d13a`.
+- Fakturadato, forfallsdato og kreditnotadato valideres som faktiske kalenderdatoer og i riktig kronologisk rekkefølge. Prosjektfaktura følger samme kontroll.
+- Fakturaskjemaet bruker dynamisk dagens dato og foreslår 14 dagers forfall, også etter at skjemaet nullstilles.
+- Verifisert med `npx tsc --noEmit`, `npm run verify:api`, `npm run verify:source`, `npm run build`, `git diff --check` og `LIVE API SMOKE: PASS (119 checks against https://styr.ing)`.
