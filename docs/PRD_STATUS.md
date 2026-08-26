@@ -184,3 +184,11 @@ Betalinger kan kobles til åpne kunde-/leverandørposter fra samme regnskapsflat
 - `supplier_invoice_lines` og `ehf_document_lines` har nå databasebegrensningen `vat_rate IN (0,12,15,25)`; eksisterende rader ble kopiert og indeksene gjenopprettet.
 - Produksjonskontroll etter migrering: begge tabeller har 0 rader tapt og inneholder den nye 12 %-begrensningen.
 - Migreringen er kjørt idempotent etter en kontrollert retry; gjeldende produksjonsskjema er bekreftet med `CHECK(vat_rate IN (0,12,15,25))`.
+
+## Siste kunderegisterforbedring (2026-08-27)
+
+- Nye kunder kan opprettes direkte fra fakturaflyten med navn, kundetype, norsk organisasjonsnummer, adresse, postnummer, poststed og e-post. Opprettelsen skriver CRM-kunden og `customer_invoice_profiles` i én D1-batch, slik at kunden er klar for fakturautkast uten et ekstra oppsettsteg.
+- API-et (`finance.ts`, `action=create_customer`) validerer norske kontrollsifre, postnummer, e-post og påkrevde fakturafelt, avviser duplikate aktive organisasjonsnummer og logger opprettelsen. Eksisterende CRM-ID-er og fritekstfri fakturaflyt er beholdt.
+- Kunderegisteret kan hentes med `view=customer-register` og viser om fakturaprofilen er komplett. Profilredigering oppdaterer både kundens navn/org.nr. og fakturaprofilen, med samme kontroll mot duplikater.
+- Verifisert med `npm run verify`, `npm run verify:live` (122 kontroller), HTTP 200 på landing og `/api/finance?boardId=board-1&view=customer-register`.
+- Produksjonsdeploy: Cloudflare Pages `https://d8cfed5f.styr-ing.pages.dev` på branch `main`, koblet til `https://styr.ing/`.
