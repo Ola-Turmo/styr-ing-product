@@ -141,28 +141,53 @@ export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
       if (!sourceAmount || bankAmount > remainingAmount) return json({ error: 'bank_source_amount_mismatch', bankAmountMinor: bankAmount, remainingAmountMinor: remainingAmount }, { status: 409 });
       if (entityType === 'sales_invoice' && Number(transaction.amount_minor || 0) <= 0) return json({ error: 'sales_payment_must_be_incoming' }, { status: 409 });
       if (entityType === 'supplier_invoice' && Number(transaction.amount_minor || 0) >= 0) return json({ error: 'supplier_payment_must_be_outgoing' }, { status: 409 });
-      const linkId = id('paylink');
-      try {
-        await db.batch([
-          db.prepare('INSERT INTO payment_links (id,board_id,bank_transaction_id,entity_type,entity_id,amount_minor,status,linked_by) VALUES (?,?,?,?,?,?,?,?)').bind(linkId, boardId, transactionId, entityType, entityId, bankAmount, 'linked', actor),
-        ]);
-      } catch (error) { return json({ error: 'payment_link_conflict', detail: error instanceof Error ? error.message : 'invoice_or_transaction_already_linked' }, { status: 409 }); }
       const reference = text(transaction.external_reference, 160) || transactionId;
+      const paymentReference = `BANK:${reference}`;
+      let linkId = id('paylink'); let linkCreated = false;
+      const linkMatches = (link: Record<string, unknown>) => String(link.entity_type) === entityType && String(link.entity_id) === entityId && Number(link.amount_minor || 0) === bankAmount;
+      let existingLink = await db.prepare('SELECT id,entity_type,entity_id,amount_minor,status FROM payment_links WHERE bank_transaction_id=? AND board_id=?').bind(transactionId, boardId).first<Record<string, unknown>>();
+      if (existingLink) {
+        if (!linkMatches(existingLink)) return json({ error: 'payment_link_conflict', detail: 'Banklinjen er allerede koblet til en annen faktura eller et annet beløp.' }, { status: 409 });
+        linkId = String(existingLink.id);
+        if (String(existingLink.status) === 'rejected') return json({ error: 'payment_link_rejected', detail: 'Den eksisterende koblingen er avvist og må behandles manuelt.' }, { status: 409 });
+      } else {
+        try {
+          await db.prepare('INSERT INTO payment_links (id,board_id,bank_transaction_id,entity_type,entity_id,amount_minor,status,linked_by) VALUES (?,?,?,?,?,?,?,?)').bind(linkId, boardId, transactionId, entityType, entityId, bankAmount, 'linked', actor).run();
+          linkCreated = true;
+        } catch (error) {
+          existingLink = await db.prepare('SELECT id,entity_type,entity_id,amount_minor,status FROM payment_links WHERE bank_transaction_id=? AND board_id=?').bind(transactionId, boardId).first<Record<string, unknown>>();
+          if (!existingLink || !linkMatches(existingLink)) return json({ error: 'payment_link_conflict', detail: error instanceof Error ? error.message : 'invoice_or_transaction_already_linked' }, { status: 409 });
+          linkId = String(existingLink.id);
+          if (String(existingLink.status) === 'rejected') return json({ error: 'payment_link_rejected', detail: 'Den eksisterende koblingen er avvist og må behandles manuelt.' }, { status: 409 });
+        }
+      }
       // A link is only a controlled association. Keep the invoice balance
       // unchanged until post_match creates the bank voucher successfully.
       // This prevents an invoice from appearing paid when posting is blocked
       // by a locked period or another accounting validation.
-      const paymentId = id('ipmt');
-      try {
-        await db.batch([
-          db.prepare('INSERT INTO invoice_payments (id,board_id,entity_type,entity_id,amount_minor,payment_reference,bank_transaction_id,status,recorded_by) VALUES (?,?,?,?,?,?,?,?,?)').bind(paymentId, boardId, entityType, entityId, bankAmount, `BANK:${reference}`, transactionId, 'recorded', actor),
-        ]);
-      } catch (error) {
-        await db.prepare("DELETE FROM payment_links WHERE id=? AND board_id=? AND status='linked'").bind(linkId, boardId).run();
-        return json({ error: 'payment_link_conflict', detail: error instanceof Error ? error.message : 'payment_record_conflict' }, { status: 409 });
+      let paymentId = ''; let paymentCreated = false;
+      let existingPayment = await db.prepare("SELECT id,entity_type,entity_id,amount_minor,payment_reference,status FROM invoice_payments WHERE bank_transaction_id=? AND board_id=? AND status<>'reversed'").bind(transactionId, boardId).first<Record<string, unknown>>();
+      const paymentMatches = (payment: Record<string, unknown>) => String(payment.entity_type) === entityType && String(payment.entity_id) === entityId && Number(payment.amount_minor || 0) === bankAmount && String(payment.payment_reference || '') === paymentReference;
+      if (existingPayment) {
+        if (!paymentMatches(existingPayment)) return json({ error: 'payment_link_conflict', detail: 'Banklinjen er allerede registrert som en annen betaling.' }, { status: 409 });
+        paymentId = String(existingPayment.id);
+      } else {
+        paymentId = id('ipmt');
+        try {
+          await db.prepare('INSERT INTO invoice_payments (id,board_id,entity_type,entity_id,amount_minor,payment_reference,bank_transaction_id,status,recorded_by) VALUES (?,?,?,?,?,?,?,?,?)').bind(paymentId, boardId, entityType, entityId, bankAmount, paymentReference, transactionId, 'recorded', actor).run();
+          paymentCreated = true;
+        } catch (error) {
+          existingPayment = await db.prepare("SELECT id,entity_type,entity_id,amount_minor,payment_reference,status FROM invoice_payments WHERE bank_transaction_id=? AND board_id=? AND status<>'reversed'").bind(transactionId, boardId).first<Record<string, unknown>>();
+          if (!existingPayment || !paymentMatches(existingPayment)) {
+            if (linkCreated) await db.prepare("DELETE FROM payment_links WHERE id=? AND board_id=? AND status='linked'").bind(linkId, boardId).run();
+            return json({ error: 'payment_link_conflict', detail: error instanceof Error ? error.message : 'payment_record_conflict' }, { status: 409 });
+          }
+          paymentId = String(existingPayment.id);
+        }
       }
+      const idempotent = !linkCreated && !paymentCreated;
       await recordAudit(db, { boardId, action: 'payment_linked_to_bank_transaction', entityType, entityId, userId: authorization.userId || undefined, details: { paymentLinkId: linkId, transactionId, amountMinor: bankAmount, glPosting: 'pending_controlled_posting', balanceUpdate: 'deferred_until_post_match' } });
-      return json({ ok: true, action, paymentLinkId: linkId, paymentId, transactionId, entityType, entityId, status: 'linked', invoiceStatus: 'payment_pending_posting', amountMinor: bankAmount, paidMinor: Number(source.paid_minor || 0), creditedMinor: creditedAmount, remainingMinor: remainingAmount, glPosting: 'pending_controlled_posting' }, { status: 201 });
+      return json({ ok: true, action, paymentLinkId: linkId, paymentId, transactionId, entityType, entityId, status: 'linked', invoiceStatus: 'payment_pending_posting', amountMinor: bankAmount, paidMinor: Number(source.paid_minor || 0), creditedMinor: creditedAmount, remainingMinor: remainingAmount, glPosting: 'pending_controlled_posting', idempotent }, { status: idempotent ? 200 : 201 });
     }
     if (action === 'post_match') {
       const transactionId = text(v?.transactionId, 120); const transaction = await db.prepare("SELECT t.*,a.ledger_account_id,pl.amount_minor AS linked_payment_minor,pl.status AS payment_link_status FROM bank_transactions t JOIN bank_accounts a ON a.id=t.bank_account_id LEFT JOIN payment_links pl ON pl.bank_transaction_id=t.id AND pl.board_id=t.board_id WHERE t.id=? AND t.board_id=? AND t.status='approved'").bind(transactionId, boardId).first<Record<string, unknown>>();
