@@ -24,23 +24,39 @@ import FxLedgerQuick from '../../components/FxLedgerQuick.astro';
     <section id="finance-error" class="finance-state" hidden><span class="section-kicker">Tilgang</span><h1 id="finance-error-title">Kunne ikke åpne økonomiflaten.</h1><p id="finance-error-copy">Prøv å logge inn på nytt.</p><a class="primary" href="/login">Gå til innlogging ↗</a></section>
     <div id="finance-content" hidden>
       <header class="finance-header"><div><a id="finance-back" href="/app">← Kundeområde</a><span class="section-kicker">Regnskap og økonomi</span><h1>Fra kilde til kontroll.</h1><p>Bilag, faktura, bankgrunnlag, lønn og innkjøp samlet i ett spor — med tydelig menneskelig godkjenning før bokføring eller eksterne steg.</p></div><div class="finance-identity"><strong id="finance-board">—</strong><span id="finance-role">—</span></div></header>
-      <ManualVoucherQuick />
-      <SalesInvoiceQuick />
-      <SupplierInvoiceQuick />
-      <BankReconciliationQuick />
-      <ReceivablesPayablesQuick />
-      <VatPeriodQuick />
-      <PayrollQuick />
-      <AssetRegisterQuick />
-      <IntercompanyQuick />
-      <CardLedgerQuick />
-      <FxLedgerQuick />
-      <PeriodCloseQuick />
-      <StatutoryNotesQuick />
-      <AccountingReportsQuick />
-      <PostingQueueQuick />
-      <CreditNotePostingQuick />
-      <EHFInboxQuick />
+      <nav class="finance-quick-nav" aria-label="Hurtigmeny for regnskap">
+        <a href="#daily-workflows">Daglig regnskap</a>
+        <a href="#reports">Rapporter</a>
+        <a href="#controlled-workflows">Flere kontroller</a>
+      </nav>
+      <section id="daily-workflows" class="workflow-section" aria-labelledby="daily-workflows-title">
+        <div class="workflow-section-head"><div><span class="section-kicker">Start her</span><h2 id="daily-workflows-title">Det du gjør hver måned.</h2><p>Bilag, faktura, bank, MVA og lønn i den rekkefølgen de vanligvis behandles. Hver handling blir liggende i kontrollsporet.</p></div><span class="workflow-badge">Regnskapskjerne</span></div>
+        <ManualVoucherQuick />
+        <SalesInvoiceQuick />
+        <SupplierInvoiceQuick />
+        <BankReconciliationQuick />
+        <ReceivablesPayablesQuick />
+        <VatPeriodQuick />
+        <PayrollQuick />
+      </section>
+      <section id="reports" class="workflow-section reports-section" aria-labelledby="reports-title">
+        <div class="workflow-section-head"><div><span class="section-kicker">Oppfølging</span><h2 id="reports-title">Se hva som er bokført.</h2><p>Bruk rapportene når du skal kontrollere perioden eller forklare tallene videre.</p></div></div>
+        <AccountingReportsQuick />
+      </section>
+      <details id="controlled-workflows" class="controlled-workflows">
+        <summary><span><span class="section-kicker">Når dere trenger mer</span><strong>Kontrollerte arbeidsflyter</strong><small>Eiendeler, bokføringsforslag, EHF, konsern, kort, valuta og årsoppgjør</small></span><b>Åpne</b></summary>
+        <div class="controlled-workflows-body">
+          <AssetRegisterQuick />
+          <PostingQueueQuick />
+          <CreditNotePostingQuick />
+          <EHFInboxQuick />
+          <IntercompanyQuick />
+          <CardLedgerQuick />
+          <FxLedgerQuick />
+          <PeriodCloseQuick />
+          <StatutoryNotesQuick />
+        </div>
+      </details>
       <nav id="finance-tabs" class="finance-tabs" aria-label="Økonomi-visninger"></nav>
       <section class="finance-summary"><article><small>Eiendeler</small><strong id="metric-assets">—</strong><span>aktive registrerte</span></article><article><small>Bankgrunnlag</small><strong id="metric-bank">—</strong><span>åpne transaksjoner</span></article><article><small>Innkjøp</small><strong id="metric-orders">—</strong><span>åpne ordre</span></article><article><small>Inntekt</small><strong id="metric-revenue">—</strong><span>aktive kontrakter</span></article></section>
       <section class="finance-card"><div class="card-head"><div><span id="finance-kicker" class="section-kicker">Kontrollspor</span><h2 id="finance-title">—</h2></div><span id="finance-count">—</span></div><div id="finance-list" class="finance-list"><p class="empty">Henter data…</p></div></section>
@@ -63,6 +79,7 @@ import FxLedgerQuick from '../../components/FxLedgerQuick.astro';
 </script>
 <style>
   .finance-shell{max-width:1160px;margin:0 auto;padding:42px 24px 88px}.finance-state{max-width:620px;margin:80px auto;text-align:center}.finance-state h1{font:500 clamp(2.5rem,6vw,4.5rem)/.95 Georgia,serif;letter-spacing:-.06em;margin:14px 0}.finance-state p,.boundary,.empty{color:var(--muted);font:.8rem/1.55 system-ui,sans-serif}.primary{display:inline-flex;margin-top:15px;padding:12px 16px;border-radius:9px;background:var(--night);color:#fff;font:700 .74rem/1 system-ui,sans-serif}.finance-header{display:flex;justify-content:space-between;align-items:end;gap:25px;margin-bottom:24px}.finance-header>a{display:block;margin-bottom:18px;color:var(--accent);font:700 .68rem/1 system-ui,sans-serif}.finance-header h1{margin:11px 0 8px;font:500 clamp(2.6rem,6vw,4.6rem)/.94 Georgia,serif;letter-spacing:-.06em}.finance-header p{margin:0;max-width:680px;color:var(--muted);font:.84rem/1.55 system-ui,sans-serif}.finance-identity{display:grid;justify-items:end;gap:7px;min-width:180px}.finance-identity strong{font:700 .78rem/1.2 system-ui,sans-serif}.finance-identity span{padding:6px 9px;border-radius:999px;background:#e8f1df;color:var(--accent);font:700 .62rem/1 system-ui,sans-serif}.finance-tabs{display:flex;gap:6px;overflow:auto;padding-bottom:7px;margin-bottom:15px}.finance-tabs a{white-space:nowrap;padding:9px 12px;border:1px solid rgba(16,36,31,.1);border-radius:9px;background:#fff;color:var(--muted);font:700 .68rem/1 system-ui,sans-serif}.finance-tabs a.active,.finance-tabs a:hover{background:var(--night);border-color:var(--night);color:#fff}.finance-summary{display:grid;grid-template-columns:repeat(4,1fr);gap:11px;margin-bottom:15px}.finance-summary article,.finance-card{border:1px solid rgba(16,36,31,.09);border-radius:15px;background:#fff}.finance-summary article{padding:17px;min-height:105px}.finance-summary small,.finance-summary span{display:block;color:var(--muted);font:600 .67rem/1.35 system-ui,sans-serif}.finance-summary strong{display:block;margin:11px 0 5px;font:500 1.9rem/1 Georgia,serif}.finance-summary span{color:var(--accent)}.finance-card{padding:22px}.card-head{display:flex;justify-content:space-between;align-items:start;gap:15px;margin-bottom:13px}.card-head h2{margin:8px 0 0;font:500 1.5rem/1 Georgia,serif}.card-head>span{color:var(--muted);font:700 .66rem/1 system-ui,sans-serif}.finance-list{display:grid}.finance-row{display:flex;align-items:center;gap:11px;padding:13px 2px;border-bottom:1px solid rgba(16,36,31,.07)}.finance-row:last-child{border-bottom:0}.finance-row i{width:8px;height:8px;border-radius:50%;background:#76b76f;flex:none}.finance-row i.warn{background:#d69738}.finance-row span{display:grid;gap:4px;flex:1}.finance-row strong{font:700 .78rem/1.25 system-ui,sans-serif}.finance-row small{color:var(--muted);font:.68rem/1.35 system-ui,sans-serif}.finance-row em{font:600 .65rem/1 system-ui,sans-serif;font-style:normal;color:var(--muted);text-align:right}.boundary{margin:16px 0 0;padding:15px 3px;border-top:1px solid rgba(16,36,31,.08)}
-  @media(max-width:760px){.finance-shell{padding:28px 16px 60px}.finance-header{align-items:start;flex-direction:column}.finance-identity{justify-items:start}.finance-summary{grid-template-columns:repeat(2,1fr)}.finance-card{padding:17px}.finance-row{align-items:flex-start;flex-wrap:wrap}.finance-row em{max-width:150px}}
+  .finance-quick-nav{position:sticky;top:62px;z-index:4;display:flex;gap:7px;overflow:auto;margin:0 0 22px;padding:10px 0;background:var(--paper);border-bottom:1px solid rgba(16,36,31,.1)}.finance-quick-nav a{white-space:nowrap;padding:9px 12px;border:1px solid rgba(16,36,31,.11);border-radius:999px;background:#fff;color:var(--muted);font:700 .68rem/1 system-ui,sans-serif}.finance-quick-nav a:hover{background:var(--night);color:#fff}.workflow-section{margin:0 0 22px;padding:22px;border-radius:20px;background:#f7faf6;border:1px solid rgba(16,36,31,.08)}.workflow-section-head{display:flex;justify-content:space-between;align-items:start;gap:18px;padding:2px 2px 5px}.workflow-section-head h2{margin:9px 0 7px;font:500 clamp(1.8rem,3vw,2.5rem)/1 Georgia,serif}.workflow-section-head p{max-width:690px;margin:0;color:var(--muted);font:.8rem/1.55 system-ui,sans-serif}.workflow-badge{padding:8px 10px;border-radius:999px;background:#dff2d2;color:#27643f;font:700 .62rem/1 system-ui,sans-serif;white-space:nowrap}.workflow-section>*:not(.workflow-section-head){margin-left:0;margin-right:0}.workflow-section .manual-voucher,.workflow-section .supplier-quick,.workflow-section .bank-quick,.workflow-section .receivables-payables,.workflow-section .vat-quick,.workflow-section .payroll-quick{background:#fff}.reports-section{background:#fff}.controlled-workflows{margin:0 0 26px;border:1px solid rgba(16,36,31,.1);border-radius:20px;background:#fff;overflow:hidden}.controlled-workflows>summary{display:flex;justify-content:space-between;align-items:center;gap:18px;padding:24px;cursor:pointer;list-style:none}.controlled-workflows>summary::-webkit-details-marker{display:none}.controlled-workflows>summary strong,.controlled-workflows>summary small{display:block}.controlled-workflows>summary strong{margin-top:7px;font:500 1.7rem/1 Georgia,serif}.controlled-workflows>summary small{margin-top:7px;color:var(--muted);font:.76rem/1.45 system-ui,sans-serif}.controlled-workflows>summary>b{padding:9px 12px;border-radius:8px;background:var(--night);color:#fff;font:700 .68rem/1 system-ui,sans-serif}.controlled-workflows[open]>summary{background:#f3f7f1;border-bottom:1px solid rgba(16,36,31,.1)}.controlled-workflows[open]>summary>b{background:var(--accent)}.controlled-workflows-body{padding:2px 22px 22px}.controlled-workflows-body>section{margin-left:0;margin-right:0}
+  @media(max-width:760px){.finance-shell{padding:28px 16px 60px}.finance-header{align-items:start;flex-direction:column}.finance-identity{justify-items:start}.finance-summary{grid-template-columns:repeat(2,1fr)}.finance-card{padding:17px}.finance-row{align-items:flex-start;flex-wrap:wrap}.finance-row em{max-width:150px}.finance-quick-nav{top:58px}.workflow-section{padding:16px}.workflow-section-head{display:block}.workflow-badge{display:inline-flex;margin-top:12px}.controlled-workflows>summary{padding:20px 16px}.controlled-workflows-body{padding:2px 10px 14px}}
   @media(max-width:480px){.finance-summary{grid-template-columns:1fr}}
 </style>
