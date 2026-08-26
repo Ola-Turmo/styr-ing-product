@@ -12,6 +12,11 @@ import {
 
 const periodPattern = /^\d{4}-(0[1-9]|1[0-2])$/;
 const datePattern = /^\d{4}-\d{2}-\d{2}$/;
+const validIsoDate = (value: string) => {
+  if (!datePattern.test(value)) return false;
+  const parsed = new Date(`${value}T00:00:00Z`);
+  return !Number.isNaN(parsed.valueOf()) && parsed.toISOString().slice(0, 10) === value;
+};
 const asMinor = (value: unknown) =>
   Number.isSafeInteger(Number(value)) && Number(value) >= 0
     ? Number(value)
@@ -940,7 +945,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
           ? (row.lines as Record<string, unknown>[])
           : [];
         if (
-          !datePattern.test(voucherDate) ||
+          !validIsoDate(voucherDate) ||
           !periodPattern.test(period) ||
           !description ||
           description.length > 200 ||
@@ -2096,8 +2101,8 @@ export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
       if (
         !invoiceNumber ||
         !accountId ||
-        !datePattern.test(issueDate) ||
-        (dueDate && !datePattern.test(dueDate))
+        !validIsoDate(issueDate) ||
+        (dueDate && !validIsoDate(dueDate))
       )
         return json({ error: "invoice_fields_invalid" }, { status: 400 });
       if (
@@ -2299,7 +2304,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
       const unitPriceMinor = asMinor(value?.unitPriceMinor);
       const vatRate = Number(value?.vatRate ?? 25);
       const dueDays = Number(value?.dueDays ?? 14);
-      if (!accountId || !name || !description || !datePattern.test(nextIssueDate) || !["month", "quarter", "year"].includes(interval) || !Number.isFinite(quantity) || quantity <= 0 || quantity > 100000 || unitPriceMinor === null || unitPriceMinor <= 0 || ![0, 15, 25].includes(vatRate) || !Number.isInteger(dueDays) || dueDays < 0 || dueDays > 365)
+      if (!accountId || !name || !description || !validIsoDate(nextIssueDate) || !["month", "quarter", "year"].includes(interval) || !Number.isFinite(quantity) || quantity <= 0 || quantity > 100000 || unitPriceMinor === null || unitPriceMinor <= 0 || ![0, 15, 25].includes(vatRate) || !Number.isInteger(dueDays) || dueDays < 0 || dueDays > 365)
         return json({ error: "recurring_template_fields_invalid", detail: "Fyll ut kunde, navn, dato, beløp og gyldig intervall." }, { status: 400 });
       if (!(await db.prepare("SELECT id FROM crm_accounts WHERE id=? AND board_id=? AND stage NOT IN ('lost')").bind(accountId, boardId).first())) return json({ error: "customer_not_found" }, { status: 400 });
       const templateId = id("rit");
@@ -2321,7 +2326,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
       const template = await db.prepare("SELECT * FROM recurring_invoice_templates WHERE id=? AND board_id=? AND status='active'").bind(templateId, boardId).first<Record<string, unknown>>();
       if (!template) return json({ error: "recurring_template_not_active_or_found" }, { status: 409 });
       const issueDate = String(value?.issueDate || template.next_issue_date || "").trim();
-      if (!datePattern.test(issueDate)) return json({ error: "recurring_issue_date_invalid" }, { status: 400 });
+      if (!validIsoDate(issueDate)) return json({ error: "recurring_issue_date_invalid" }, { status: 400 });
       const existingGeneration = await db.prepare("SELECT g.id,g.sales_invoice_id,i.invoice_number FROM recurring_invoice_generations g JOIN sales_invoices i ON i.id=g.sales_invoice_id WHERE g.template_id=? AND g.board_id=? AND g.issue_date=?").bind(templateId, boardId, issueDate).first<Record<string, unknown>>();
       if (existingGeneration) return json({ ok: true, action, templateId, generationId: existingGeneration.id, invoiceId: existingGeneration.sales_invoice_id, invoiceNumber: existingGeneration.invoice_number, idempotent: true, status: "draft" });
       const quantity = Number(template.quantity || 1), unitPriceMinor = Number(template.unit_price_minor || 0), vatRate = Number(template.vat_rate || 0), netMinor = Math.round(quantity * unitPriceMinor), vatMinor = Math.round(netMinor * vatRate / 100), totalMinor = netMinor + vatMinor;
@@ -2536,7 +2541,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
       if (
         !invoiceId ||
         !number ||
-        !datePattern.test(issueDate) ||
+        !validIsoDate(issueDate) ||
         !description ||
         amountMinor === null ||
         amountMinor <= 0 ||
@@ -2977,7 +2982,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
       ? (voucher.lines as Record<string, unknown>[])
       : [];
     if (
-      !datePattern.test(voucherDate) ||
+      !validIsoDate(voucherDate) ||
       !periodPattern.test(period) ||
       !description ||
       description.length > 200 ||
