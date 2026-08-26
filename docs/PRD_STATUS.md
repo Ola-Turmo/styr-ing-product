@@ -108,6 +108,13 @@ Betalinger kan kobles til åpne kunde-/leverandørposter fra samme regnskapsflat
 - Deploy: `https://79e3e4a0.styr-ing.pages.dev` → `https://styr.ing/` (Cloudflare Pages `main`).
 - Verifisert med `npm run verify:live` (120 kontroller), HTTP 200 på landing, `/finance/` og `/api/health`.
 
+## Siste periodelåsingsforbedring (2026-08-27)
+
+- Godkjenning av periodeavslutning sammenligner nå den lagrede kontrollsnapshothashen med dagens regnskapsdata før perioden kan låses. Nye eller endrede bilag, åpne poster, MVA-grunnlag, lønn, avskrivninger, forslag eller SAF-T-kontroll krever en ny kontroll.
+- `prepare_period_close` leser tilbake og returnerer den faktiske persisted closure-ID-en etter UPSERT. Dette gjør trygg retry entydig også når samme periode åpnes i flere faner.
+- Deploy: `https://51c0d6c4.styr-ing.pages.dev` → `https://styr.ing/` (Cloudflare Pages `main`).
+- Verifisert med `npm run verify`, `npm run verify:live` (120 kontroller), HTTP 200 på landing, `/finance/` og `/api/health`.
+
 ## Siste kontoaktiveringsforbedring (2026-08-26)
 
 - Invitasjon på styremedlemsiden bruker nå et inline-skjema med e-post, navn, rolle, tydelig 24-timers utløp og kopieringsknapp. Nettleserens flertrinns `prompt`-dialoger er fjernet.
