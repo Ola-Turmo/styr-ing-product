@@ -27,7 +27,7 @@ Dette er en implementasjonsstatus, ikke en påstand om regulatorisk godkjenning.
 | Leverandørflyt, mottak og 3-veis match | Intern | `functions/api/procurement.ts`, `SupplierInvoiceQuick`; sammendrag og UI viser restsaldo etter delbetaling og betaling krever godkjent/anvist faktura. Ordre, mottak, leverandørfaktura og EHF avviser kalender-ugyldige datoer server-side |
 | EHF-grunnlag, kontroll og UBL-eksport | Intern klargjøring | `functions/api/procurement.ts`, `EHFInboxQuick`; linjer, MVA og totaler valideres mot hverandre, og validerte dokumenter kan lastes ned som UBL 2.1 / Peppol BIS Billing 3.0 XML. PEPPOL-transport er ikke konfigurert. |
 | Resultat, balanse, saldobalanse og hovedbok | Intern | `finance.ts`, `AccountingReportsQuick` |
-| SAF-T Financial 1.3 eksport | Intern eksport | XML/CSV kan genereres; innsending er ikke aktivert |
+| SAF-T Financial 1.3 eksport | Intern eksport | Skatteetaten-formatert 1.30 XML med firmaprofil, periodekriterier, hovedbokssaldoer, journal-totalsummer og posterte bilag; innsending er ikke aktivert |
 | Årsoppgjørsnoter og årsregnskap-forberedelse | Intern forberedelse | `StatutoryNotesQuick`, `AnnualAccountsQuick` |
 | Eiendeler med bok/tax-avskrivning | Intern kontroll | `functions/api/assets.ts`, `AssetRegisterQuick`; anskaffelsesdato valideres som faktisk kalenderdato før lagring |
 | Intercompany og valuta/agio | Intern kontroll | `finance.ts`, `IntercompanyQuick`, `FxLedgerQuick` |

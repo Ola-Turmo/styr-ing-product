@@ -56,24 +56,42 @@ async function buildSafT(
   from: string,
   to: string,
 ) {
-  const accounts = (
-    await db
+  const [profile, accountRows, lineRows] = await Promise.all([
+    db
       .prepare(
-        "SELECT code,name,account_type,vat_code FROM ledger_accounts WHERE board_id = ? ORDER BY code",
+        "SELECT p.*,b.name board_name,b.org_number board_org_number FROM boards b LEFT JOIN accounting_profiles p ON p.board_id=b.id WHERE b.id=?",
       )
       .bind(boardId)
-      .all()
-  ).results as Record<string, unknown>[];
-  const lines = (
-    await db
+      .first<Record<string, unknown>>(),
+    db
       .prepare(
-        `SELECT v.id AS voucher_id,v.voucher_number,v.voucher_date,v.period,v.description,l.id AS line_id,l.debit_minor,l.credit_minor,l.vat_code,a.code,a.name
-    FROM vouchers v JOIN voucher_lines l ON l.voucher_id=v.id JOIN ledger_accounts a ON a.id=l.account_id
-    WHERE v.board_id=? AND v.status='posted' AND v.period BETWEEN ? AND ? ORDER BY v.voucher_number,l.id`,
+        `SELECT a.code,a.name,a.account_type,a.vat_code,
+          COALESCE(SUM(CASE WHEN v.period < ? THEN l.debit_minor ELSE 0 END),0) AS opening_debit_minor,
+          COALESCE(SUM(CASE WHEN v.period < ? THEN l.credit_minor ELSE 0 END),0) AS opening_credit_minor,
+          COALESCE(SUM(CASE WHEN v.period <= ? THEN l.debit_minor ELSE 0 END),0) AS closing_debit_minor,
+          COALESCE(SUM(CASE WHEN v.period <= ? THEN l.credit_minor ELSE 0 END),0) AS closing_credit_minor
+        FROM ledger_accounts a
+        LEFT JOIN voucher_lines l ON l.account_id=a.id
+        LEFT JOIN vouchers v ON v.id=l.voucher_id AND v.board_id=a.board_id AND v.status='posted'
+        WHERE a.board_id=? AND a.active=1
+        GROUP BY a.id ORDER BY a.code`,
+      )
+      .bind(from, from, to, to, boardId)
+      .all(),
+    db
+      .prepare(
+        `SELECT v.id AS voucher_id,v.voucher_number,v.voucher_date,v.period,v.description,
+          l.id AS line_id,l.debit_minor,l.credit_minor,a.code,a.name
+        FROM vouchers v JOIN voucher_lines l ON l.voucher_id=v.id
+        JOIN ledger_accounts a ON a.id=l.account_id
+        WHERE v.board_id=? AND v.status='posted' AND v.period BETWEEN ? AND ?
+        ORDER BY v.period,v.voucher_number,l.id`,
       )
       .bind(boardId, from, to)
-      .all()
-  ).results as Record<string, unknown>[];
+      .all(),
+  ]);
+  const accounts = accountRows.results as Record<string, unknown>[];
+  const lines = lineRows.results as Record<string, unknown>[];
   const esc = (value: unknown) =>
     String(value ?? "")
       .replace(/&/g, "&amp;")
@@ -82,6 +100,26 @@ async function buildSafT(
       .replace(/"/g, "&quot;")
       .replace(/'/g, "&apos;");
   const amount = (value: unknown) => (Number(value || 0) / 100).toFixed(2);
+  const monthParts = (period: string) => ({ year: Number(period.slice(0, 4)), month: Number(period.slice(5, 7)) });
+  const startParts = monthParts(from);
+  const endParts = monthParts(to);
+  const createdDate = new Date().toISOString().slice(0, 10);
+  const sellerName = String(profile?.legal_name || profile?.board_name || "Styr.ing-kunde");
+  const registrationNumber = String(profile?.org_number || profile?.board_org_number || "000000000");
+  const street = String(profile?.address_line1 || "Ikke angitt");
+  const postalCode = String(profile?.postal_code || "0000");
+  const city = String(profile?.city || "Ikke angitt");
+  const countryCode = String(profile?.country_code || "NO").toUpperCase();
+  const email = profile?.email ? `<Email>${esc(profile.email)}</Email>` : "";
+  const taxRegistration = profile?.vat_registered ? `<TaxRegistration><TaxRegistrationNumber>${esc(registrationNumber)}MVA</TaxRegistrationNumber></TaxRegistration>` : "";
+  const bankAccount = profile?.bank_account ? `<BankAccount><BankAccountNumber>${esc(profile.bank_account)}</BankAccountNumber><BankAccountName>${esc(sellerName)}</BankAccountName><CurrencyCode>NOK</CurrencyCode></BankAccount>` : "";
+  const groupingCategory = (accountType: unknown) => ({
+    asset: "balanseverdiForOmloepsmiddel",
+    liability: "kortsiktigGjeld",
+    equity: "egenkapital",
+    revenue: "driftsinntekt",
+    expense: "driftskostnad",
+  } as Record<string, string>)[String(accountType)] || "NA";
   const grouped = new Map<string, Record<string, unknown>[]>();
   for (const line of lines) {
     const key = String(line.voucher_id);
@@ -92,10 +130,18 @@ async function buildSafT(
   const transactions = [...grouped.values()]
     .map((voucherLines) => {
       const first = voucherLines[0];
-      return `<Transaction><TransactionID>${esc(first.voucher_number)}</TransactionID><TransactionDate>${esc(first.voucher_date)}</TransactionDate><Description>${esc(first.description)}</Description>${voucherLines.map((line) => `<Line><RecordID>${esc(line.line_id)}</RecordID><AccountID>${esc(line.code)}</AccountID><AccountDescription>${esc(line.name)}</AccountDescription><DebitAmount>${amount(line.debit_minor)}</DebitAmount><CreditAmount>${amount(line.credit_minor)}</CreditAmount>${line.vat_code ? `<TaxCode>${esc(line.vat_code)}</TaxCode>` : ""}</Line>`).join("")}</Transaction>`;
+      const periodParts = monthParts(String(first.period));
+      return `<Transaction><TransactionID>${esc(first.voucher_number)}</TransactionID><Period>${periodParts.month}</Period><PeriodYear>${periodParts.year}</PeriodYear><TransactionDate>${esc(first.voucher_date)}</TransactionDate><Description>${esc(first.description || "Bokføring")}</Description><SystemEntryDate>${esc(first.voucher_date)}</SystemEntryDate><GLPostingDate>${esc(first.voucher_date)}</GLPostingDate><SystemID>${esc(first.voucher_id)}</SystemID>${voucherLines.map((line) => `<Line><RecordID>${esc(line.line_id)}</RecordID><AccountID>${esc(line.code)}</AccountID><Description>${esc(line.name || "Bokføringslinje")}</Description>${Number(line.debit_minor || 0) > 0 ? `<DebitAmount><Amount>${amount(line.debit_minor)}</Amount></DebitAmount>` : `<CreditAmount><Amount>${amount(line.credit_minor)}</Amount></CreditAmount>`}</Line>`).join("")}</Transaction>`;
     })
     .join("");
-  const xml = `<?xml version="1.0" encoding="UTF-8"?><AuditFile xmlns="urn:StandardAuditFile-Taxation-Financial:NO"><Header><FileVersion>1.3</FileVersion><AuditFileVersion>1.0</AuditFileVersion><PeriodStart>${esc(from)}</PeriodStart><PeriodEnd>${esc(to)}</PeriodEnd><CurrencyCode>NOK</CurrencyCode><SelectionCriteria>${esc(`${from}:${to}`)}</SelectionCriteria></Header><MasterFiles><GeneralLedgerAccounts>${accounts.map((a) => `<Account><AccountID>${esc(a.code)}</AccountID><AccountDescription>${esc(a.name)}</AccountDescription><AccountType>${esc(a.account_type)}</AccountType>${a.vat_code ? `<TaxCode>${esc(a.vat_code)}</TaxCode>` : ""}</Account>`).join("")}</GeneralLedgerAccounts></MasterFiles><GeneralLedgerEntries><Journal><JournalID>GENERAL</JournalID>${transactions}</Journal></GeneralLedgerEntries></AuditFile>`;
+  const totalDebit = lines.reduce((sum, line) => sum + Number(line.debit_minor || 0), 0);
+  const totalCredit = lines.reduce((sum, line) => sum + Number(line.credit_minor || 0), 0);
+  const accountXml = accounts.map((a) => {
+    const openingNet = Number(a.opening_debit_minor || 0) - Number(a.opening_credit_minor || 0);
+    const closingNet = Number(a.closing_debit_minor || 0) - Number(a.closing_credit_minor || 0);
+    return `<Account><AccountID>${esc(a.code)}</AccountID><AccountDescription>${esc(a.name)}</AccountDescription><GroupingCategory>${groupingCategory(a.account_type)}</GroupingCategory><GroupingCode>${esc(a.code)}</GroupingCode><AccountType>GL</AccountType>${openingNet >= 0 ? `<OpeningDebitBalance>${amount(openingNet)}</OpeningDebitBalance>` : `<OpeningCreditBalance>${amount(Math.abs(openingNet))}</OpeningCreditBalance>`}${closingNet >= 0 ? `<ClosingDebitBalance>${amount(closingNet)}</ClosingDebitBalance>` : `<ClosingCreditBalance>${amount(Math.abs(closingNet))}</ClosingCreditBalance>`}</Account>`;
+  }).join("");
+  const xml = `<?xml version="1.0" encoding="UTF-8"?><AuditFile xmlns="urn:StandardAuditFile-Taxation-Financial:NO"><Header><AuditFileVersion>1.30</AuditFileVersion><AuditFileCountry>NO</AuditFileCountry><AuditFileDateCreated>${createdDate}</AuditFileDateCreated><SoftwareCompanyName>Styr.ing</SoftwareCompanyName><SoftwareID>styr.ing-regnskap</SoftwareID><SoftwareVersion>1.0.0</SoftwareVersion><Company><RegistrationNumber>${esc(registrationNumber)}</RegistrationNumber><Name>${esc(sellerName)}</Name><Address><StreetName>${esc(street)}</StreetName><City>${esc(city)}</City><PostalCode>${esc(postalCode)}</PostalCode><Country>${esc(countryCode)}</Country></Address><Contact><ContactPerson><FirstName>Styr.ing</FirstName><LastName>support</LastName></ContactPerson>${email}</Contact>${taxRegistration}${bankAccount}</Company><DefaultCurrencyCode>NOK</DefaultCurrencyCode><SelectionCriteria><PeriodStart>${startParts.month}</PeriodStart><PeriodStartYear>${startParts.year}</PeriodStartYear><PeriodEnd>${endParts.month}</PeriodEnd><PeriodEndYear>${endParts.year}</PeriodEndYear></SelectionCriteria><HeaderComment>SAF-T Financial 1.30 eksport av posterte bilag for valgt periode.</HeaderComment><TaxAccountingBasis>A</TaxAccountingBasis></Header><MasterFiles><GeneralLedgerAccounts>${accountXml}</GeneralLedgerAccounts></MasterFiles><GeneralLedgerEntries><NumberOfEntries>${grouped.size}</NumberOfEntries><TotalDebit>${amount(totalDebit)}</TotalDebit><TotalCredit>${amount(totalCredit)}</TotalCredit><Journal><JournalID>GENERAL</JournalID><Description>Hovedbok</Description><Type>GL</Type>${transactions}</Journal></GeneralLedgerEntries></AuditFile>`;
   return { xml, checksum: await sha256(xml), rowCount: lines.length };
 }
 
