@@ -29,6 +29,7 @@ Dette er en implementasjonsstatus, ikke en påstand om regulatorisk godkjenning.
 | Førstegangsoppsett for små virksomheter: kontoplan, bilagsimport og åpne perioder | Intern | `AccountingSetupQuick`, nedlastbar CSV-mal med virksomhetens konto-ID-er, `finance.ts` (`seed_smb_chart`, `import_vouchers`, `create_account`, `create_period`), balansekontroll, låste perioder, ekstern referanse-idempotens, autorisert skriverolle og audit-logg |
 | Godkjente prosjekttimer → salgsfakturautkast | Intern | `functions/api/field.ts` (`convert_invoice_draft`), `src/pages/field.astro`, kobling via `time_entries.invoice_draft_id`, oppretter `sales_invoices`/`sales_invoice_lines` med MVA og kontrollert review-steg; sending/EHF er fortsatt deaktivert |
 | Hash-verifiserbar audit-kjede | Intern | `functions/api/_lib.ts`, `functions/api/audit.ts`, `audit_log.prev_hash/event_hash`, integritetsstatus i `/audit` |
+| Invitasjon og kontoaktivering | Intern | `functions/api/auth.ts`, `src/pages/activate.astro`; hash-lagret engangstoken, 24-timers utløp, årsak for ugyldig/brukt/utløpt lenke, eldre aktive invitasjoner til samme e-post ugyldiggjøres ved ny invitasjon |
 
 ## Adaptere som ikke skal fremstilles som live
 
@@ -50,7 +51,7 @@ CRM/revenue, styre/govenance, HCM, IT, felt, HMS/ESG, treasury, kort, risiko, co
 - Produksjon `https://styr.ing/`: landing, `/finance/`, `/app/finance/`, `/login`, `/api/health` — HTTP 200
 - Produksjonssammendrag: balanserte bilag, perioder, bank-/innkjøps-/lønnskontroller returnerer JSON fra D1
 - Produksjonssmoke: `LIVE API SMOKE: PASS (115 checks against https://styr.ing)` etter siste deploy, inkludert strukturkontroll for fakturaprofil og fakturaliste
-- Siste deploy: Cloudflare Pages `https://cea8e971.styr-ing.pages.dev` (produksjonsdomene `https://styr.ing/`), inkluderer bilagsarkiv på R2, globalt søk, idempotent prosjekttimer → salgsfakturakonvertering, direkte fakturadetaljer via `invoiceId`, kreditnota i hovedbokskøen, kreditnota-bevisst restsaldo/betalingskontroll, dobbeltføringssikker manuell betaling for kunde- og leverandørfaktura, manuell leverandørbetaling i hurtig- og full innkjøpsflyt, restsaldo-bevisste bankmatch-forslag, korrekt inngående 15 % MVA, krav om anvisning før leverandørbetaling, restsaldo-bevisst likviditetsprognose, fungerende EHF-grunnlagsregistrering med NOK-standard og valutavelger og norsk fakturadokument med profilert godkjenning, bedrift/privatkunde, SHA-256-snapshot og utskrift/PDF, SMB-fokusert regnskapsforside, kildecommit `737bd18`
+- Siste deploy: Cloudflare Pages `https://395b92a9.styr-ing.pages.dev` (produksjonsdomene `https://styr.ing/`), inkluderer bilagsarkiv på R2, globalt søk, idempotent prosjekttimer → salgsfakturakonvertering, direkte fakturadetaljer via `invoiceId`, kreditnota i hovedbokskøen, kreditnota-bevisst restsaldo/betalingskontroll, dobbeltføringssikker manuell betaling for kunde- og leverandørfaktura, manuell leverandørbetaling i hurtig- og full innkjøpsflyt, restsaldo-bevisste bankmatch-forslag, korrekt inngående 15 % MVA, krav om anvisning før leverandørbetaling, restsaldo-bevisst likviditetsprognose, fungerende EHF-grunnlagsregistrering med NOK-standard og valutavelger og norsk fakturadokument med profilert godkjenning, bedrift/privatkunde, SHA-256-snapshot og utskrift/PDF, SMB-fokusert regnskapsforside og diagnostiserbar engangsaktivering, kildecommit `2e3f539`
 
 ## Brukerflyt — månedsavslutning
 
@@ -62,7 +63,7 @@ Betalinger kan kobles til åpne kunde-/leverandørposter fra samme regnskapsflat
 
 ## Neste leveranse før reell kunde
 
-1. Koble og godkjenne én konkret innloggings-/e-postleverandør med engangslenker som testes med klokke, replay og utløp.
+1. Koble og godkjenne én konkret e-postleverandør; intern engangsaktivering, klokke-/utløpsstatus og replay-avvisning er implementert, men utsending og leverandør-overvåking mangler.
 2. Etabler Stripe-produkter/priser, skatt, abonnementsvilkår og webhook-secret før Billing aktiveres.
 3. Velg én bank- og én EHF-partner; implementer adapterkontrakter i sandbox før produksjon.
 4. Fullfør juridisk godkjenning av personvern, DPA, vilkår, retention og DPIA.
