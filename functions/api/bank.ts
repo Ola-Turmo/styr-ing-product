@@ -11,18 +11,18 @@ async function candidates(db: D1Database, boardId: string, transaction: Record<s
   const absoluteAmount = Math.abs(Number(transaction.amount_minor || 0));
   const reference = `${text(transaction.external_reference, 120)} ${text(transaction.description, 240)} ${text(transaction.counterparty, 160)}`.toLowerCase();
   const [sales, suppliers, cards] = await Promise.all([
-    db.prepare("SELECT id,invoice_number,description,total_minor FROM sales_invoices WHERE board_id=? AND status NOT IN ('cancelled') AND ABS(total_minor)=?").bind(boardId, absoluteAmount).all(),
-    db.prepare("SELECT id,invoice_number,supplier_name,amount_minor FROM supplier_invoices WHERE board_id=? AND status NOT IN ('paid') AND ABS(amount_minor)=?").bind(boardId, absoluteAmount).all(),
+    db.prepare("SELECT i.id,i.invoice_number,i.description,i.total_minor,i.paid_minor,COALESCE((SELECT SUM(c.total_minor) FROM sales_credit_notes c WHERE c.sales_invoice_id=i.id AND c.board_id=i.board_id AND c.status='posted'),0) credited_minor FROM sales_invoices i WHERE i.board_id=? AND i.status NOT IN ('cancelled') AND MAX(0,ABS(i.total_minor)-ABS(i.paid_minor)-COALESCE((SELECT SUM(c.total_minor) FROM sales_credit_notes c WHERE c.sales_invoice_id=i.id AND c.board_id=i.board_id AND c.status='posted'),0))=?").bind(boardId, absoluteAmount).all(),
+    db.prepare("SELECT id,invoice_number,supplier_name,amount_minor,paid_minor FROM supplier_invoices WHERE board_id=? AND status NOT IN ('paid') AND MAX(0,ABS(amount_minor)-ABS(paid_minor))=?").bind(boardId, absoluteAmount).all(),
     db.prepare("SELECT id,merchant,amount_minor,transaction_date FROM card_transactions WHERE board_id=? AND status NOT IN ('reconciled','rejected') AND ABS(amount_minor)=?").bind(boardId, absoluteAmount).all(),
   ]);
   const result: Candidate[] = [];
   for (const row of (sales.results || []) as Record<string, unknown>[]) {
     const invoiceNumber = text(row.invoice_number, 80); const hit = invoiceNumber && reference.includes(invoiceNumber.toLowerCase());
-    result.push({ entityType: 'sales_invoice', entityId: text(row.id), reference: invoiceNumber, description: text(row.description), amountMinor: Number(row.total_minor || 0), score: hit ? 100 : 50, confidence: hit ? 'exact' : 'strong' });
+    result.push({ entityType: 'sales_invoice', entityId: text(row.id), reference: invoiceNumber, description: text(row.description), amountMinor: Math.max(0, Number(row.total_minor || 0) - Number(row.paid_minor || 0) - Number(row.credited_minor || 0)), score: hit ? 100 : 50, confidence: hit ? 'exact' : 'strong' });
   }
   for (const row of (suppliers.results || []) as Record<string, unknown>[]) {
     const invoiceNumber = text(row.invoice_number, 80); const supplier = text(row.supplier_name, 160); const hit = (invoiceNumber && reference.includes(invoiceNumber.toLowerCase())) || (supplier && reference.includes(supplier.toLowerCase()));
-    result.push({ entityType: 'supplier_invoice', entityId: text(row.id), reference: invoiceNumber, description: supplier, amountMinor: Number(row.amount_minor || 0), score: hit ? 100 : 50, confidence: hit ? 'exact' : 'strong' });
+    result.push({ entityType: 'supplier_invoice', entityId: text(row.id), reference: invoiceNumber, description: supplier, amountMinor: Math.max(0, Number(row.amount_minor || 0) - Number(row.paid_minor || 0)), score: hit ? 100 : 50, confidence: hit ? 'exact' : 'strong' });
   }
   for (const row of (cards.results || []) as Record<string, unknown>[]) {
     const merchant = text(row.merchant, 160); const hit = merchant && reference.includes(merchant.toLowerCase());
