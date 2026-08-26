@@ -17,7 +17,7 @@
     <label class="line-description">Tekst<input data-field="description" maxlength="200" required placeholder="Hva gjelder linjen?" /></label>
     <label>Debet (kr)<input data-field="debit" type="number" min="0" step="0.01" inputmode="decimal" value="0" /></label>
     <label>Kredit (kr)<input data-field="credit" type="number" min="0" step="0.01" inputmode="decimal" value="0" /></label>
-    <label>MVA<select data-field="vatCode"><option value="">Ingen</option><option value="1">Inngående 25 %</option><option value="3">Utgående 25 %</option><option value="3_15">Utgående 15 %</option><option value="0">Unntatt / 0 %</option></select></label>
+    <label>MVA<select data-field="vatCode"><option value="">Ingen</option><option value="1">Inngående 25 %</option><option value="1_15">Inngående 15 %</option><option value="1_12">Inngående 12 %</option><option value="3">Utgående 25 %</option><option value="3_15">Utgående 15 %</option><option value="3_12">Utgående 12 %</option><option value="0">Unntatt / 0 %</option></select></label>
     <button type="button" data-remove class="remove-line" aria-label="Fjern linje">×</button>
   </div>
 </template>

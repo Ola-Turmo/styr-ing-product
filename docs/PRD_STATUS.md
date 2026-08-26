@@ -20,7 +20,7 @@ Dette er en implementasjonsstatus, ikke en påstand om regulatorisk godkjenning.
 | Dobbeltføringssikker manuell betaling | Intern | `finance.ts` og `procurement.ts` avviser gjenbruk av betalingsreferanse med annet beløp og returnerer idempotent resultat ved trygg retry; D1-indeks `uq_invoice_payments_manual_reference` |
 | Kontrollert faktura → hovedbok | Intern | `PostingQueueQuick`, `functions/api/postings.ts`: kildehash, konto-/MVA-valg, separat godkjenning, idempotent bilagspostering og audit-logg; lønnskjøringer krever aktiv liabilitykonto 2600/260x for forskuddstrekk |
 | Bankimport, matchforslag og manuell bokføring | Intern | `functions/api/bank.ts`, `BankReconciliationQuick`; CSV-importen støtter norske datoer, desimalkomma/tusenskilletegn, quoted-felter og validerer linjer før opplasting. API-et avviser også kalender-ugyldige datoer server-side |
-| MVA-beregning, snapshot og kontroll | Intern | `functions/api/mva.ts`, `VatPeriodQuick`; inngående 15 % (`1_15`) klassifiseres korrekt |
+| MVA-beregning, snapshot og kontroll | Intern | `functions/api/mva.ts`, `VatPeriodQuick`; inngående og utgående 12 %/15 %/25 % klassifiseres med konsekvente koder (`1_12`, `1_15`, `1`, `3_12`, `3_15`, `3`) |
 | Lønnskjøring og feriepenger/OTP-kontroller | Intern | `functions/api/payroll.ts`, `PayrollQuick`; aktive ansatte registreres i personregisteret, og hver lønnskjøring valideres og lagres med brutto/skattetrekk per ansatt. Altinn, skattekort, NAV og utbetaling er ikke koblet til eksterne tjenester. |
 | Leverandørflyt, mottak og 3-veis match | Intern | `functions/api/procurement.ts`, `SupplierInvoiceQuick`; sammendrag og UI viser restsaldo etter delbetaling og betaling krever godkjent/anvist faktura. Ordre, mottak, leverandørfaktura og EHF avviser kalender-ugyldige datoer server-side |
 | EHF-grunnlag, kontroll og UBL-eksport | Intern klargjøring | `functions/api/procurement.ts`, `EHFInboxQuick`; linjer, MVA og totaler valideres mot hverandre, og validerte dokumenter kan lastes ned som UBL 2.1 / Peppol BIS Billing 3.0 XML. PEPPOL-transport er ikke konfigurert. |
@@ -84,3 +84,9 @@ Betalinger kan kobles til åpne kunde-/leverandørposter fra samme regnskapsflat
 
 - CSV-importen i førstegangsoppsettet støtter nå quoted-felter, semikolon/komma som skilletegn og norske tall med tusenskilletegn/desimalkomma. Dette gjør åpningsbalanse og historikkimport mer robust for små norske virksomheter uten å gjette konto eller MVA.
 - Verifisert med `npx tsc --noEmit`, `npm run verify:api`, `npm run verify:source`, `npm run build` og `git diff --check`.
+
+## Siste MVA-forbedring (2026-08-26)
+
+- Norsk 12 % MVA støttes nå gjennom hele den interne regnskapsflyten: salgsfaktura, leverandørfaktura, EHF-grunnlag, gjentakende faktura, prosjektfakturering, manuelle bilag og CSV-import.
+- Inngående og utgående MVA bruker separate koder, slik at salg ikke feilklassifiseres som kjøp i MVA-grunnlaget.
+- Gjeldende satser er kontrollert mot Skatteetatens publiserte satsoversikt. Ekstern innsending av MVA-melding er fortsatt ikke konfigurert.

@@ -1002,7 +1002,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
             (d === 0 && c === 0) ||
             (d > 0 && c > 0) ||
             (vatCode !== null &&
-              !["0", "1", "3", "3_15", "3C"].includes(vatCode))
+              !["0", "1", "1_12", "1_15", "3", "3_12", "3_15", "3C"].includes(vatCode))
           )
             return json(
               { error: "voucher_import_line_invalid", row: rowIndex + 1 },
@@ -2153,11 +2153,13 @@ export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
         const vatRate = Number(line.vatRate ?? line.vat_rate ?? 0);
         const vatCode = line.vatCode
           ? String(line.vatCode).trim()
-          : vatRate === 15
-            ? "3_15"
-            : vatRate === 25
-              ? "3"
-              : null;
+          : vatRate === 12
+            ? "3_12"
+            : vatRate === 15
+              ? "3_15"
+              : vatRate === 25
+                ? "3"
+                : null;
         const lineAccountId =
           String(line.accountId ?? line.account_id ?? "").trim() || null;
         if (
@@ -2167,7 +2169,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
           quantity > 100000 ||
           !Number.isSafeInteger(unitPriceMinor) ||
           unitPriceMinor < 0 ||
-          ![0, 15, 25].includes(vatRate)
+          ![0, 12, 15, 25].includes(vatRate)
         )
           return json(
             { error: "invoice_line_invalid", lineNumber: index + 1 },
@@ -2304,11 +2306,11 @@ export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
       const unitPriceMinor = asMinor(value?.unitPriceMinor);
       const vatRate = Number(value?.vatRate ?? 25);
       const dueDays = Number(value?.dueDays ?? 14);
-      if (!accountId || !name || !description || !validIsoDate(nextIssueDate) || !["month", "quarter", "year"].includes(interval) || !Number.isFinite(quantity) || quantity <= 0 || quantity > 100000 || unitPriceMinor === null || unitPriceMinor <= 0 || ![0, 15, 25].includes(vatRate) || !Number.isInteger(dueDays) || dueDays < 0 || dueDays > 365)
+      if (!accountId || !name || !description || !validIsoDate(nextIssueDate) || !["month", "quarter", "year"].includes(interval) || !Number.isFinite(quantity) || quantity <= 0 || quantity > 100000 || unitPriceMinor === null || unitPriceMinor <= 0 || ![0, 12, 15, 25].includes(vatRate) || !Number.isInteger(dueDays) || dueDays < 0 || dueDays > 365)
         return json({ error: "recurring_template_fields_invalid", detail: "Fyll ut kunde, navn, dato, beløp og gyldig intervall." }, { status: 400 });
       if (!(await db.prepare("SELECT id FROM crm_accounts WHERE id=? AND board_id=? AND stage NOT IN ('lost')").bind(accountId, boardId).first())) return json({ error: "customer_not_found" }, { status: 400 });
       const templateId = id("rit");
-      await db.prepare("INSERT INTO recurring_invoice_templates (id,board_id,account_id,name,invoice_number_prefix,description,quantity,unit_price_minor,vat_rate,vat_code,interval,next_issue_date,due_days,status,currency,created_by) VALUES (?,?,?,?,?,?,?,?,?,?,?, ?,?, 'active','NOK',?)").bind(templateId, boardId, accountId, name, prefix, description, quantity, unitPriceMinor, vatRate, vatRate === 15 ? "3_15" : vatRate === 25 ? "3" : null, interval, nextIssueDate, dueDays, authorization.userId || "api").run();
+      await db.prepare("INSERT INTO recurring_invoice_templates (id,board_id,account_id,name,invoice_number_prefix,description,quantity,unit_price_minor,vat_rate,vat_code,interval,next_issue_date,due_days,status,currency,created_by) VALUES (?,?,?,?,?,?,?,?,?,?,?, ?,?, 'active','NOK',?)").bind(templateId, boardId, accountId, name, prefix, description, quantity, unitPriceMinor, vatRate, vatRate === 12 ? "3_12" : vatRate === 15 ? "3_15" : vatRate === 25 ? "3" : null, interval, nextIssueDate, dueDays, authorization.userId || "api").run();
       await recordAudit(db, { boardId, action: "recurring_invoice_template_created", entityType: "recurring_invoice_template", entityId: templateId, userId: authorization.userId || undefined, details: { interval, nextIssueDate, externalDelivery: "not_configured" } });
       return json({ ok: true, action, templateId, status: "active", nextIssueDate, externalDelivery: "not_configured" }, { status: 201 });
     }
@@ -2330,7 +2332,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
       const existingGeneration = await db.prepare("SELECT g.id,g.sales_invoice_id,i.invoice_number FROM recurring_invoice_generations g JOIN sales_invoices i ON i.id=g.sales_invoice_id WHERE g.template_id=? AND g.board_id=? AND g.issue_date=?").bind(templateId, boardId, issueDate).first<Record<string, unknown>>();
       if (existingGeneration) return json({ ok: true, action, templateId, generationId: existingGeneration.id, invoiceId: existingGeneration.sales_invoice_id, invoiceNumber: existingGeneration.invoice_number, idempotent: true, status: "draft" });
       const quantity = Number(template.quantity || 1), unitPriceMinor = Number(template.unit_price_minor || 0), vatRate = Number(template.vat_rate || 0), netMinor = Math.round(quantity * unitPriceMinor), vatMinor = Math.round(netMinor * vatRate / 100), totalMinor = netMinor + vatMinor;
-      if (!Number.isSafeInteger(unitPriceMinor) || unitPriceMinor <= 0 || !Number.isFinite(quantity) || quantity <= 0 || ![0, 15, 25].includes(vatRate)) return json({ error: "recurring_template_values_invalid" }, { status: 409 });
+      if (!Number.isSafeInteger(unitPriceMinor) || unitPriceMinor <= 0 || !Number.isFinite(quantity) || quantity <= 0 || ![0, 12, 15, 25].includes(vatRate)) return json({ error: "recurring_template_values_invalid" }, { status: 409 });
       const invoiceNumber = `${String(template.invoice_number_prefix || "RE")}-${issueDate.replace(/-/g, "")}`;
       if (await db.prepare("SELECT id FROM sales_invoices WHERE board_id=? AND invoice_number=?").bind(boardId, invoiceNumber).first()) return json({ error: "recurring_invoice_number_exists", detail: "Endre fakturanummerprefiks eller bruk en annen kjøredato." }, { status: 409 });
       const invoiceId = id("sinv"), lineId = id("sinvline"), generationId = id("rig");
@@ -3038,7 +3040,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
         c === null ||
         (d === 0 && c === 0) ||
         (d > 0 && c > 0) ||
-        (vatCode !== null && !["0", "1", "3", "3_15", "3C"].includes(vatCode))
+        (vatCode !== null && !["0", "1", "1_12", "1_15", "3", "3_12", "3_15", "3C"].includes(vatCode))
       )
         return json({ error: "voucher_line_invalid" }, { status: 400 });
       debit += d;
