@@ -4,6 +4,11 @@ const views = new Set(['summary', 'accounts', 'transactions', 'suggestions']);
 const datePattern = /^\d{4}-\d{2}-\d{2}$/;
 const text = (value: unknown, max = 240) => String(value ?? '').trim().slice(0, max);
 const amount = (value: unknown) => Number.isInteger(Number(value)) ? Number(value) : NaN;
+const validIsoDate = (value: string) => {
+  if (!datePattern.test(value)) return false;
+  const parsed = new Date(`${value}T00:00:00Z`);
+  return !Number.isNaN(parsed.valueOf()) && parsed.toISOString().slice(0, 10) === value;
+};
 
 type Candidate = { entityType: 'sales_invoice' | 'supplier_invoice' | 'card_transaction'; entityId: string; reference: string; description: string; amountMinor: number; score: number; confidence: 'exact' | 'strong' | 'weak' };
 
@@ -71,7 +76,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
       const statements: D1PreparedStatement[] = []; const accepted: Record<string, unknown>[] = []; const invalid: Array<{ line: number; error: string }> = [];
       for (let index = 0; index < rows.length; index += 1) {
         const row = rows[index] || {}; const transactionDate = text(row.transactionDate, 20); const description = text(row.description, 240); const externalReference = text(row.externalReference, 160); const amountMinor = amount(row.amountMinor);
-        if (!datePattern.test(transactionDate) || !description || !externalReference || !Number.isInteger(amountMinor) || amountMinor === 0) { invalid.push({ line: index + 1, error: 'date_description_reference_and_nonzero_amount_required' }); continue; }
+        if (!validIsoDate(transactionDate) || (row.valueDate && !validIsoDate(text(row.valueDate, 20))) || !description || !externalReference || !Number.isInteger(amountMinor) || amountMinor === 0) { invalid.push({ line: index + 1, error: 'valid_date_description_reference_and_nonzero_amount_required' }); continue; }
         const transactionId = id('banktx'); statements.push(db.prepare('INSERT INTO bank_transactions (id,board_id,bank_account_id,transaction_date,value_date,description,counterparty,amount_minor,currency,external_reference,status) VALUES (?,?,?,?,?,?,?,?,?,?,?)').bind(transactionId, boardId, bankAccountId, transactionDate, text(row.valueDate, 20) || null, description, text(row.counterparty, 160) || null, amountMinor, text(row.currency, 3) || 'NOK', externalReference, 'imported')); accepted.push({ transactionId, line: index + 1, externalReference });
       }
       if (invalid.length) return json({ error: 'bank_import_validation_failed', invalid, accepted: [] }, { status: 400 });
@@ -80,7 +85,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
     }
     if (action === 'import_transaction') {
       const bankAccountId = text(v?.bankAccountId, 120); const transactionDate = text(v?.transactionDate, 20); const description = text(v?.description, 240); const externalReference = text(v?.externalReference, 160); const amountMinor = amount(v?.amountMinor);
-      if (!bankAccountId || !datePattern.test(transactionDate) || !description || !externalReference || !Number.isInteger(amountMinor) || amountMinor === 0) return json({ error: 'valid_account_date_description_reference_and_nonzero_amount_required' }, { status: 400 });
+      if (!bankAccountId || !validIsoDate(transactionDate) || (v?.valueDate && !validIsoDate(text(v.valueDate, 20))) || !description || !externalReference || !Number.isInteger(amountMinor) || amountMinor === 0) return json({ error: 'valid_account_date_description_reference_and_nonzero_amount_required' }, { status: 400 });
       if (!(await db.prepare('SELECT id FROM bank_accounts WHERE id=? AND board_id=?').bind(bankAccountId, boardId).first())) return json({ error: 'bank_account_not_found' }, { status: 404 });
       const transactionId = id('banktx'); await db.prepare('INSERT INTO bank_transactions (id,board_id,bank_account_id,transaction_date,value_date,description,counterparty,amount_minor,currency,external_reference,status) VALUES (?,?,?,?,?,?,?,?,?,?,?)').bind(transactionId, boardId, bankAccountId, transactionDate, text(v?.valueDate, 20) || null, description, text(v?.counterparty, 160) || null, amountMinor, text(v?.currency, 3) || 'NOK', externalReference, 'imported').run();
       await recordAudit(db, { boardId, action: 'bank_transaction_imported', entityType: 'bank_transaction', entityId: transactionId, userId: authorization.userId || undefined, details: { source: 'manual_import', autoPosting: 'disabled' } }); return json({ ok: true, action, transactionId, status: 'imported', autoPosting: 'disabled' }, { status: 201 });
