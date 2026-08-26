@@ -59,7 +59,7 @@ The public preview is safe to explore with fictional data. The deployed backend 
 - `POST /api/mcp` (API key) — MCP-compatible JSON-RPC endpoint exposing the read-only `search_board` tool; ReBAC/SSO gateway and external AI provider approval remain required
 - `GET /api/finance?boardId=...&view=summary|accounts|periods|vouchers|intercompany|notes` — tenant-scoped accounting, intercompany and statutory-note preparation data
 - `GET /api/finance?boardId=...&view=saf-t&from=YYYY-MM&to=YYYY-MM` — SAF‑T Financial 1.3 XML export contract
-- `POST /api/finance` (API key) — balanced voucher posting, period locking, intercompany mirror preparation/approval and statutory-note approval (`action: create_voucher|lock_period|prepare_intercompany|approve_intercompany|approve_note`)
+- `POST /api/finance` (API key) — balanced voucher posting, controlled CSV-shaped voucher import, period locking, intercompany mirror preparation/approval and statutory-note approval (`action: create_voucher|import_vouchers|lock_period|prepare_intercompany|approve_intercompany|approve_note`)
 - `GET /api/assets?boardId=...&view=summary|assets|depreciation` — tenant-scoped fixed-asset register with separate financial and tax depreciation tracks
 - `POST /api/assets` (API key) — approve depreciation entries; ledger posting remains separately controlled
 - `GET /api/treasury?boardId=...&view=summary|payroll|submissions|liquidity|collections` — tenant-scoped payroll, statutory-submission preparation, liquidity and collections data
