@@ -137,6 +137,15 @@ Betalinger kan kobles til åpne kunde-/leverandørposter fra samme regnskapsflat
 - Verifisert med `npm run verify`, `npm run verify:api`, `git diff --check` og `npm run verify:live` (120 kontroller).
 - Produksjonsdeploy: Cloudflare Pages `https://ea8ffd88.styr-ing.pages.dev` på branch `main`, koblet til `https://styr.ing/`.
 
+## Siste bankklassifiseringsforbedring (2026-08-27)
+
+- Vanlige banklinjer uten faktura- eller kortmatch kan nå plasseres på en valgt aktiv hovedbokskonto med en obligatorisk forklaring. Dette dekker typiske småbedriftsbehov som husleie, bankgebyr, overføring og eierinnskudd.
+- Klassifisering og endelig bokføring er to separate steg. Motkontoen velges av en autorisert bruker, og systemet gjetter ikke MVA-behandling. Låste perioder og konto-/virksomhetssperrer gjelder fortsatt.
+- Gjentatt bokføring av samme bankreferanse er idempotent og returnerer det eksisterende bilaget i stedet for å opprette en ny post.
+- Ny migrasjon er definert i `d1/migrations/20260914_bank_manual_classification.sql`. I produksjon ble de to additive kolonnene (`manual_counter_account_id` og `classification_note`) lagt til med en kontrollert D1-kommando fordi historisk migreringslogg ikke samsvarer med skjemaet som allerede ligger i `d1/schema.sql`; full replay stopper tidligere på en allerede eksisterende `attested_by`-kolonne. Kolonnene er verifisert i produksjon.
+- Verifisert med `npm run verify`, `npm run verify:api`, `npm run build`, `git diff --check` og `npm run verify:live` (120 kontroller). Landing, `/app/finance/` og `/api/health` svarer HTTP 200.
+- Produksjonsdeploy: Cloudflare Pages `https://2afeabf0.styr-ing.pages.dev` på branch `main`, koblet til `https://styr.ing/`.
+
 ## Siste kontoaktiveringsforbedring (2026-08-26)
 
 - Invitasjon på styremedlemsiden bruker nå et inline-skjema med e-post, navn, rolle, tydelig 24-timers utløp og kopieringsknapp. Nettleserens flertrinns `prompt`-dialoger er fjernet.
