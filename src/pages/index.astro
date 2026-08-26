@@ -2,11 +2,12 @@
 import Layout from '../layouts/Layout.astro';
 
 const modules = [
-  ['◒', 'Regnskap og lønn', 'Bilag, bankgrunnlag, faktura, MVA, lønn og rapportering i én rolig arbeidsflyt.', '/finance'],
+  ['◒', 'Bilag og bokføring', 'Registrer bilag, før debet og kredit og behold dokumentasjon og kontrollspor.', '/finance'],
   ['▤', 'Faktura og betaling', 'Lag fakturagrunnlag, følg åpne poster og registrer betaling med tydelig status.', '/finance'],
   ['⌁', 'Bank og avstemming', 'Importer grunnlag, få match-forslag og godkjenn hva som skal bokføres.', '/finance'],
-  ['▥', 'MVA og rapporter', 'Beregn MVA-perioder, kontroller avvik og bruk et oppdatert rapporteringsgrunnlag.', '/finance'],
-  ['▣', 'Innkjøp', 'Bestilling, mottak, leverandørfaktura og treveis kontroll.', '/procurement'],
+  ['▥', 'MVA og lønn', 'Kontroller MVA-perioder og lønnsgrunnlag, med frister og godkjenning samlet.', '/finance'],
+  ['▣', 'Leverandører og innkjøp', 'Følg leverandørfaktura, betaling, bestilling, mottak og avvik.', '/procurement'],
+  ['▤', 'Rapporter og årsoppgjør', 'Resultat, balanse, hovedbok, SAF-T og kontrollert klargjøring av årsregnskap.', '/finance'],
   ['⌂', 'Prosjekt og timer', 'Før timer og få et ryddig grunnlag for lønn og faktura.', '/field'],
   ['⌁', 'Styrearbeid', 'Møter, sakspapirer, vedtak og protokoller samlet.', '/app/arbeidsflate?view=governance'],
   ['◈', 'Risiko og kontroll', 'Knytt risiko, kontroll, bevis og tiltak til ansvar.', '/risk'],
@@ -19,8 +20,8 @@ const modules = [
 
 const audiences = [
   ['Daglig leder', 'Se hva som er bokført, hva som mangler og hva som haster.'],
-  ['Regnskapsansvarlig', 'Hold bilag, faktura, bank, MVA og lønn i samme flyt.'],
-  ['Regnskapsfører', 'Del et ryddig, sporbar grunnlag med kunden.'],
+  ['Fører regnskapet selv', 'Hold bilag, faktura, bank, MVA og lønn i samme flyt.'],
+  ['Bruker regnskapsfører', 'Del et ryddig, sporbart grunnlag uten dobbeltarbeid.'],
 ];
 ---
 
@@ -33,8 +34,8 @@ const audiences = [
     <section class="hero">
       <div class="hero-copy">
         <p class="eyebrow"><i></i>Norsk regnskapsprogram for små virksomheter</p>
-        <h1>Regnskapet først.<br /><em>Styring når dere trenger det.</em></h1>
-        <p class="lede">Styr.ing samler bilag, bokføring, faktura, MVA, lønn, bankgrunnlag og rapportering i ett komplett regnskapssystem for små norske AS og enkeltpersonforetak. Når dere trenger mer, ligger styre, prosjekter og kontroll i samme arbeidsflate.</p>
+        <h1>Hele regnskapet.<br /><em>Ett rolig sted.</em></h1>
+        <p class="lede">Fra første bilag til faktura, bankavstemming, MVA, lønn, rapporter og årsoppgjør. Styr.ing samler regnskapet for små norske AS og enkeltpersonforetak, slik at dere ser hva som er gjort og hva som gjenstår.</p>
         <div class="actions"><a class="button primary" href="/finance">Se regnskapsflaten med eksempeldata ↗</a><a class="button secondary" href="mailto:ola@styr.ing?subject=Demo%20av%20Styr.ing">Bestill en gjennomgang</a></div>
         <div class="proof"><span><b>01</b>Bilag og faktura</span><span><b>02</b>Bank og MVA</span><span><b>03</b>Lønn og rapporter</span></div>
         <p class="hero-note"><span>✓</span> Laget for få personer, mange hatter og en regnskapshverdag som må fungere.</p>
@@ -58,7 +59,7 @@ const audiences = [
       </div>
     </section>
 
-    <section class="audience" aria-label="Hvem bruker Styr.ing"><span class="kicker">For små norske virksomheter</span>{audiences.map(([title, text]) => <div><strong>{title}</strong><span>{text}</span></div>)}<div><strong>Lønn</strong><span>Få kontroll på lønnsgrunnlaget før rapportering og utbetaling.</span></div></section>
+    <section class="audience" aria-label="Hvem bruker Styr.ing"><span class="kicker">For små norske virksomheter</span>{audiences.map(([title, text]) => <div><strong>{title}</strong><span>{text}</span></div>)}<div><strong>Har ansatte</strong><span>Få kontroll på lønnsgrunnlaget før rapportering og utbetaling.</span></div></section>
 
     <section class="outcomes" aria-labelledby="outcomes-title">
       <div class="section-intro outcomes-intro"><p class="kicker">Regnskap i hverdagen</p><h2 id="outcomes-title">Alt det viktigste.<br /><em>På ett sted.</em></h2><p>Start med de daglige regnskapsoppgavene. Få en tydelig oversikt over hva som er gjort, hva som mangler og hva som må gjøres før fristen.</p></div>
@@ -79,8 +80,8 @@ const audiences = [
 
     <section class="steps"><div><p class="kicker">Slik fungerer det</p><h2>Fra bilag til<br /><em>rapport.</em></h2><p>En enkel arbeidsflyt som gjør regnskapet forståelig – også når dere er få personer og alle har flere roller.</p><a class="button dark" href="/finance">Se regnskapsflaten ↗</a></div><div class="step-list"><div><b>01</b><span><strong>Samle</strong><small>Last opp bilag, faktura og bankgrunnlag på ett sted.</small></span></div><div class="active"><b>02</b><span><strong>Kontroller</strong><small>Se avvik, MVA-grunnlag og hva som venter på godkjenning.</small></span></div><div><b>03</b><span><strong>Rapporter</strong><small>Bruk oppdaterte rapporter og SAF-T-grunnlag når perioden er klar.</small></span></div></div></section>
 
-    <section class="faq" aria-labelledby="faq-title"><div><p class="kicker">Vanlige spørsmål</p><h2 id="faq-title">Kort forklart,<br /><em>før dere bestemmer dere.</em></h2><p>Styr.ing er laget for små virksomheter som vil samle økonomi og oppfølging uten å bygge en verktøykasse av enkeltløsninger.</p></div><div class="faq-list"><details open><summary>Er Styr.ing et komplett regnskapssystem?</summary><p>Ja. Regnskapet er kjernen: bilag, faktura, MVA, perioder, lønnskontroller og rapporteringsgrunnlag. Styre, risiko og andre arbeidsflater bygger rundt den samme kilden.</p></details><details><summary>Kan vi teste uten å legge inn reelle data?</summary><p>Ja. Den offentlige arbeidsflaten bruker kun illustrasjonsdata. Be om aktivering for en virksomhetsspesifikk gjennomgang.</p></details><details><summary>Er dette laget for små AS?</summary><p>Ja. Arbeidsflyten er laget for norske virksomheter med få personer, mange hatter og behov for at regnskapet blir forståelig i hverdagen.</p></details></div></section>
-    <section class="cta"><p class="kicker">Klarere styring starter her</p><h2>Gjør neste møte<br /><em>lettere å følge opp.</em></h2><p>Utforsk regnskapsflaten med fiktive data, eller bestill en rolig gjennomgang av hvordan Styr.ing kan passe deres AS.</p><div class="cta-actions"><a class="button primary" href="/finance">Prøv regnskapsflaten ↗</a><a class="button secondary" href="mailto:ola@styr.ing?subject=Demo%20av%20Styr.ing">Kontakt oss</a></div></section>
+    <section class="faq" aria-labelledby="faq-title"><div><p class="kicker">Vanlige spørsmål</p><h2 id="faq-title">Kort forklart,<br /><em>før dere bestemmer dere.</em></h2><p>Styr.ing er laget for små virksomheter som vil samle økonomi og oppfølging uten å bygge en verktøykasse av enkeltløsninger.</p></div><div class="faq-list"><details open><summary>Er Styr.ing et komplett regnskapssystem?</summary><p>Regnskapet er selve kjernen: bilag og bokføring, faktura, bankavstemming, MVA, lønnskontroller, perioder, rapporter, SAF-T og klargjøring av årsregnskap. Eksterne innsendinger og betalinger krever egne leverandøravtaler.</p></details><details><summary>Kan vi teste uten å legge inn reelle data?</summary><p>Ja. Den offentlige arbeidsflaten bruker kun illustrasjonsdata. Be om aktivering for en virksomhetsspesifikk gjennomgang.</p></details><details><summary>Er dette laget for små AS og ENK?</summary><p>Ja. Arbeidsflyten er laget for norske virksomheter med få personer, mange hatter og behov for at regnskapet blir forståelig i hverdagen.</p></details></div></section>
+    <section class="cta"><p class="kicker">Få kontroll på regnskapet</p><h2>Se hva som er gjort.<br /><em>Og hva som gjenstår.</em></h2><p>Utforsk regnskapsflaten med fiktive data, eller bestill en gjennomgang av hvordan Styr.ing kan passe virksomheten deres.</p><div class="cta-actions"><a class="button primary" href="/finance">Prøv regnskapsflaten ↗</a><a class="button secondary" href="mailto:ola@styr.ing?subject=Demo%20av%20Styr.ing">Kontakt oss</a></div></section>
   </div>
 </Layout>
 
