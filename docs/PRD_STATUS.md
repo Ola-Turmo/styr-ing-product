@@ -14,6 +14,7 @@ Dette er en implementasjonsstatus, ikke en påstand om regulatorisk godkjenning.
 | Bilag, balanserte linjer og gapless sekvens | Intern | `functions/api/finance.ts`, `voucher_sequences`, atomisk validering |
 | Periodelåsing og kontrollspor | Intern | `finance.ts`, period close-komponentene, audit-logg |
 | Faktura, kreditnota, åpne poster og betaling | Intern | `finance.ts`, `SalesInvoiceQuick`, `ReceivablesPayablesQuick` |
+| Norsk fakturadokument med profil, kontrollert godkjenning og utskrift | Intern | `finance.ts` (`invoice-setup`, `invoice-document`, `approve_invoice`), `SalesInvoiceQuick`; selger-/kundeadresse, org.nr., bankkonto, linjer og summer fryses i et versjonert SHA-256-snapshot før godkjenning |
 | Dobbeltføringssikker manuell betaling | Intern | `finance.ts` og `procurement.ts` avviser gjenbruk av betalingsreferanse med annet beløp og returnerer idempotent resultat ved trygg retry; D1-indeks `uq_invoice_payments_manual_reference` |
 | Kontrollert faktura → hovedbok | Intern | `PostingQueueQuick`, `functions/api/postings.ts`: kildehash, konto-/MVA-valg, separat godkjenning, idempotent bilagspostering og audit-logg |
 | Bankimport, matchforslag og manuell bokføring | Intern | `functions/api/bank.ts`, `BankReconciliationQuick` |
@@ -49,7 +50,7 @@ CRM/revenue, styre/govenance, HCM, IT, felt, HMS/ESG, treasury, kort, risiko, co
 - Produksjon `https://styr.ing/`: landing, `/finance/`, `/app/finance/`, `/login`, `/api/health` — HTTP 200
 - Produksjonssammendrag: balanserte bilag, perioder, bank-/innkjøps-/lønnskontroller returnerer JSON fra D1
 - Produksjonssmoke: `LIVE API SMOKE: PASS (114 checks against https://styr.ing)` etter siste deploy
-- Siste deploy: Cloudflare Pages `https://ada1cfeb.styr-ing.pages.dev` (produksjonsdomene `https://styr.ing/`), inkluderer bilagsarkiv på R2, globalt søk, idempotent prosjekttimer → salgsfakturakonvertering, direkte fakturadetaljer via `invoiceId`, kreditnota i hovedbokskøen, kreditnota-bevisst restsaldo/betalingskontroll, dobbeltføringssikker manuell betaling for kunde- og leverandørfaktura, manuell leverandørbetaling i hurtig- og full innkjøpsflyt, restsaldo-bevisste bankmatch-forslag, korrekt inngående 15 % MVA, krav om anvisning før leverandørbetaling, restsaldo-bevisst likviditetsprognose og fungerende EHF-grunnlagsregistrering med NOK-standard og valutavelger, kildecommit `1a066fc`
+- Siste deploy: Cloudflare Pages `https://237c2fdb.styr-ing.pages.dev` (produksjonsdomene `https://styr.ing/`), inkluderer bilagsarkiv på R2, globalt søk, idempotent prosjekttimer → salgsfakturakonvertering, direkte fakturadetaljer via `invoiceId`, kreditnota i hovedbokskøen, kreditnota-bevisst restsaldo/betalingskontroll, dobbeltføringssikker manuell betaling for kunde- og leverandørfaktura, manuell leverandørbetaling i hurtig- og full innkjøpsflyt, restsaldo-bevisste bankmatch-forslag, korrekt inngående 15 % MVA, krav om anvisning før leverandørbetaling, restsaldo-bevisst likviditetsprognose, fungerende EHF-grunnlagsregistrering med NOK-standard og valutavelger og norsk fakturadokument med profilert godkjenning, SHA-256-snapshot og utskrift/PDF, kildecommit `e51f327`
 
 ## Brukerflyt — månedsavslutning
 
