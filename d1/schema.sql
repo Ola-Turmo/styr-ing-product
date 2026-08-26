@@ -1016,7 +1016,8 @@ CREATE TABLE IF NOT EXISTS accounting_profiles (
 CREATE TABLE IF NOT EXISTS customer_invoice_profiles (
   board_id TEXT NOT NULL REFERENCES boards(id) ON DELETE CASCADE,
   account_id TEXT NOT NULL REFERENCES crm_accounts(id) ON DELETE CASCADE,
-  org_number TEXT, address_line1 TEXT NOT NULL, postal_code TEXT NOT NULL, city TEXT NOT NULL,
+  org_number TEXT, customer_type TEXT NOT NULL DEFAULT 'business' CHECK(customer_type IN ('business','private')),
+  address_line1 TEXT NOT NULL, postal_code TEXT NOT NULL, city TEXT NOT NULL,
   country_code TEXT NOT NULL DEFAULT 'NO', email TEXT, updated_by TEXT,
   updated_at TEXT NOT NULL DEFAULT (datetime('now')), PRIMARY KEY(board_id,account_id)
 );
