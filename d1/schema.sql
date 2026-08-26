@@ -926,7 +926,7 @@ CREATE TABLE IF NOT EXISTS goods_receipts (
 );
 CREATE TABLE IF NOT EXISTS supplier_invoices (
   id TEXT PRIMARY KEY, board_id TEXT NOT NULL REFERENCES boards(id) ON DELETE CASCADE, purchase_order_id TEXT REFERENCES purchase_orders(id) ON DELETE SET NULL,
- invoice_number TEXT NOT NULL, supplier_name TEXT NOT NULL, supplier_party_id TEXT, amount_minor INTEGER NOT NULL DEFAULT 0, vat_minor INTEGER NOT NULL DEFAULT 0, currency TEXT NOT NULL DEFAULT 'NOK', due_date TEXT,  
+ invoice_number TEXT NOT NULL, supplier_name TEXT NOT NULL, supplier_party_id TEXT, amount_minor INTEGER NOT NULL DEFAULT 0, vat_minor INTEGER NOT NULL DEFAULT 0, currency TEXT NOT NULL DEFAULT 'NOK', due_date TEXT,
   status TEXT NOT NULL DEFAULT 'received' CHECK(status IN ('received','matched','exception','approved','booked','paid')), match_status TEXT NOT NULL DEFAULT 'unmatched' CHECK(match_status IN ('unmatched','matched','partial','exception')),
   attested_by TEXT, attested_at TEXT, assigned_by TEXT, assigned_at TEXT,
   approved_by TEXT, approved_at TEXT, paid_at TEXT, payment_reference TEXT, paid_minor INTEGER NOT NULL DEFAULT 0, external_reference TEXT, created_at TEXT NOT NULL DEFAULT (datetime('now')), UNIQUE(board_id,invoice_number)
