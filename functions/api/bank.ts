@@ -114,15 +114,27 @@ export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
       if (entityType === 'sales_invoice' && Number(transaction.amount_minor || 0) <= 0) return json({ error: 'sales_payment_must_be_incoming' }, { status: 409 });
       if (entityType === 'supplier_invoice' && Number(transaction.amount_minor || 0) >= 0) return json({ error: 'supplier_payment_must_be_outgoing' }, { status: 409 });
       const linkId = id('paylink');
-      try { await db.prepare('INSERT INTO payment_links (id,board_id,bank_transaction_id,entity_type,entity_id,amount_minor,status,linked_by) VALUES (?,?,?,?,?,?,?,?)').bind(linkId, boardId, transactionId, entityType, entityId, bankAmount, 'linked', actor).run(); } catch (error) { return json({ error: 'payment_link_conflict', detail: error instanceof Error ? error.message : 'invoice_or_transaction_already_linked' }, { status: 409 }); }
+      try {
+        await db.batch([
+          db.prepare('INSERT INTO payment_links (id,board_id,bank_transaction_id,entity_type,entity_id,amount_minor,status,linked_by) VALUES (?,?,?,?,?,?,?,?)').bind(linkId, boardId, transactionId, entityType, entityId, bankAmount, 'linked', actor),
+        ]);
+      } catch (error) { return json({ error: 'payment_link_conflict', detail: error instanceof Error ? error.message : 'invoice_or_transaction_already_linked' }, { status: 409 }); }
       const reference = text(transaction.external_reference, 160) || transactionId;
-      const nextPaid = Number(source.paid_minor || 0) + bankAmount; const nextStatus = nextPaid >= sourceAmount ? 'paid' : text(source.status, 30); const paymentId = id('ipmt');
-      await db.batch([
-        db.prepare('INSERT INTO invoice_payments (id,board_id,entity_type,entity_id,amount_minor,payment_reference,bank_transaction_id,status,recorded_by) VALUES (?,?,?,?,?,?,?,?,?)').bind(paymentId, boardId, entityType, entityId, bankAmount, `BANK:${reference}`, transactionId, 'recorded', actor),
-        entityType === 'sales_invoice' ? db.prepare("UPDATE sales_invoices SET paid_minor=?,status=?,paid_at=CASE WHEN ?=? THEN datetime('now') ELSE paid_at END,payment_reference=?,updated_at=datetime('now') WHERE id=? AND board_id=?").bind(nextPaid, nextStatus, nextPaid, sourceAmount, `BANK:${reference}`, entityId, boardId) : db.prepare("UPDATE supplier_invoices SET paid_minor=?,status=?,paid_at=CASE WHEN ?=? THEN datetime('now') ELSE paid_at END,payment_reference=? WHERE id=? AND board_id=?").bind(nextPaid, nextStatus, nextPaid, sourceAmount, `BANK:${reference}`, entityId, boardId),
-      ]);
-      await recordAudit(db, { boardId, action: 'payment_linked_to_bank_transaction', entityType, entityId, userId: authorization.userId || undefined, details: { paymentLinkId: linkId, transactionId, amountMinor: bankAmount, glPosting: 'pending_controlled_posting' } });
-      return json({ ok: true, action, paymentLinkId: linkId, paymentId, transactionId, entityType, entityId, status: 'linked', invoiceStatus: nextStatus, amountMinor: bankAmount, paidMinor: nextPaid, remainingMinor: sourceAmount-nextPaid, glPosting: 'pending_controlled_posting' }, { status: 201 });
+      // A link is only a controlled association. Keep the invoice balance
+      // unchanged until post_match creates the bank voucher successfully.
+      // This prevents an invoice from appearing paid when posting is blocked
+      // by a locked period or another accounting validation.
+      const paymentId = id('ipmt');
+      try {
+        await db.batch([
+          db.prepare('INSERT INTO invoice_payments (id,board_id,entity_type,entity_id,amount_minor,payment_reference,bank_transaction_id,status,recorded_by) VALUES (?,?,?,?,?,?,?,?,?)').bind(paymentId, boardId, entityType, entityId, bankAmount, `BANK:${reference}`, transactionId, 'recorded', actor),
+        ]);
+      } catch (error) {
+        await db.prepare("DELETE FROM payment_links WHERE id=? AND board_id=? AND status='linked'").bind(linkId, boardId).run();
+        return json({ error: 'payment_link_conflict', detail: error instanceof Error ? error.message : 'payment_record_conflict' }, { status: 409 });
+      }
+      await recordAudit(db, { boardId, action: 'payment_linked_to_bank_transaction', entityType, entityId, userId: authorization.userId || undefined, details: { paymentLinkId: linkId, transactionId, amountMinor: bankAmount, glPosting: 'pending_controlled_posting', balanceUpdate: 'deferred_until_post_match' } });
+      return json({ ok: true, action, paymentLinkId: linkId, paymentId, transactionId, entityType, entityId, status: 'linked', invoiceStatus: 'payment_pending_posting', amountMinor: bankAmount, paidMinor: Number(source.paid_minor || 0), remainingMinor: sourceAmount-Number(source.paid_minor || 0), glPosting: 'pending_controlled_posting' }, { status: 201 });
     }
     if (action === 'post_match') {
       const transactionId = text(v?.transactionId, 120); const transaction = await db.prepare("SELECT t.*,a.ledger_account_id,pl.amount_minor AS linked_payment_minor,pl.status AS payment_link_status FROM bank_transactions t JOIN bank_accounts a ON a.id=t.bank_account_id LEFT JOIN payment_links pl ON pl.bank_transaction_id=t.id AND pl.board_id=t.board_id WHERE t.id=? AND t.board_id=? AND t.status='approved' AND t.posted_voucher_id IS NULL").bind(transactionId, boardId).first<Record<string, unknown>>();
@@ -132,7 +144,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
       const accountRows = (await db.prepare('SELECT id FROM ledger_accounts WHERE board_id=? AND active=1 AND id IN (?,?)').bind(boardId, bankAccountId, counterAccountId).all()).results; if (accountRows.length !== 2) return json({ error: 'ledger_account_not_found' }, { status: 400 });
       const source = entityType === 'sales_invoice' ? await db.prepare("SELECT invoice_number,total_minor,paid_minor,status FROM sales_invoices WHERE id=? AND board_id=?").bind(entityId, boardId).first<Record<string, unknown>>() : entityType === 'supplier_invoice' ? await db.prepare("SELECT invoice_number,amount_minor,paid_minor,status FROM supplier_invoices WHERE id=? AND board_id=?").bind(entityId, boardId).first<Record<string, unknown>>() : entityType === 'card_transaction' ? await db.prepare("SELECT merchant,amount_minor,status FROM card_transactions WHERE id=? AND board_id=?").bind(entityId, boardId).first<Record<string, unknown>>() : null;
       if (!source || !['sales_invoice','supplier_invoice','card_transaction'].includes(entityType)) return json({ error: 'matched_source_not_found' }, { status: 404 });
-      const sourceAmount = Math.abs(Number(source.total_minor ?? source.amount_minor ?? 0)); const linkedPaymentMinor = text(transaction.payment_link_status, 20) === 'linked' ? Number(transaction.linked_payment_minor || 0) : 0; const paidBeforeThisTransaction = Math.max(0, Number(source.paid_minor || 0) - linkedPaymentMinor); const remainingAmount = Math.max(0, sourceAmount - paidBeforeThisTransaction); if (!sourceAmount || (linkedPaymentMinor && linkedPaymentMinor !== amountMinor) || amountMinor > remainingAmount) return json({ error: 'bank_source_amount_mismatch', bankAmountMinor: amountMinor, linkedPaymentMinor, remainingAmountMinor: remainingAmount }, { status: 409 }); const nextPaid = paidBeforeThisTransaction + amountMinor; const nextStatus = nextPaid >= sourceAmount ? 'paid' : text(source.status, 30);
+      const sourceAmount = Math.abs(Number(source.total_minor ?? source.amount_minor ?? 0)); const linkedPaymentMinor = text(transaction.payment_link_status, 20) === 'linked' ? Number(transaction.linked_payment_minor || 0) : 0; const paidBeforeThisTransaction = Number(source.paid_minor || 0); const remainingAmount = Math.max(0, sourceAmount - paidBeforeThisTransaction); if (!sourceAmount || (linkedPaymentMinor && linkedPaymentMinor !== amountMinor) || amountMinor > remainingAmount) return json({ error: 'bank_source_amount_mismatch', bankAmountMinor: amountMinor, linkedPaymentMinor, remainingAmountMinor: remainingAmount }, { status: 409 }); const nextPaid = paidBeforeThisTransaction + amountMinor; const nextStatus = nextPaid >= sourceAmount ? 'paid' : text(source.status, 30);
       const date = text(transaction.transaction_date, 20); const period = date.slice(0, 7); if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(period)) return json({ error: 'bank_transaction_period_invalid' }, { status: 400 }); if (await db.prepare("SELECT 1 FROM accounting_periods WHERE board_id=? AND period=? AND status='locked'").bind(boardId, period).first()) return json({ error: 'period_locked', period }, { status: 409 });
       const externalReference = `bank:${transactionId}`;
       const alreadyPosted = await db.prepare('SELECT id,voucher_number,period FROM vouchers WHERE board_id=? AND external_reference=?').bind(boardId, externalReference).first<{ id: string; voucher_number: number; period: string }>();
