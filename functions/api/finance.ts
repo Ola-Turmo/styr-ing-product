@@ -2927,35 +2927,42 @@ export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
       const nextPaid = alreadyPaid + paymentAmount,
         nextStatus = nextPaid + credited >= total ? "paid" : invoice.status;
       const paymentId = id("ipmt");
-      await db.batch([
-        db
-          .prepare(
-            "INSERT INTO invoice_payments (id,board_id,entity_type,entity_id,amount_minor,payment_reference,status,recorded_by) VALUES (?,?,?,?,?,?,?,?)",
-          )
-          .bind(
-            paymentId,
-            boardId,
-            "sales_invoice",
-            invoiceId,
-            paymentAmount,
-            paymentReference,
-            "recorded",
-            authorization.userId || "service",
-          ),
-        db
-          .prepare(
-            "UPDATE sales_invoices SET paid_minor=?,status=?,paid_at=CASE WHEN ?=? THEN datetime('now') ELSE paid_at END,payment_reference=?,updated_at=datetime('now') WHERE id=? AND board_id=?",
-          )
-          .bind(
-            nextPaid,
-            nextStatus,
-            nextPaid,
-            total,
-            paymentReference,
-            invoiceId,
-            boardId,
-          ),
-      ]);
+      try {
+        await db.batch([
+          db
+            .prepare(
+              "INSERT INTO invoice_payments (id,board_id,entity_type,entity_id,amount_minor,payment_reference,status,recorded_by) VALUES (?,?,?,?,?,?,?,?)",
+            )
+            .bind(
+              paymentId,
+              boardId,
+              "sales_invoice",
+              invoiceId,
+              paymentAmount,
+              paymentReference,
+              "recorded",
+              authorization.userId || "service",
+            ),
+          db
+            .prepare(
+              "UPDATE sales_invoices SET paid_minor=?,status=?,paid_at=CASE WHEN ?=? THEN datetime('now') ELSE paid_at END,payment_reference=?,updated_at=datetime('now') WHERE id=? AND board_id=?",
+            )
+            .bind(
+              nextPaid,
+              nextStatus,
+              nextPaid,
+              total,
+              paymentReference,
+              invoiceId,
+              boardId,
+            ),
+        ]);
+      } catch (error) {
+        if (!(error instanceof Error) || !error.message.toLowerCase().includes('unique')) throw error;
+        const raced = await db.prepare("SELECT id,amount_minor,status FROM invoice_payments WHERE board_id=? AND entity_type='sales_invoice' AND entity_id=? AND bank_transaction_id IS NULL AND payment_reference=? AND status<>'reversed' LIMIT 1").bind(boardId, invoiceId, paymentReference).first<Record<string, unknown>>();
+        if (!raced || Number(raced.amount_minor || 0) !== paymentAmount) return json({ error: 'payment_reference_conflict', detail: 'En annen betaling brukte referansen samtidig med et annet beløp.' }, { status: 409 });
+        return json({ ok: true, action, invoiceId, status: String(invoice.status), paymentSource: 'manual', paymentId: String(raced.id), amountMinor: paymentAmount, paidMinor: alreadyPaid, remainingMinor: remaining, idempotent: true });
+      }
       await recordAudit(db, {
         boardId,
         action: "sales_invoice_payment_recorded",
