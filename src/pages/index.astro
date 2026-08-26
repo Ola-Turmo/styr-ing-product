@@ -3,11 +3,12 @@ import Layout from '../layouts/Layout.astro';
 
 const modules = [
   ['◒', 'Bilag og bokføring', 'Registrer bilag, før debet og kredit og behold dokumentasjon og kontrollspor.', '/finance'],
-  ['▤', 'Faktura og betaling', 'Lag fakturagrunnlag, følg åpne poster og registrer betaling med tydelig status.', '/finance'],
+  ['▤', 'Faktura og åpne poster', 'Lag fakturagrunnlag, følg forfall og registrer innbetalinger med tydelig status.', '/finance'],
   ['⌁', 'Bank og avstemming', 'Importer grunnlag, få match-forslag og godkjenn hva som skal bokføres.', '/finance'],
-  ['▥', 'MVA og lønn', 'Kontroller MVA-perioder og lønnsgrunnlag, med frister og godkjenning samlet.', '/finance'],
-  ['▣', 'Leverandører og innkjøp', 'Følg leverandørfaktura, betaling, bestilling, mottak og avvik.', '/procurement'],
+  ['▥', 'MVA og frister', 'Se MVA-grunnlag, periodestatus og hva som må kontrolleres før fristen.', '/finance'],
+  ['◫', 'Lønn og ansatte', 'Hold lønnsgrunnlag, arbeidsgiveravgift og kontrollpunkter samlet før godkjenning.', '/finance'],
   ['▤', 'Rapporter og årsoppgjør', 'Resultat, balanse, hovedbok, SAF-T og kontrollert klargjøring av årsregnskap.', '/finance'],
+  ['▣', 'Leverandører og innkjøp', 'Følg leverandørfaktura, betaling, bestilling, mottak og avvik.', '/procurement'],
   ['⌂', 'Prosjekt og timer', 'Før timer og få et ryddig grunnlag for lønn og faktura.', '/field'],
   ['⌁', 'Styrearbeid', 'Møter, sakspapirer, vedtak og protokoller samlet.', '/app/arbeidsflate?view=governance'],
   ['◈', 'Risiko og kontroll', 'Knytt risiko, kontroll, bevis og tiltak til ansvar.', '/risk'],
@@ -27,7 +28,7 @@ const audiences = [
 
 <Layout title="Komplett regnskap for små norske bedrifter" activeNav="home">
   <div class="home">
-    <section class="positioning" aria-label="Styr.ing for norske virksomheter">
+      <section class="positioning" aria-label="Styr.ing for norske virksomheter">
       <span>NORSK REGNSKAPSSYSTEM FOR SMÅ AS OG ENK</span><strong>Hele regnskapet. Ett rolig sted.</strong><a href="/trust">Sikkerhet og datagrunnlag ↗</a>
     </section>
 
@@ -38,7 +39,7 @@ const audiences = [
         <p class="lede">Fra første bilag til faktura, bankavstemming, MVA, lønn, rapporter og årsoppgjør. Styr.ing er et komplett regnskapssystem for små norske virksomheter — samlet på ett sted, slik at dere ser hva som er gjort, hva som mangler og hva som må godkjennes.</p>
         <div class="actions"><a class="button primary" href="/finance">Se regnskapsflaten med eksempeldata ↗</a><a class="button secondary" href="mailto:ola@styr.ing?subject=Demo%20av%20Styr.ing">Bestill en rolig gjennomgang</a></div>
         <div class="proof"><span><b>01</b>Bilag og faktura</span><span><b>02</b>Bank og MVA</span><span><b>03</b>Lønn og rapporter</span></div>
-        <p class="hero-note"><span>✓</span> Laget for få personer, mange hatter og en regnskapshverdag som må fungere.</p>
+        <p class="hero-note"><span>✓</span> Ingen økonomiavdeling nødvendig — laget for få personer, mange hatter og en regnskapshverdag som må fungere.</p>
       </div>
 
       <div class="product-stage" aria-label="Illustrasjon av Styr.ing arbeidsflate">
@@ -67,11 +68,11 @@ const audiences = [
     </section>
 
     <section class="modules" id="produkt">
-      <div class="section-intro"><p class="kicker">Regnskapet først · styring når dere trenger det</p><h2>Alt det vanlige regnskapet.<br /><em>Samlet og forståelig.</em></h2><p>Bilag, faktura, MVA, lønn, bankgrunnlag, rapporter og årsoppgjør er kjernen i Styr.ing. Når grunnregnskapet er på plass, kan dere koble på kunder, prosjekter, styre og kontroll uten å bytte system.</p></div>
+      <div class="section-intro"><p class="kicker">Regnskapet først · styring når dere trenger det</p><h2>Alt det vanlige regnskapet.<br /><em>Samlet og forståelig.</em></h2><p>Bilag, faktura, bank, MVA, lønn, rapporter og årsoppgjør er kjernen i Styr.ing. Når grunnregnskapet er på plass, kan dere koble på kunder, prosjekter, styre og kontroll uten å bytte system.</p></div>
       <p class="module-group-label">Regnskapskjernen</p>
       <div class="module-grid">{modules.slice(0, 6).map(([icon, title, text, href], index) => <a class="module" href={href}><span class="number">{String(index + 1).padStart(2, '0')}</span><span class="icon">{icon}</span><h3>{title}</h3><p>{text}</p><b>Åpne arbeidsflate ↗</b></a>)}</div>
       <details class="secondary-capabilities">
-        <summary><span><b>07–14</b> Mer styring når grunnregnskapet er på plass</span><i>Vis tilleggene +</i></summary>
+        <summary><span><b>07–15</b> Mer styring når grunnregnskapet er på plass</span><i>Vis tilleggene +</i></summary>
         <p class="secondary-intro">Regnskapet er kjernen. Når dere trenger mer, kan dere samle timer, kunder, styrearbeid, risiko og drift i samme virksomhetsbilde.</p>
         <div class="secondary-grid">{modules.slice(6).map(([icon, title, text, href], index) => <a class="module" href={href}><span class="number">{String(index + 7).padStart(2, '0')}</span><span class="icon">{icon}</span><h3>{title}</h3><p>{text}</p><b>Åpne arbeidsflate ↗</b></a>)}</div>
       </details>
