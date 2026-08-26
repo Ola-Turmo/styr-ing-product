@@ -2147,15 +2147,14 @@ export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
       );
     }
     if (action === "create_invoice") {
-      const invoiceNumber = String(value?.invoiceNumber || "").trim(),
-        issueDate = String(value?.issueDate || "").trim(),
+      let invoiceNumber = String(value?.invoiceNumber || "").trim();
+      const issueDate = String(value?.issueDate || "").trim(),
         dueDate = String(value?.dueDate || "").trim() || null,
         description = String(value?.description || "").trim(),
         amountMinor = Number(value?.amountMinor || 0),
         vatMinor = Number(value?.vatMinor || 0);
       const accountId = String(value?.accountId || "").trim();
       if (
-        !invoiceNumber ||
         !accountId ||
         !validIsoDate(issueDate) ||
         (dueDate && (!validIsoDate(dueDate) || dueDate < issueDate))
@@ -2280,24 +2279,20 @@ export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
       );
       const totalMinor = invoiceAmountMinor + invoiceVatMinor;
       const invoiceId = id("sinv");
-      const statements = [
-        db
-          .prepare(
-            "INSERT INTO sales_invoices (id,board_id,account_id,invoice_number,issue_date,due_date,description,amount_minor,vat_minor,total_minor,currency,status,source,external_status) VALUES (?,?,?,?,?,?,?,?,?,?,?,'NOK','draft','manual','not_configured')",
-          )
-          .bind(
-            invoiceId,
-            boardId,
-            accountId,
-            invoiceNumber,
-            issueDate,
-            dueDate,
-            invoiceDescription,
-            invoiceAmountMinor,
-            invoiceVatMinor,
-            totalMinor,
-          ),
-      ];
+      const statements = [] as D1PreparedStatement[];
+      if (!invoiceNumber) {
+        const invoiceYear = Number(issueDate.slice(0, 4));
+        statements.push(
+          db.prepare("INSERT INTO sales_invoice_sequences (board_id,invoice_year,next_number) SELECT ?,?,COALESCE(MAX(CAST(substr(invoice_number,6) AS INTEGER)),0)+1 FROM sales_invoices WHERE board_id=? AND invoice_number GLOB ? ON CONFLICT(board_id,invoice_year) DO NOTHING").bind(boardId, invoiceYear, boardId, `${invoiceYear}-[0-9]*`),
+          db.prepare("UPDATE sales_invoice_sequences SET next_number=MAX(next_number,COALESCE((SELECT MAX(CAST(substr(invoice_number,6) AS INTEGER)) FROM sales_invoices WHERE board_id=? AND invoice_number GLOB ?),0)+1),updated_at=datetime('now') WHERE board_id=? AND invoice_year=?").bind(boardId, `${invoiceYear}-[0-9]*`, boardId, invoiceYear),
+          db.prepare("UPDATE sales_invoice_sequences SET next_number=next_number+1,updated_at=datetime('now') WHERE board_id=? AND invoice_year=?").bind(boardId, invoiceYear),
+          db.prepare("INSERT INTO sales_invoices (id,board_id,account_id,invoice_number,issue_date,due_date,description,amount_minor,vat_minor,total_minor,currency,status,source,external_status) SELECT ?,?,?,printf('%04d-%05d',invoice_year,next_number-1),?,?,?,?,?,?, 'NOK','draft','manual','not_configured' FROM sales_invoice_sequences WHERE board_id=? AND invoice_year=?").bind(invoiceId, boardId, accountId, issueDate, dueDate, invoiceDescription, invoiceAmountMinor, invoiceVatMinor, totalMinor, boardId, invoiceYear),
+        );
+      } else {
+        statements.push(
+          db.prepare("INSERT INTO sales_invoices (id,board_id,account_id,invoice_number,issue_date,due_date,description,amount_minor,vat_minor,total_minor,currency,status,source,external_status) VALUES (?,?,?,?,?,?,?,?,?,?,?,'NOK','draft','manual','not_configured')").bind(invoiceId, boardId, accountId, invoiceNumber, issueDate, dueDate, invoiceDescription, invoiceAmountMinor, invoiceVatMinor, totalMinor),
+        );
+      }
       lines.forEach((line) =>
         statements.push(
           db
@@ -2322,6 +2317,9 @@ export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
         ),
       );
       await db.batch(statements);
+      const createdInvoice = await db.prepare("SELECT invoice_number FROM sales_invoices WHERE id=? AND board_id=?").bind(invoiceId, boardId).first<{ invoice_number: string }>();
+      if (!createdInvoice) return json({ error: "invoice_created_without_number" }, { status: 503 });
+      invoiceNumber = createdInvoice.invoice_number;
       await recordAudit(db, {
         boardId,
         action: "sales_invoice_created",
@@ -2334,6 +2332,8 @@ export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
           amountMinor: invoiceAmountMinor,
           vatMinor: invoiceVatMinor,
           externalDelivery: "not_configured",
+          invoiceNumber,
+          numbering: value?.invoiceNumber ? "provided" : "atomic_year_sequence",
         },
       });
       return json(
@@ -2341,6 +2341,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
           ok: true,
           action,
           invoiceId,
+          invoiceNumber,
           status: "draft",
           amountMinor: invoiceAmountMinor,
           vatMinor: invoiceVatMinor,

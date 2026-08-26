@@ -14,6 +14,7 @@ Dette er en implementasjonsstatus, ikke en påstand om regulatorisk godkjenning.
 | Bilag, balanserte linjer og gapless sekvens | Intern | `functions/api/finance.ts`, `voucher_sequences`, atomisk validering |
 | Periodelåsing og kontrollspor | Intern | `finance.ts`, period close-komponentene, audit-logg |
 | Faktura, kreditnota, åpne poster og betaling | Intern | `finance.ts`, `SalesInvoiceQuick`, `ReceivablesPayablesQuick`; faktura, kreditnota og bilag avviser kalender-ugyldige datoer server-side, faktura/EHF krever forfall på eller etter fakturadato, kreditnota kan ikke tilbakedateres før originalfaktura, og betalingsreferanser er idempotente |
+| Automatisk fakturanummer for manuelle salgsfakturaer | Intern | `sales_invoice_sequences`, `functions/api/finance.ts`, `SalesInvoiceQuick`; tomt fakturanummer tildeles atomisk per virksomhet og fakturaår (for eksempel `2026-00001`), mens eksplisitt nummer fortsatt støttes |
 | Kontrollert purringsutkast for forfalte fakturaer | Intern klargjøring | `functions/api/collections.ts`, `CollectionReminderQuick`; bygger norsk tekst med kunde, fakturanummer, forfall, restsaldo og SHA-256-checksum, med eksplisitt menneskelig godkjenning. Renter, gebyrer og ekstern utsending er deaktivert. |
 | Gjentakende fakturering for faste leveranser | Intern | `recurring_invoice_templates`/`recurring_invoice_generations`, `finance.ts`, `RecurringInvoiceQuick`; månedlig, kvartalsvis og årlig mal lager idempotente fakturautkast med neste kjøredato. Utsending og bokføring krever fortsatt separat kontroll. |
 | Norsk fakturadokument med profil, kontrollert godkjenning og utskrift | Intern | `finance.ts` (`invoice-setup`, `invoice-document`, `approve_invoice`), `SalesInvoiceQuick`; selger-/kundeadresse, kundetype (bedrift eller privatkunde), org.nr. når det kreves, bankkonto, linjer og summer fryses i et versjonert SHA-256-snapshot før godkjenning |
@@ -74,6 +75,9 @@ Betalinger kan kobles til åpne kunde-/leverandørposter fra samme regnskapsflat
 5. Kjør tenant-isolasjon, rolle, eksport/sletting og hendelsesreplay som automatiserte ende-til-ende-tester.
 
 ## Siste regnskapsforbedring (2026-08-26)
+
+- Manuelle salgsfakturaer kan nå opprettes uten at en liten virksomhet må gjette neste nummer. D1-sekvensen `sales_invoice_sequences` reserverer neste nummer atomisk per virksomhet og år, returnerer nummeret i API-responsen og skriver nummeret til kontrollsporet. Eksisterende fakturanummer kan fortsatt oppgis eksplisitt.
+- Produksjonsmigrasjon `20260912_sales_invoice_sequences.sql` er kjørt på `styr-ing-db` og verifisert med `sqlite_master`.
 
 - Deploy: `https://12d13e5e.styr-ing.pages.dev` → `https://styr.ing/`.
 - Commit: `bb8d13a`.
