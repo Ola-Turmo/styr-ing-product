@@ -4,6 +4,83 @@
   <p id="credit-posting-status" role="status" aria-live="polite"></p><div id="credit-posting-list"></div>
 </section>
 <script is:inline>
-  const cpEsc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));const cpMoney=v=>`${(Number(v||0)/100).toLocaleString('nb-NO')} kr`;let cpBoard=new URLSearchParams(location.search).get('boardId')||'';let cpAccounts=[];const cpStatus=document.querySelector('#credit-posting-status');const cpApi=async(u,o)=>{const r=await fetch(u,o),d=await r.json();if(!r.ok)throw new Error(d.error||'Kunne ikke hente kreditnotaer');return d;};const cpFill=()=>{const opts=cpAccounts.map(a=>`<option value="${cpEsc(a.id)}">${cpEsc(a.code)} · ${cpEsc(a.name)}</option>`).join('');['#credit-posting-receivable','#credit-posting-revenue'].forEach(s=>document.querySelector(s).innerHTML=opts||'<option value="">Ingen aktive kontoer</option>');document.querySelector('#credit-posting-vat').innerHTML='<option value="">Ingen MVA</option>'+opts;};const cpLoad=async()=>{if(!cpBoard){const a=await(await fetch('/api/auth')).json();cpBoard=a.boards?.[0]?.id||'';}const [n,a,p]=await Promise.all([cpApi(`/api/finance?boardId=${encodeURIComponent(cpBoard)}&view=credit-notes`),cpApi(`/api/finance?boardId=${encodeURIComponent(cpBoard)}&view=accounts`),cpApi(`/api/postings?boardId=${encodeURIComponent(cpBoard)}&view=proposals`)]);const notes=(n.data||[]).filter(x=>x.status==='approved');cpAccounts=(a.data||[]).filter(x=>x.active);cpFill();document.querySelector('#credit-posting-source').innerHTML=notes.length?notes.map(x=>`<option value="${cpEsc(x.id)}">${cpEsc(x.credit_note_number)} · ${cpMoney(x.total_minor)} · ${cpEsc(x.invoice_number)}</option>`).join(''):'<option value="">Ingen godkjente kreditnotaer</option>';const rows=(p.data||[]).filter(x=>x.source_type==='sales_credit_note');document.querySelector('#credit-posting-list').innerHTML=rows.length?rows.map(x=>`<article><strong>${cpEsc(x.source_reference)}</strong><span>${cpEsc(x.status)} · ${cpMoney(x.amount_minor)}</span><div>${x.status==='review'?`<button data-cp-action="approve_credit_note_proposal" data-id="${cpEsc(x.id)}">Godkjenn forslag</button>`:''}${x.status==='approved'?`<button data-cp-action="post_credit_note_proposal" data-id="${cpEsc(x.id)}">Bokfør bilag</button>`:''}${x.status==='posted'?'<small>Bilag bokført</small>':''}</div></article>`).join(''):'<p>Ingen kreditnotaforslag.</p>';};document.querySelector('#credit-posting-form')?.addEventListener('submit',async e=>{e.preventDefault();const f=new FormData(e.currentTarget);try{const d=await cpApi('/api/postings',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({boardId:cpBoard,action:'prepare_credit_note',sourceId:f.get('sourceId'),primaryAccountId:f.get('primaryAccountId'),secondaryAccountId:f.get('secondaryAccountId'),vatAccountId:f.get('vatAccountId')})});cpStatus.textContent=`✓ Forslag ${d.proposalId} er opprettet.`;await cpLoad();}catch(err){cpStatus.textContent=`Kunne ikke opprette forslag: ${err.message}`;}});document.querySelector('#credit-posting-list')?.addEventListener('click',async e=>{const b=e.target.closest('[data-cp-action]');if(!b)return;try{const d=await cpApi('/api/postings',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({boardId:cpBoard,action:b.dataset.cpAction,proposalId:b.dataset.id})});cpStatus.textContent=d.status==='posted'?`✓ Bilag ${d.voucherNumber} er bokført.`:'✓ Forslag godkjent.';await cpLoad();}catch(err){cpStatus.textContent=`Kunne ikke oppdatere: ${err.message}`;}}});cpLoad().catch(e=>cpStatus.textContent=e.message);
+  (() => {
+    const cpEsc = (value) => String(value ?? '').replace(/[&<>"']/g, (character) => ({
+      '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+    }[character]));
+    const cpMoney = (value) => `${(Number(value || 0) / 100).toLocaleString('nb-NO')} kr`;
+    let cpBoard = new URLSearchParams(location.search).get('boardId') || '';
+    let cpAccounts = [];
+    const cpStatus = document.querySelector('#credit-posting-status');
+    const cpApi = async (url, options) => {
+      const response = await fetch(url, options);
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || 'Kunne ikke hente kreditnotaer');
+      return data;
+    };
+    const cpFillAccounts = () => {
+      const options = cpAccounts.map((account) => `<option value="${cpEsc(account.id)}">${cpEsc(account.code)} · ${cpEsc(account.name)}</option>`).join('');
+      ['#credit-posting-receivable', '#credit-posting-revenue'].forEach((selector) => {
+        const target = document.querySelector(selector);
+        if (target) target.innerHTML = options || '<option value="">Ingen aktive kontoer</option>';
+      });
+      const vat = document.querySelector('#credit-posting-vat');
+      if (vat) vat.innerHTML = '<option value="">Ingen MVA</option>' + options;
+    };
+    const cpRender = (notes, proposals) => {
+      const source = document.querySelector('#credit-posting-source');
+      const approvedNotes = notes.filter((note) => note.status === 'approved');
+      if (source) source.innerHTML = approvedNotes.length
+        ? approvedNotes.map((note) => `<option value="${cpEsc(note.id)}">${cpEsc(note.credit_note_number)} · ${cpMoney(note.total_minor)} · ${cpEsc(note.invoice_number)}</option>`).join('')
+        : '<option value="">Ingen godkjente kreditnotaer</option>';
+      const list = document.querySelector('#credit-posting-list');
+      const rows = proposals.filter((proposal) => proposal.source_type === 'sales_credit_note');
+      if (!list) return;
+      list.innerHTML = rows.length ? rows.map((proposal) => {
+        const approve = proposal.status === 'review' ? `<button data-cp-action="approve_credit_note_proposal" data-id="${cpEsc(proposal.id)}">Godkjenn forslag</button>` : '';
+        const post = proposal.status === 'approved' ? `<button data-cp-action="post_credit_note_proposal" data-id="${cpEsc(proposal.id)}">Bokfør bilag</button>` : '';
+        const done = proposal.status === 'posted' ? '<small>Bilag bokført</small>' : '';
+        return `<article><strong>${cpEsc(proposal.source_reference)}</strong><span>${cpEsc(proposal.status)} · ${cpMoney(proposal.amount_minor)}</span><div>${approve}${post}${done}</div></article>`;
+      }).join('') : '<p>Ingen kreditnotaforslag.</p>';
+    };
+    const cpLoad = async () => {
+      if (!cpBoard) {
+        const auth = await (await fetch('/api/auth')).json();
+        cpBoard = auth.boards?.[0]?.id || '';
+      }
+      if (!cpBoard) throw new Error('Ingen virksomhet valgt');
+      const [notes, accounts, proposals] = await Promise.all([
+        cpApi(`/api/finance?boardId=${encodeURIComponent(cpBoard)}&view=credit-notes`),
+        cpApi(`/api/finance?boardId=${encodeURIComponent(cpBoard)}&view=accounts`),
+        cpApi(`/api/postings?boardId=${encodeURIComponent(cpBoard)}&view=proposals`)
+      ]);
+      cpAccounts = (accounts.data || []).filter((account) => account.active);
+      cpFillAccounts();
+      cpRender(notes.data || [], proposals.data || []);
+    };
+    document.querySelector('#credit-posting-form')?.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const form = new FormData(event.currentTarget);
+      try {
+        const data = await cpApi('/api/postings', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ boardId: cpBoard, action: 'prepare_credit_note', sourceId: form.get('sourceId'), primaryAccountId: form.get('primaryAccountId'), secondaryAccountId: form.get('secondaryAccountId'), vatAccountId: form.get('vatAccountId') }) });
+        if (cpStatus) cpStatus.textContent = `✓ Forslag ${data.proposalId} er opprettet.`;
+        await cpLoad();
+      } catch (error) {
+        if (cpStatus) cpStatus.textContent = `Kunne ikke opprette forslag: ${error instanceof Error ? error.message : 'prøv igjen'}`;
+      }
+    });
+    document.querySelector('#credit-posting-list')?.addEventListener('click', async (event) => {
+      const button = event.target.closest('[data-cp-action]');
+      if (!button) return;
+      try {
+        const data = await cpApi('/api/postings', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ boardId: cpBoard, action: button.dataset.cpAction, proposalId: button.dataset.id }) });
+        if (cpStatus) cpStatus.textContent = data.status === 'posted' ? `✓ Bilag ${data.voucherNumber} er bokført.` : '✓ Forslag godkjent.';
+        await cpLoad();
+      } catch (error) {
+        if (cpStatus) cpStatus.textContent = `Kunne ikke oppdatere: ${error instanceof Error ? error.message : 'prøv igjen'}`;
+      }
+    });
+    cpLoad().catch((error) => { if (cpStatus) cpStatus.textContent = error instanceof Error ? error.message : 'Kreditnotabildet kunne ikke lastes.'; });
+  })();
 </script>
 <style>.credit-posting{margin:18px 0;padding:24px;border:1px solid rgba(16,36,31,.1);border-radius:18px;background:#fff8e5}.credit-posting h2{margin:8px 0;font:500 1.7rem Georgia,serif}.credit-posting p{color:var(--muted);font:.8rem/1.5 system-ui,sans-serif}.credit-posting form{display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr auto;gap:8px;align-items:end}.credit-posting label{display:grid;gap:5px;color:var(--muted);font:600 .63rem system-ui,sans-serif}.credit-posting select{padding:8px;border:1px solid rgba(16,36,31,.15);border-radius:7px;background:#fff}.credit-posting button{padding:9px;border:0;border-radius:7px;background:#28624c;color:#fff;font-weight:700;cursor:pointer}.credit-posting article{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:10px;margin-top:7px;background:#fff;border:1px solid rgba(16,36,31,.1);border-radius:8px;font:.7rem system-ui,sans-serif}.credit-posting article button{margin-left:6px;font-size:.65rem}.credit-posting article span{color:var(--muted)}@media(max-width:850px){.credit-posting form{grid-template-columns:1fr 1fr}.credit-posting form button{grid-column:1/-1}}@media(max-width:500px){.credit-posting form{grid-template-columns:1fr}.credit-posting article{display:grid}}</style>
