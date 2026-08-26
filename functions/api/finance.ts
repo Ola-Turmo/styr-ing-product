@@ -22,6 +22,24 @@ const asMinor = (value: unknown) =>
     ? Number(value)
     : null;
 
+const validNorwegianMod11 = (value: string, weights: number[]) => {
+  if (!/^\d+$/.test(value) || value.length !== weights.length + 1) return false;
+  const sum = weights.reduce(
+    (total, weight, index) => total + Number(value[index]) * weight,
+    0,
+  );
+  const remainder = 11 - (sum % 11);
+  if (remainder === 10) return false;
+  const checkDigit = remainder === 11 ? 0 : remainder;
+  return checkDigit === Number(value.at(-1));
+};
+
+const validOrgNumber = (value: string) =>
+  validNorwegianMod11(value, [3, 2, 7, 6, 5, 4, 3, 2]);
+
+const validBankAccount = (value: string) =>
+  validNorwegianMod11(value, [5, 4, 3, 2, 7, 6, 5, 4, 3, 2]);
+
 function nextRecurringDate(value: string, interval: string) {
   const date = new Date(`${value}T00:00:00Z`);
   if (Number.isNaN(date.getTime())) return null;
@@ -837,13 +855,13 @@ export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
       if (
         !legalName ||
         legalName.length > 200 ||
-        !/^[0-9]{9}$/.test(orgNumber) ||
+        !validOrgNumber(orgNumber) ||
         !addressLine1 ||
         addressLine1.length > 200 ||
         !/^[0-9]{4}$/.test(postalCode) ||
         !city ||
         city.length > 100 ||
-        !/^[0-9]{11}$/.test(bankAccount) ||
+        !validBankAccount(bankAccount) ||
         (email && (!email.includes("@") || email.length > 200))
       )
         return json(
@@ -901,10 +919,10 @@ export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
         email = String(value?.email || "").trim() || null;
       if (
         !accountId ||
-        (customerType === "business" && !/^[0-9]{9}$/.test(orgNumber)) ||
+        (customerType === "business" && !validOrgNumber(orgNumber)) ||
         (customerType === "private" &&
           orgNumber &&
-          !/^[0-9]{9}$/.test(orgNumber)) ||
+          !validOrgNumber(orgNumber)) ||
         !addressLine1 ||
         addressLine1.length > 200 ||
         !/^[0-9]{4}$/.test(postalCode) ||

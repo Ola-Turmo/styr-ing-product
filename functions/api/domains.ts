@@ -1,5 +1,13 @@
 import { authorizeBoardRead, authorizeBoardWrite, body, id, json, recordAudit, requireDb, type Env } from './_lib';
 
+const validNorwegianOrgNumber = (value: unknown) => {
+  const digits = String(value ?? '').replace(/\s/g, '');
+  if (!/^\d{9}$/.test(digits)) return false;
+  const sum = [3, 2, 7, 6, 5, 4, 3, 2].reduce((total, weight, index) => total + Number(digits[index]) * weight, 0);
+  const remainder = 11 - (sum % 11);
+  return remainder !== 10 && (remainder === 11 ? 0 : remainder) === Number(digits.at(-1));
+};
+
 type Domain = 'people' | 'goals' | 'it_assets' | 'service_tickets' | 'finance_records' | 'crm_accounts' | 'contracts' | 'sustainability_items' | 'integration_registry';
 const allowed: Record<Domain, string[]> = {
   people: ['id','board_id','name','email','role','department','employment_status','start_date','manager_id','created_at','updated_at'],
@@ -37,6 +45,9 @@ export const onRequestPost: PagesFunction<Env> = async ({ env, params, request }
     const authorization = await authorizeBoardWrite(request, env, boardId);
     if (!authorization.allowed) return json({ error: 'board_write_denied' }, { status: 401 });
     const data = (value?.data && typeof value.data === 'object') ? value.data as Record<string, unknown> : {};
+    if (domain === 'crm_accounts' && data.org_number !== undefined && data.org_number !== null && String(data.org_number).trim() && !validNorwegianOrgNumber(data.org_number)) {
+      return json({ error: 'org_number_invalid', detail: 'Organisasjonsnummeret må være 9 siffer med gyldig kontrollsiffer.' }, { status: 400 });
+    }
     const columns = allowed[domain].filter((column) => !['id','board_id','created_at','updated_at'].includes(column) && data[column] !== undefined);
     if (!columns.length) return json({ error: 'data_required', fields: allowed[domain] }, { status: 400 });
     const recordId = id(domain.slice(0, 4)); const values = columns.map((column) => data[column]);

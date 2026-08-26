@@ -112,6 +112,7 @@ for (const [label, path, payload] of [
   ['posting approval guard', '/api/postings', { boardId: 'board-1', action: 'approve_proposal', proposalId: 'fixture-not-used' }],
   ['posting post guard', '/api/postings', { boardId: 'board-1', action: 'post_proposal', proposalId: 'fixture-not-used' }],
   ['sales invoice write guard', '/api/finance', { boardId: 'board-1', action: 'create_invoice', invoiceNumber: 'UNAUTH', issueDate: '2026-08-25', description: 'Unauthorised', amountMinor: 100 }],
+  ['crm org number write guard', '/api/domains/crm_accounts', { boardId: 'board-1', data: { company_name: 'Unauthorised AS', org_number: '123456789' } }],
   ['bank account write guard', '/api/bank', { boardId: 'board-1', action: 'create_account', name: 'Unauthorised bank account' }],
   ['bank transaction write guard', '/api/bank', { boardId: 'board-1', action: 'import_transaction', bankAccountId: 'fixture-not-used', transactionDate: '2026-08-25', description: 'Unauthorised', externalReference: 'UNAUTH', amountMinor: -100 }],
   ['bank post guard', '/api/bank', { boardId: 'board-1', action: 'post_match', transactionId: 'fixture-not-used', counterAccountId: 'fixture-not-used' }],

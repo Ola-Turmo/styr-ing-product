@@ -9,7 +9,8 @@ const malformedSql = [/\bSELECT\s+FROM\b/i, /\bFROM\s+(?:WHERE|LEFT\s+JOIN|RIGHT
 const routeContracts = {
   'functions/api/hcm.ts': ['create_offboarding', 'it_lifecycle_tasks', 'lifecycleTasksSynchronized', 'db.batch'],
   'functions/api/procurement.ts': ['create_order', 'create_receipt', 'create_invoice', 'three_way_match_required', 'approve_invoice', 'requiresHumanApproval', 'payment_reference_conflict', 'idempotent', 'Peppol BIS Billing 3.0', 'line_total_mismatch'],
-  'functions/api/finance.ts': ['record_invoice_payment', 'payment_reference_conflict', 'idempotent', 'bank_transaction_id IS NULL', 'save_accounting_profile', 'save_customer_invoice_profile', 'invoice-document', 'sales_invoice_documents'],
+  'functions/api/finance.ts': ['record_invoice_payment', 'payment_reference_conflict', 'idempotent', 'bank_transaction_id IS NULL', 'save_accounting_profile', 'save_customer_invoice_profile', 'invoice-document', 'sales_invoice_documents', 'validNorwegianMod11', 'invoice_number_exists'],
+  'functions/api/domains.ts': ['crm_accounts', 'authorizeBoardWrite', 'recordAudit', 'org_number_invalid', 'validNorwegianOrgNumber'],
   'functions/api/payroll.ts': ['calculate_compliance', 'prepare_submission', 'payloadHash', 'externalSubmission'],
   'functions/api/field.ts': ['classify_trip', 'complete_maintenance', 'prepare_invoice', 'approve_time', 'requiresHumanApproval'],
   'functions/api/commercial.ts': ['approve_quote', 'send_quote', 'create_case', 'record_case_response', 'update_case_status'],
