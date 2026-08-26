@@ -4,7 +4,12 @@ const views = new Set(['summary', 'orders', 'receipts', 'invoices', 'invoice-lin
 const actions = ['create_order', 'approve_order', 'create_receipt', 'create_invoice', 'match_invoice', 'attest_invoice', 'assign_invoice', 'record_invoice_payment', 'receive_ehf', 'validate_ehf', 'link_ehf_invoice'];
 const txt = (v: unknown, max = 200) => String(v ?? '').trim().slice(0, max);
 const num = (v: unknown) => Number.isFinite(Number(v)) && Number(v) >= 0 ? Math.round(Number(v)) : null;
-const isoDate = (v: unknown) => /^\d{4}-\d{2}-\d{2}$/.test(String(v ?? '')) ? String(v) : null;
+const isoDate = (v: unknown) => {
+  const value = String(v ?? '').trim();
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return null;
+  const parsed = new Date(`${value}T00:00:00Z`);
+  return !Number.isNaN(parsed.valueOf()) && parsed.toISOString().slice(0, 10) === value ? value : null;
+};
 const newId = (p: string) => `${p}-${crypto.randomUUID()}`;
 
 const xmlEscape = (value: unknown) => String(value ?? '').replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&apos;' }[char] || char));

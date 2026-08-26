@@ -3,6 +3,11 @@ import { authorizeBoardRead, authorizeBoardWrite, body, id, json, recordAudit, r
 const views = new Set(['summary', 'assets', 'depreciation']);
 const datePattern = /^\d{4}-\d{2}-\d{2}$/;
 const periodPattern = /^\d{4}-(0[1-9]|1[0-2])$/;
+const validIsoDate = (value: string) => {
+  if (!datePattern.test(value)) return false;
+  const parsed = new Date(`${value}T00:00:00Z`);
+  return !Number.isNaN(parsed.valueOf()) && parsed.toISOString().slice(0, 10) === value;
+};
 const minor = (value: unknown) => Number.isSafeInteger(Number(value)) && Number(value) >= 0 ? Number(value) : null;
 const text = (value: unknown, max = 200) => String(value ?? '').trim().slice(0, max);
 
@@ -67,7 +72,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
     const authorization = await authorizeBoardWrite(request, env, boardId); if (!authorization.allowed) return json({ error: 'write_not_authorized' }, { status: 401 }); const actor = authorization.userId || 'service';
     if (action === 'create_asset') {
       const assetNumber = text(value?.assetNumber, 80); const name = text(value?.name); const category = text(value?.category, 100); const acquisitionDate = text(value?.acquisitionDate, 20); const cost = minor(value?.acquisitionCostMinor); const residual = minor(value?.residualValueMinor ?? 0); const life = Number(value?.usefulLifeMonths); const method = ['linear', 'declining_balance', 'none'].includes(text(value?.financialMethod, 30)) ? text(value?.financialMethod, 30) : ''; const taxGroup = text(value?.taxGroup, 10); const taxRate = Number(value?.taxRatePercent ?? 0);
-      if (!assetNumber || !name || !category || !datePattern.test(acquisitionDate) || cost === null || cost <= 0 || residual === null || residual > cost || !Number.isInteger(life) || life < 1 || life > 1200 || !method || !Number.isFinite(taxRate) || taxRate < 0 || taxRate > 100) return json({ error: 'asset_fields_invalid' }, { status: 400 });
+      if (!assetNumber || !name || !category || !validIsoDate(acquisitionDate) || cost === null || cost <= 0 || residual === null || residual > cost || !Number.isInteger(life) || life < 1 || life > 1200 || !method || !Number.isFinite(taxRate) || taxRate < 0 || taxRate > 100) return json({ error: 'asset_fields_invalid' }, { status: 400 });
       if (await db.prepare('SELECT id FROM fixed_assets WHERE board_id=? AND asset_number=?').bind(boardId, assetNumber).first()) return json({ error: 'asset_number_exists' }, { status: 409 });
       const assetId = id('fixed'); await db.prepare('INSERT INTO fixed_assets (id,board_id,asset_number,name,category,acquisition_date,acquisition_cost_minor,residual_value_minor,currency,financial_method,useful_life_months,tax_group,tax_rate_percent,status) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)').bind(assetId, boardId, assetNumber, name, category, acquisitionDate, cost, residual, text(value?.currency, 3) || 'NOK', method, life, taxGroup || null, taxRate || null, 'active').run();
       await recordAudit(db, { boardId, action: 'fixed_asset_created', entityType: 'fixed_asset', entityId: assetId, userId: authorization.userId || undefined, details: { assetNumber, costMinor: cost, financialMethod: method, taxGroup: taxGroup || null } });
