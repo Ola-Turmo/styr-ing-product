@@ -1,6 +1,7 @@
 ---
 import Layout from '../layouts/Layout.astro';
 ---
+
 <Layout title="Logg inn — Styr.ing" activeNav="login">
   <main class="auth-shell">
     <section class="auth-card">
@@ -16,32 +17,78 @@ import Layout from '../layouts/Layout.astro';
         <button type="submit">Logg inn <span aria-hidden="true">↗</span></button>
         <p id="login-status" class="status" role="status" aria-live="polite"></p>
       </form>
+      <p class="invite-note">Har du fått en invitasjonslenke? Den kan aktiveres én gang innen 24 timer. Be administratoren om en ny lenke hvis den er utløpt eller allerede brukt.</p>
       <div class="auth-links"><a href="/workspace">Utforsk offentlig demo ↗</a><a href="mailto:ola@styr.ing?subject=Styr.ing%20tilgang">Be om tilgang</a></div>
     </section>
-    <aside class="auth-aside"><span class="section-kicker">Trygg arbeidsflate</span><h2>Én konto.<br /><em>Riktig kontekst.</em></h2><p>Tilgang til et styre eller en virksomhet styres av medlemskap i tenant-en. Sesjoner kan tilbakekalles, og kontrollendringer blir synlige i kontrollsporet.</p><div class="aside-proof"><span>✓</span><div><strong>Ingen selvbetjent registrering</strong><small>Tilgang gis etter godkjent kundeavtale.</small></div></div><div class="aside-proof"><span>◌</span><div><strong>Syv dagers sesjon</strong><small>HttpOnly-cookie med utløp og siste aktivitet.</small></div></div></aside>
+    <aside class="auth-aside">
+      <span class="section-kicker">Trygg arbeidsflate</span>
+      <h2>Én konto.<br /><em>Riktig kontekst.</em></h2>
+      <p>Tilgang til et styre eller en virksomhet styres av medlemskap. Sesjoner kan tilbakekalles, og kontrollendringer blir synlige i kontrollsporet.</p>
+      <div class="aside-proof"><span>✓</span><div><strong>Ingen selvbetjent registrering</strong><small>Tilgang gis etter godkjent kundeavtale.</small></div></div>
+      <div class="aside-proof"><span>◌</span><div><strong>Syv dagers sesjon</strong><small>HttpOnly-cookie med utløp og siste aktivitet.</small></div></div>
+    </aside>
   </main>
 </Layout>
+
 <script is:inline>
   const form = document.querySelector('#login-form');
   const status = document.querySelector('#login-status');
   const requestedNext = new URLSearchParams(window.location.search).get('next') || '';
   const safeNext = requestedNext.startsWith('/') && !requestedNext.startsWith('//') ? requestedNext : '';
   const destination = (data) => safeNext || (data.boards?.[0]?.id ? `/app?boardId=${encodeURIComponent(data.boards[0].id)}` : '/workspace');
-  fetch('/api/auth').then((response) => response.json()).then((data) => { if (data.authenticated) window.location.href = destination(data); }).catch(() => {});
+
+  fetch('/api/auth')
+    .then((response) => response.json())
+    .then((data) => { if (data.authenticated) window.location.href = destination(data); })
+    .catch(() => {});
+
   form?.addEventListener('submit', async (event) => {
     event.preventDefault();
     if (!status) return;
     status.textContent = 'Logger inn…';
     const formData = new FormData(form);
     try {
-      const response = await fetch('/api/auth', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ action: 'login', email: formData.get('email'), password: formData.get('password') }) });
+      const response = await fetch('/api/auth', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ action: 'login', email: formData.get('email'), password: formData.get('password') })
+      });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error === 'invalid_credentials' ? 'E-posten eller passordet stemmer ikke.' : 'Innloggingen kunne ikke fullføres akkurat nå.');
       status.textContent = 'Innlogget. Åpner arbeidsflaten…';
       window.location.href = destination(data);
-    } catch (error) { status.textContent = error instanceof Error ? error.message : 'Noe gikk galt.'; }
+    } catch (error) {
+      status.textContent = error instanceof Error ? error.message : 'Noe gikk galt.';
+    }
   });
 </script>
+
 <style>
-  .auth-shell{max-width:1040px;margin:0 auto;padding:70px 24px 100px;display:grid;grid-template-columns:minmax(330px,440px) 1fr;gap:80px;align-items:center}.auth-card{padding:35px;border:1px solid rgba(16,36,31,.1);border-radius:22px;background:#fff;box-shadow:0 20px 55px rgba(16,36,31,.1)}.auth-mark{display:grid;place-items:center;width:42px;height:42px;border-radius:13px;background:var(--night);color:var(--glow);font:700 1.2rem/1 Georgia,serif;margin-bottom:28px}.eyebrow,.section-kicker{font:700 .68rem/1 system-ui,sans-serif;letter-spacing:.14em;text-transform:uppercase}.eyebrow{color:var(--accent)}.auth-card h1{font:500 2.4rem/1 Georgia,serif;letter-spacing:-.04em;margin:13px 0}.intro,.auth-aside p{color:var(--muted);font:.84rem/1.6 system-ui,sans-serif}.intro{margin-bottom:28px}.auth-card label{display:block;margin:16px 0 7px;color:var(--ink);font:700 .7rem/1 system-ui,sans-serif}.auth-card input{width:100%;box-sizing:border-box;padding:13px;border:1px solid rgba(16,36,31,.18);border-radius:9px;background:#fcfdfb;color:var(--ink);font:.86rem/1 system-ui,sans-serif}.auth-card input:focus{outline:3px solid rgba(31,111,91,.18);border-color:var(--accent)}.auth-card button{width:100%;display:flex;justify-content:space-between;align-items:center;margin-top:23px;padding:14px 16px;border:0;border-radius:9px;background:var(--night);color:#fff;cursor:pointer;font:700 .78rem/1 system-ui,sans-serif}.auth-card button:hover{background:var(--accent)}.status{min-height:1.3em;margin:12px 0 0;color:#9b5b25;font:600 .7rem/1.35 system-ui,sans-serif}.auth-links{display:flex;justify-content:space-between;gap:10px;margin-top:24px;font:700 .67rem/1 system-ui,sans-serif}.auth-links a{color:var(--accent)}.auth-aside{max-width:420px}.auth-aside h2{margin:16px 0 18px;font:500 clamp(2.5rem,5vw,4.2rem)/.94 Georgia,serif;letter-spacing:-.05em}.auth-aside h2 em{color:var(--accent);font-style:normal}.auth-aside p{max-width:380px}.aside-proof{display:flex;gap:12px;align-items:flex-start;margin-top:24px}.aside-proof>span{display:grid;place-items:center;width:28px;height:28px;border-radius:8px;background:#e8f1df;color:var(--accent);font:700 .78rem/1 system-ui,sans-serif}.aside-proof strong,.aside-proof small{display:block;font-family:system-ui,sans-serif}.aside-proof strong{font-size:.76rem}.aside-proof small{margin-top:3px;color:var(--muted);font-size:.68rem;line-height:1.4}@media(max-width:760px){.auth-shell{grid-template-columns:1fr;gap:42px;padding:45px 20px 75px}.auth-card{padding:26px}.auth-aside{padding:0 6px}}
+  .auth-shell{max-width:1040px;margin:0 auto;padding:70px 24px 100px;display:grid;grid-template-columns:minmax(330px,440px) 1fr;gap:80px;align-items:center}
+  .auth-card{padding:35px;border:1px solid rgba(16,36,31,.1);border-radius:22px;background:#fff;box-shadow:0 20px 55px rgba(16,36,31,.1)}
+  .auth-mark{display:grid;place-items:center;width:42px;height:42px;border-radius:13px;background:var(--night);color:var(--glow);font:700 1.2rem/1 Georgia,serif;margin-bottom:28px}
+  .eyebrow,.section-kicker{font:700 .68rem/1 system-ui,sans-serif;letter-spacing:.14em;text-transform:uppercase}
+  .eyebrow{color:var(--accent)}
+  .auth-card h1{font:500 2.4rem/1 Georgia,serif;letter-spacing:-.04em;margin:13px 0}
+  .intro,.auth-aside p{color:var(--muted);font:.84rem/1.6 system-ui,sans-serif}
+  .intro{margin-bottom:28px}
+  .auth-card label{display:block;margin:16px 0 7px;color:var(--ink);font:700 .7rem/1 system-ui,sans-serif}
+  .auth-card input{width:100%;box-sizing:border-box;padding:13px;border:1px solid rgba(16,36,31,.18);border-radius:9px;background:#fcfdfb;color:var(--ink);font:.86rem/1 system-ui,sans-serif}
+  .auth-card input:focus{outline:3px solid rgba(31,111,91,.18);border-color:var(--accent)}
+  .auth-card button{width:100%;display:flex;justify-content:space-between;align-items:center;margin-top:23px;padding:14px 16px;border:0;border-radius:9px;background:var(--night);color:#fff;cursor:pointer;font:700 .78rem/1 system-ui,sans-serif}
+  .auth-card button:hover{background:var(--accent)}
+  .status{min-height:1.3em;margin:12px 0 0;color:#9b5b25;font:600 .7rem/1.35 system-ui,sans-serif}
+  .invite-note{margin:18px 0 0;padding:12px 14px;border-radius:10px;background:#fff8df;color:#705d20;font:.72rem/1.45 system-ui,sans-serif}
+  .auth-links{display:flex;justify-content:space-between;gap:10px;margin-top:24px;font:700 .67rem/1 system-ui,sans-serif}
+  .auth-links a{color:var(--accent)}
+  .auth-aside{max-width:420px}
+  .auth-aside h2{margin:16px 0 18px;font:500 clamp(2.5rem,5vw,4.2rem)/.94 Georgia,serif;letter-spacing:-.05em}
+  .auth-aside h2 em{color:var(--accent);font-style:normal}
+  .auth-aside p{max-width:380px}
+  .aside-proof{display:flex;gap:12px;align-items:flex-start;margin-top:24px}
+  .aside-proof>span{display:grid;place-items:center;width:28px;height:28px;border-radius:8px;background:#e8f1df;color:var(--accent);font:700 .78rem/1 system-ui,sans-serif}
+  .aside-proof strong,.aside-proof small{display:block;font-family:system-ui,sans-serif}
+  .aside-proof strong{font-size:.76rem}
+  .aside-proof small{margin-top:3px;color:var(--muted);font-size:.68rem;line-height:1.4}
+  @media(max-width:760px){.auth-shell{grid-template-columns:1fr;gap:42px;padding:45px 20px 75px}.auth-card{padding:26px}.auth-aside{padding:0 6px}}
 </style>
