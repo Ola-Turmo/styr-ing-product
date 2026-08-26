@@ -124,13 +124,16 @@ import TransparencyQuick from '../components/TransparencyQuick.astro';
       min-height: 62px;
       overflow: visible;
     }
+    /* Navigation labels are words, never columns of individual letters.
+       Keep this invariant even when a browser reports a narrow/zoomed viewport. */
+    .site-nav, .site-nav * { word-break: keep-all; overflow-wrap: normal; hyphens: none; }
     .logo { display: inline-flex; flex: 0 0 auto; align-items: center; gap: 9px; min-width: max-content; white-space: nowrap; font-size: 1.25rem; font-weight: 700; letter-spacing: -0.02em; color: var(--ink); }
     .logo > span:last-child { color: var(--ink); white-space: nowrap; }
     .logo-mark { width: 30px; height: 30px; border-radius: 10px; display: grid; place-items: center; background: var(--night); color: var(--glow); font: 700 1.05rem/1 Georgia, serif; box-shadow: 0 5px 14px rgba(16,36,31,.15); }
     .logo-dot { color: var(--accent); }
     .nav-links { display: flex; flex: 1 1 auto; gap: clamp(12px,2vw,24px); list-style: none; font-family: system-ui, sans-serif; font-size: 0.83rem; align-items: center; justify-content: flex-end; min-width: 0; white-space: nowrap; }
     .nav-links li { display: block; flex: 0 0 auto; width: auto; min-width: max-content; white-space: nowrap; }
-    .nav-links a { color: var(--muted); font-weight: 500; }
+    .nav-links a { color: var(--muted); font-weight: 500; white-space: nowrap; }
     .nav-links a:hover { color: var(--accent); }
     .nav-links a.active { color: var(--accent); font-weight: 600; }
     .nav-cta {
@@ -143,7 +146,7 @@ import TransparencyQuick from '../components/TransparencyQuick.astro';
 
     .nav-secondary { color: var(--muted); font-weight: 600 !important; }
     .nav-group { position: relative; }
-    .nav-group > summary { list-style: none; cursor: pointer; color: var(--muted); font: 500 .83rem/1 system-ui, sans-serif; }
+    .nav-group > summary { list-style: none; cursor: pointer; color: var(--muted); font: 500 .83rem/1 system-ui, sans-serif; white-space: nowrap; }
     .nav-group > summary::-webkit-details-marker { display: none; }
     .nav-group > summary::after { content: '⌄'; margin-left: 5px; font-size: .75em; }
     .nav-group[open] > summary, .nav-group > summary:hover { color: var(--accent); }
