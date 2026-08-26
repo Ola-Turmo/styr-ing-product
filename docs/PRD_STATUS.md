@@ -81,6 +81,12 @@ Betalinger kan kobles til åpne kunde-/leverandørposter fra samme regnskapsflat
 - Fakturaskjemaet bruker dynamisk dagens dato og foreslår 14 dagers forfall, også etter at skjemaet nullstilles.
 - Verifisert med `npx tsc --noEmit`, `npm run verify:api`, `npm run verify:source`, `npm run build`, `git diff --check` og `LIVE API SMOKE: PASS (119 checks against https://styr.ing)`.
 
+## Siste kontoaktiveringsforbedring (2026-08-26)
+
+- Invitasjon på styremedlemsiden bruker nå et inline-skjema med e-post, navn, rolle, tydelig 24-timers utløp og kopieringsknapp. Nettleserens flertrinns `prompt`-dialoger er fjernet.
+- `functions/api/auth.ts` returnerer `expiresAt` og gjør en betinget token-claim før bruker-/styrekobling opprettes. Dette avviser parallelle eller allerede brukte aktiveringsforsøk.
+- Produksjonsdeploy: Cloudflare Pages `https://7ebcc542.styr-ing.pages.dev` på branch `main`, koblet til `https://styr.ing/`; `LIVE API SMOKE: PASS (120 checks)`.
+
 ## Siste SMB-forbedring (2026-08-26)
 
 - CSV-importen i førstegangsoppsettet støtter nå quoted-felter, semikolon/komma som skilletegn og norske tall med tusenskilletegn/desimalkomma. Dette gjør åpningsbalanse og historikkimport mer robust for små norske virksomheter uten å gjette konto eller MVA.
