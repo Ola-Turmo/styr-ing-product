@@ -17,6 +17,16 @@ const asMinor = (value: unknown) =>
     ? Number(value)
     : null;
 
+function nextRecurringDate(value: string, interval: string) {
+  const date = new Date(`${value}T00:00:00Z`);
+  if (Number.isNaN(date.getTime())) return null;
+  if (interval === "month") date.setUTCMonth(date.getUTCMonth() + 1);
+  else if (interval === "quarter") date.setUTCMonth(date.getUTCMonth() + 3);
+  else if (interval === "year") date.setUTCFullYear(date.getUTCFullYear() + 1);
+  else return null;
+  return date.toISOString().slice(0, 10);
+}
+
 async function buildSafT(
   db: D1Database,
   boardId: string,
@@ -306,6 +316,10 @@ async function boardData(
         .bind(boardId)
         .all()
     ).results;
+  if (view === "recurring-templates")
+    return (await db.prepare(`SELECT t.*,a.company_name,(SELECT COUNT(*) FROM recurring_invoice_generations g WHERE g.template_id=t.id AND g.board_id=t.board_id) AS generated_count,(SELECT MAX(g.issue_date) FROM recurring_invoice_generations g WHERE g.template_id=t.id AND g.board_id=t.board_id) AS last_generated_date FROM recurring_invoice_templates t JOIN crm_accounts a ON a.id=t.account_id AND a.board_id=t.board_id WHERE t.board_id=? ORDER BY CASE t.status WHEN 'active' THEN 0 WHEN 'paused' THEN 1 ELSE 2 END,t.next_issue_date`).bind(boardId).all()).results;
+  if (view === "recurring-generations")
+    return (await db.prepare(`SELECT g.*,t.name template_name,t.interval,a.company_name,i.invoice_number,i.status invoice_status FROM recurring_invoice_generations g JOIN recurring_invoice_templates t ON t.id=g.template_id AND t.board_id=g.board_id JOIN sales_invoices i ON i.id=g.sales_invoice_id AND i.board_id=g.board_id JOIN crm_accounts a ON a.id=i.account_id AND a.board_id=i.board_id WHERE g.board_id=? ORDER BY g.issue_date DESC,g.created_at DESC LIMIT 100`).bind(boardId).all()).results;
   if (view === "invoice-lines")
     return (
       await db
@@ -2273,6 +2287,60 @@ export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
         },
         { status: 201 },
       );
+    }
+    if (action === "create_recurring_template") {
+      const accountId = String(value?.accountId || "").trim();
+      const name = String(value?.name || "").trim();
+      const description = String(value?.description || "").trim();
+      const prefix = (String(value?.invoiceNumberPrefix || "RE").trim().toUpperCase().replace(/[^A-Z0-9_-]/g, "").slice(0, 20) || "RE");
+      const interval = String(value?.interval || "month");
+      const nextIssueDate = String(value?.nextIssueDate || "").trim();
+      const quantity = Number(value?.quantity ?? 1);
+      const unitPriceMinor = asMinor(value?.unitPriceMinor);
+      const vatRate = Number(value?.vatRate ?? 25);
+      const dueDays = Number(value?.dueDays ?? 14);
+      if (!accountId || !name || !description || !datePattern.test(nextIssueDate) || !["month", "quarter", "year"].includes(interval) || !Number.isFinite(quantity) || quantity <= 0 || quantity > 100000 || unitPriceMinor === null || unitPriceMinor <= 0 || ![0, 15, 25].includes(vatRate) || !Number.isInteger(dueDays) || dueDays < 0 || dueDays > 365)
+        return json({ error: "recurring_template_fields_invalid", detail: "Fyll ut kunde, navn, dato, beløp og gyldig intervall." }, { status: 400 });
+      if (!(await db.prepare("SELECT id FROM crm_accounts WHERE id=? AND board_id=? AND stage NOT IN ('lost')").bind(accountId, boardId).first())) return json({ error: "customer_not_found" }, { status: 400 });
+      const templateId = id("rit");
+      await db.prepare("INSERT INTO recurring_invoice_templates (id,board_id,account_id,name,invoice_number_prefix,description,quantity,unit_price_minor,vat_rate,vat_code,interval,next_issue_date,due_days,status,currency,created_by) VALUES (?,?,?,?,?,?,?,?,?,?,?, ?,?, 'active','NOK',?)").bind(templateId, boardId, accountId, name, prefix, description, quantity, unitPriceMinor, vatRate, vatRate === 15 ? "3_15" : vatRate === 25 ? "3" : null, interval, nextIssueDate, dueDays, authorization.userId || "api").run();
+      await recordAudit(db, { boardId, action: "recurring_invoice_template_created", entityType: "recurring_invoice_template", entityId: templateId, userId: authorization.userId || undefined, details: { interval, nextIssueDate, externalDelivery: "not_configured" } });
+      return json({ ok: true, action, templateId, status: "active", nextIssueDate, externalDelivery: "not_configured" }, { status: 201 });
+    }
+    if (action === "update_recurring_template_status") {
+      const templateId = String(value?.templateId || "").trim();
+      const status = String(value?.status || "");
+      if (!templateId || !["active", "paused", "cancelled"].includes(status)) return json({ error: "recurring_template_status_invalid" }, { status: 400 });
+      const result = await db.prepare("UPDATE recurring_invoice_templates SET status=?,updated_at=datetime('now') WHERE id=? AND board_id=? AND status<>?").bind(status, templateId, boardId, status).run();
+      if (!result.meta?.changes) return json({ error: "recurring_template_not_found_or_unchanged" }, { status: 409 });
+      await recordAudit(db, { boardId, action: "recurring_invoice_template_status_changed", entityType: "recurring_invoice_template", entityId: templateId, userId: authorization.userId || undefined, details: { status } });
+      return json({ ok: true, action, templateId, status });
+    }
+    if (action === "generate_recurring_invoice") {
+      const templateId = String(value?.templateId || "").trim();
+      const template = await db.prepare("SELECT * FROM recurring_invoice_templates WHERE id=? AND board_id=? AND status='active'").bind(templateId, boardId).first<Record<string, unknown>>();
+      if (!template) return json({ error: "recurring_template_not_active_or_found" }, { status: 409 });
+      const issueDate = String(value?.issueDate || template.next_issue_date || "").trim();
+      if (!datePattern.test(issueDate)) return json({ error: "recurring_issue_date_invalid" }, { status: 400 });
+      const existingGeneration = await db.prepare("SELECT g.id,g.sales_invoice_id,i.invoice_number FROM recurring_invoice_generations g JOIN sales_invoices i ON i.id=g.sales_invoice_id WHERE g.template_id=? AND g.board_id=? AND g.issue_date=?").bind(templateId, boardId, issueDate).first<Record<string, unknown>>();
+      if (existingGeneration) return json({ ok: true, action, templateId, generationId: existingGeneration.id, invoiceId: existingGeneration.sales_invoice_id, invoiceNumber: existingGeneration.invoice_number, idempotent: true, status: "draft" });
+      const quantity = Number(template.quantity || 1), unitPriceMinor = Number(template.unit_price_minor || 0), vatRate = Number(template.vat_rate || 0), netMinor = Math.round(quantity * unitPriceMinor), vatMinor = Math.round(netMinor * vatRate / 100), totalMinor = netMinor + vatMinor;
+      if (!Number.isSafeInteger(unitPriceMinor) || unitPriceMinor <= 0 || !Number.isFinite(quantity) || quantity <= 0 || ![0, 15, 25].includes(vatRate)) return json({ error: "recurring_template_values_invalid" }, { status: 409 });
+      const invoiceNumber = `${String(template.invoice_number_prefix || "RE")}-${issueDate.replace(/-/g, "")}`;
+      if (await db.prepare("SELECT id FROM sales_invoices WHERE board_id=? AND invoice_number=?").bind(boardId, invoiceNumber).first()) return json({ error: "recurring_invoice_number_exists", detail: "Endre fakturanummerprefiks eller bruk en annen kjøredato." }, { status: 409 });
+      const invoiceId = id("sinv"), lineId = id("sinvline"), generationId = id("rig");
+      const dueDate = new Date(`${issueDate}T00:00:00Z`); dueDate.setUTCDate(dueDate.getUTCDate() + Number(template.due_days || 14));
+      const dueDateText = dueDate.toISOString().slice(0, 10);
+      const nextDate = nextRecurringDate(issueDate, String(template.interval));
+      if (!nextDate) return json({ error: "recurring_interval_invalid" }, { status: 409 });
+      await db.batch([
+        db.prepare("INSERT INTO sales_invoices (id,board_id,account_id,invoice_number,issue_date,due_date,description,amount_minor,vat_minor,total_minor,currency,status,source,external_status) VALUES (?,?,?,?,?,?,?,?,?,?,?,'NOK','draft','subscription','not_configured')").bind(invoiceId, boardId, template.account_id, invoiceNumber, issueDate, dueDateText, template.description, netMinor, vatMinor, totalMinor),
+        db.prepare("INSERT INTO sales_invoice_lines (id,board_id,sales_invoice_id,line_number,description,quantity,unit_price_minor,vat_rate,vat_code,net_minor,vat_minor,total_minor,account_id) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)").bind(lineId, boardId, invoiceId, 1, template.description, quantity, unitPriceMinor, vatRate, template.vat_code || null, netMinor, vatMinor, totalMinor, null),
+        db.prepare("INSERT INTO recurring_invoice_generations (id,board_id,template_id,issue_date,sales_invoice_id,created_by) VALUES (?,?,?,?,?,?)").bind(generationId, boardId, templateId, issueDate, invoiceId, authorization.userId || "api"),
+        db.prepare("UPDATE recurring_invoice_templates SET next_issue_date=?,updated_at=datetime('now') WHERE id=? AND board_id=? AND status='active'").bind(nextDate, templateId, boardId),
+      ]);
+      await recordAudit(db, { boardId, action: "recurring_invoice_generated", entityType: "sales_invoice", entityId: invoiceId, userId: authorization.userId || undefined, details: { templateId, generationId, issueDate, nextIssueDate: nextDate, externalDelivery: "not_configured" } });
+      return json({ ok: true, action, templateId, generationId, invoiceId, invoiceNumber, status: "draft", issueDate, dueDate: dueDateText, nextIssueDate: nextDate, totalMinor, externalDelivery: "not_configured" }, { status: 201 });
     }
     if (action === "review_invoice") {
       const invoiceId = String(value?.invoiceId || "").trim();
