@@ -123,6 +123,13 @@ Betalinger kan kobles til åpne kunde-/leverandørposter fra samme regnskapsflat
 - Deploy: `https://8389625c.styr-ing.pages.dev` → `https://styr.ing/` (Cloudflare Pages `main`).
 - Verifisert med `npm run verify`, `npm run verify:api`, `npm run build`, `npm run verify:live` (120 kontroller) og HTTP 200 på landing, `/app/finance/` og `/api/health`.
 
+## Siste manuelle bilagsforbedring (2026-08-27)
+
+- Manuell bokføring med `externalReference` er nå idempotent: retry av samme balanserte bilag returnerer originalt bilagsnummer uten å lage en ny post eller bruke nytt sekvensnummer.
+- Samme referanse med endret dato, periode, beskrivelse eller linjer avvises tydelig med `external_reference_conflict` (HTTP 409), også ved samtidige forespørsler.
+- Verifisert med `npm run verify`, `npm run verify:api`, `npm run build`, `git diff --check` og `npm run verify:live` (120 kontroller).
+- Produksjonsdeploy: Cloudflare Pages `https://b89fded6.styr-ing.pages.dev` på branch `main`, koblet til `https://styr.ing/`.
+
 ## Siste kontoaktiveringsforbedring (2026-08-26)
 
 - Invitasjon på styremedlemsiden bruker nå et inline-skjema med e-post, navn, rolle, tydelig 24-timers utløp og kopieringsknapp. Nettleserens flertrinns `prompt`-dialoger er fjernet.
