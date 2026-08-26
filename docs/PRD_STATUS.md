@@ -95,6 +95,13 @@ Betalinger kan kobles til åpne kunde-/leverandørposter fra samme regnskapsflat
 - Deploy: `https://f33b5ead.styr-ing.pages.dev` → `https://styr.ing/` (Cloudflare Pages `main`).
 - Verifisert med `npm run verify`, `npm run verify:live` (120 kontroller), HTTP 200 på landing og `/api/health`.
 
+## Siste betalingsflyt-forbedring (2026-08-27)
+
+- Banklinje → kunde-/leverandørbetaling er nå idempotent ved trygg retry. Samme faktura, beløp og bankreferanse returnerer eksisterende kobling og betalings-ID; avvikende faktura eller beløp gir en eksplisitt konflikt.
+- Konkurrerende faner håndteres ved å lese tilbake koblingen som vant D1s unike banklinje-/betalingsbegrensning. Ingen ekstra delbetaling eller betalingspost opprettes.
+- Deploy: `https://e61c3636.styr-ing.pages.dev` → `https://styr.ing/` (Cloudflare Pages `main`).
+- Verifisert med `npm run verify:live` (120 kontroller), HTTP 200 på landing, `/finance/` og `/api/health`.
+
 ## Siste kontoaktiveringsforbedring (2026-08-26)
 
 - Invitasjon på styremedlemsiden bruker nå et inline-skjema med e-post, navn, rolle, tydelig 24-timers utløp og kopieringsknapp. Nettleserens flertrinns `prompt`-dialoger er fjernet.
