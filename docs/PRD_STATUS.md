@@ -21,6 +21,7 @@ Dette er en implementasjonsstatus, ikke en påstand om regulatorisk godkjenning.
 | Årsoppgjørsnoter og årsregnskap-forberedelse | Intern forberedelse | `StatutoryNotesQuick`, `AnnualAccountsQuick` |
 | Eiendeler med bok/tax-avskrivning | Intern kontroll | `functions/api/assets.ts`, `AssetRegisterQuick` |
 | Intercompany og valuta/agio | Intern kontroll | `finance.ts`, `IntercompanyQuick`, `FxLedgerQuick` |
+| Førstegangsoppsett for små virksomheter: kontoplan og åpne perioder | Intern | `AccountingSetupQuick`, `finance.ts` (`create_account`, `create_period`), autorisert skriverolle og audit-logg |
 
 ## Adaptere som ikke skal fremstilles som live
 
