@@ -1,5 +1,8 @@
+import type { R2Bucket } from '@cloudflare/workers-types';
+
 export interface Env {
   DB?: D1Database;
+  DOCS?: R2Bucket;
   API_WRITE_KEY?: string;
   STRIPE_RESTRICTED_KEY?: string;
   STRIPE_WEBHOOK_SECRET?: string;
@@ -49,6 +52,11 @@ function base64ToBytes(value: string) {
 
 export async function sha256(value: string) {
   const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(value));
+  return bytesToBase64(new Uint8Array(digest));
+}
+
+export async function sha256Bytes(value: Uint8Array) {
+  const digest = await crypto.subtle.digest('SHA-256', value as BufferSource);
   return bytesToBase64(new Uint8Array(digest));
 }
 

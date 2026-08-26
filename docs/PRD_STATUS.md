@@ -9,6 +9,7 @@ Dette er en implementasjonsstatus, ikke en påstand om regulatorisk godkjenning.
 
 | Krav | Status | Bevis i løsningen |
 |---|---|---|
+| Bilagsarkiv med dokumentinnhold og kontrollsum | Intern | `functions/api/documents.ts`, `accounting_documents`, Cloudflare R2-binding `DOCS`, tenant-sjekk, SHA-256, opplastingsflate i `app/finance.astro` |
 | Bilag, balanserte linjer og gapless sekvens | Intern | `functions/api/finance.ts`, `voucher_sequences`, atomisk validering |
 | Periodelåsing og kontrollspor | Intern | `finance.ts`, period close-komponentene, audit-logg |
 | Faktura, kreditnota, åpne poster og betaling | Intern | `finance.ts`, `SalesInvoiceQuick`, `ReceivablesPayablesQuick` |
@@ -37,15 +38,15 @@ CRM/revenue, styre/govenance, HCM, IT, felt, HMS/ESG, treasury, kort, risiko, co
 
 ## Verifikasjon utført
 
-- `npm run verify:source` — PASS (54 sider, 45 nettleserskript)
-- `npm run verify:api` — PASS (41 API-moduler)
+- `npm run verify:source` — PASS (54 sider, 46 nettleserskript)
+- `npm run verify:api` — PASS (42 API-moduler)
 - `npx tsc --noEmit` — PASS
 - `npm run build` — PASS (63 sider)
 - `git diff --check` — PASS
 - Produksjon `https://styr.ing/`: landing, `/finance/`, `/app/finance/`, `/login`, `/api/health` — HTTP 200
 - Produksjonssammendrag: balanserte bilag, perioder, bank-/innkjøps-/lønnskontroller returnerer JSON fra D1
-- Produksjonssmoke: `LIVE API SMOKE: PASS (112 checks against https://styr.ing)` etter siste deploy
-- Siste deploy: Cloudflare Pages `https://35209983.styr-ing.pages.dev` (produksjonsdomene `https://styr.ing/`), commit `ef677ce` (hash-verifiserbar audit-kjede, integritets-smoke og audit-UI)
+- Produksjonssmoke: `LIVE API SMOKE: PASS (114 checks against https://styr.ing)` etter siste deploy
+- Siste deploy: Cloudflare Pages `https://201acf4e.styr-ing.pages.dev` (produksjonsdomene `https://styr.ing/`), inkluderer bilagsarkiv på R2, commit oppdateres ved neste kildecommit
 
 ## Brukerflyt — månedsavslutning
 

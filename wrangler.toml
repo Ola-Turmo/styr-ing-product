@@ -8,3 +8,7 @@ pages_build_output_dir = "dist"
 binding = "DB"
 database_name = "styr-ing-db"
 database_id = "745ab44e-8069-489d-8333-d1fd4049ae1d"
+
+[[r2_buckets]]
+binding = "DOCS"
+bucket_name = "styr-ing-documents"

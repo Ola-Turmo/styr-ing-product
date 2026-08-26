@@ -4,7 +4,7 @@ const checks = [
   ['health', '/api/health', 200], ['auth session', '/api/auth', 200],
   ['legal status', '/api/legal?boardId=board-1', 200], ['billing status', '/api/billing?boardId=board-1', 200],
   ['privacy center', '/api/privacy?boardId=board-1', 200], ['membership guard', '/api/members?boardId=board-1', 401],
- ['invite activation page', '/activate/', 200], ['public landing page', '/', 200], ['public capability map', '/capabilities/', 200], ['customer workspace shell', '/app/', 200], ['tenant workspace shell', '/app/arbeidsflate/', 200], ['tenant finance workspace shell', '/app/finance/', 200], ['tenant intelligence workspace shell', '/app/intelligence/', 200], ['boards', '/api/boards', 200],
+ ['invite activation page', '/activate/', 200], ['public landing page', '/', 200], ['public capability map', '/capabilities/', 200], ['customer workspace shell', '/app/', 200], ['tenant workspace shell', '/app/arbeidsflate/', 200], ['tenant finance workspace shell', '/app/finance/', 200], ['tenant intelligence workspace shell', '/app/intelligence/', 200], ['boards', '/api/boards', 200], ['accounting document metadata', '/api/documents?boardId=board-1', 200],
  ['event mesh summary', '/api/events?boardId=board-1&view=summary', 200], ['event mesh destinations', '/api/events?boardId=board-1&view=destinations', 200], ['event mesh deliveries', '/api/events?boardId=board-1&view=deliveries', 200], ['event mesh events', '/api/events?boardId=board-1&view=events', 200],
   ['compliance summary', '/api/compliance?boardId=board-1&view=summary', 200],
   ['controls summary', '/api/controls?boardId=board-1&view=summary', 200],
@@ -61,6 +61,10 @@ for (const [label, path, expected] of checks) {
   if (label === 'audit integrity') {
     const payload = await response.json();
     if (!payload.integrity || payload.integrity.valid !== true) failures.push(`${label}: expected valid audit integrity`);
+  }
+  if (label === 'accounting document metadata') {
+    const payload = await response.json();
+    if (!Array.isArray(payload.data) || payload.storage !== 'r2') failures.push(`${label}: expected tenant metadata and R2 storage`);
   }
 }
 for (const [label, path, payload] of [
