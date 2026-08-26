@@ -84,6 +84,7 @@ for (const [label, path, payload] of [
   ['board governance write guard', '/api/board_governance', { boardId: 'board-1', action: 'record_attendance', attendanceId: 'fixture-not-used', attendanceStatus: 'present' }],
   ['board dissent write guard', '/api/board_governance', { boardId: 'board-1', action: 'record_dissent', resolutionId: 'fixture-not-used', memberId: 'fixture-not-used', statement: 'fixture' }],
   ['finance period write guard', '/api/finance', { boardId: 'board-1', action: 'lock_period', period: '2026-99' }],
+  ['SMB chart setup write guard', '/api/finance', { boardId: 'board-1', action: 'seed_smb_chart' }],
   ['MVA calculation guard', '/api/mva', { boardId: 'board-1', action: 'calculate_period', period: '2026-08' }],
   ['MVA approval guard', '/api/mva', { boardId: 'board-1', action: 'approve_period', period: '2026-08' }],
   ['posting preparation guard', '/api/postings', { boardId: 'board-1', action: 'prepare_sales_invoice', sourceId: 'fixture-not-used', period: '2026-08', primaryAccountId: 'fixture-not-used', secondaryAccountId: 'fixture-not-used' }],

@@ -125,6 +125,36 @@ export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
       await recordAudit(db, { boardId, action, entityType: 'ledger_account', entityId: code, userId: authorization.userId || undefined, details: { code, accountType } });
       return json({ ok: true, action, code, name, accountType }, { status: 201 });
     }
+    if (action === 'seed_smb_chart') {
+      // A deliberately small, Norwegian SMB-friendly starter chart. It is
+      // idempotent and never overwrites an account the customer has already
+      // created; the accountant can extend or rename accounts afterwards.
+      const starterAccounts = [
+        ['1500', 'Kundefordringer', 'asset', null],
+        ['1920', 'Bankinnskudd', 'asset', null],
+        ['2050', 'Annen egenkapital', 'equity', null],
+        ['2400', 'Leverandørgjeld', 'liability', null],
+        ['2600', 'Forskuddstrekk', 'liability', null],
+        ['2700', 'Skyldig utgående merverdiavgift', 'liability', '3'],
+        ['2710', 'Inngående merverdiavgift', 'asset', '1'],
+        ['2770', 'Skyldig arbeidsgiveravgift', 'liability', null],
+        ['2900', 'Annen kortsiktig gjeld', 'liability', null],
+        ['3000', 'Salgsinntekt', 'revenue', '3'],
+        ['4000', 'Varekjøp', 'expense', '1'],
+        ['5000', 'Lønn', 'expense', null],
+        ['6300', 'Leiekostnad', 'expense', '1'],
+        ['6800', 'Kontorrekvisita', 'expense', '1'],
+        ['8050', 'Renteinntekt', 'revenue', null],
+      ] as const;
+      const existing = (await db.prepare('SELECT code FROM ledger_accounts WHERE board_id=?').bind(boardId).all()).results as Array<{ code?: unknown }>;
+      const existingCodes = new Set(existing.map((row) => String(row.code || '')));
+      const missing = starterAccounts.filter(([code]) => !existingCodes.has(code));
+      if (missing.length) {
+        await db.batch(missing.map(([code, name, accountType, vatCode]) => db.prepare('INSERT INTO ledger_accounts (id,board_id,code,name,account_type,vat_code,active) VALUES (?,?,?,?,?,?,1)').bind(id('acct'), boardId, code, name, accountType, vatCode)));
+      }
+      await recordAudit(db, { boardId, action, entityType: 'ledger_account', entityId: 'smb-starter-chart', userId: authorization.userId || undefined, details: { inserted: missing.length, total: starterAccounts.length } });
+      return json({ ok: true, action, inserted: missing.length, existing: starterAccounts.length - missing.length, total: starterAccounts.length, note: 'Starter chart only; have an accountant validate your complete chart and VAT mapping before production use.' }, { status: 201 });
+    }
     if (action === 'create_period') {
       const period = String(value?.period || '').trim(); if (!periodPattern.test(period)) return json({ error: 'period_invalid' }, { status: 400 });
       try { await db.prepare('INSERT INTO accounting_periods (id,board_id,period,status) VALUES (?,?,?,\'open\')').bind(id('period'), boardId, period).run(); }
