@@ -32,7 +32,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
         a.company_name,COALESCE(p.email,'') customer_email
         FROM sales_invoices i LEFT JOIN crm_accounts a ON a.id=i.account_id
         LEFT JOIN customer_invoice_profiles p ON p.board_id=i.board_id AND p.account_id=i.account_id
-        WHERE i.id=? AND i.board_id=? AND i.status NOT IN ('draft','review','cancelled')`).bind(invoiceId, boardId).first<Record<string, unknown>>();
+        WHERE i.id=? AND i.board_id=? AND i.status NOT IN ('draft','review','cancelled','paid')`).bind(invoiceId, boardId).first<Record<string, unknown>>();
       if (!invoice) return json({ error: 'sales_invoice_not_found_or_not_issued' }, { status: 404 });
       const outstanding = Math.max(0, Number(invoice.total_minor || 0) - Number(invoice.paid_minor || 0) - Number(invoice.credited_minor || 0));
       const today = new Date().toISOString().slice(0, 10), dueDate = String(invoice.due_date || '');
