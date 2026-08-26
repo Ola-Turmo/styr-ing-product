@@ -154,11 +154,15 @@ for (const [label, path, payload] of [
   ['SAF-T export record guard', '/api/finance', { boardId: 'board-1', action: 'record_saf_t_export', from: '2026-01', to: '2026-12' }],
   ['privacy request guard', '/api/privacy', { boardId: 'board-1', requestType: 'access' }],
   ['invite guard', '/api/auth', { action: 'invite_user', boardId: 'board-1', email: 'invite@example.invalid', name: 'Invite User' }],
-  ['accounting document upload guard', '/api/documents', { boardId: 'board-1' }],
 ]) {
   const response = await fetch(`${baseUrl}${path}`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(payload) });
   if (response.status !== 401) failures.push(`${label}: expected 401, got ${response.status}`);
 }
+const documentForm = new FormData();
+documentForm.set('boardId', 'board-1');
+documentForm.set('file', new Blob(['smoke'], { type: 'text/plain' }), 'smoke.txt');
+const documentUploadGuard = await fetch(`${baseUrl}/api/documents`, { method: 'POST', body: documentForm });
+if (documentUploadGuard.status !== 401) failures.push(`accounting document upload guard: expected 401, got ${documentUploadGuard.status}`);
 const invalidLogin = await fetch(`${baseUrl}/api/auth`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ action: 'login', email: 'nobody@example.invalid', password: 'not-a-real-password' }) });
 if (invalidLogin.status !== 401) failures.push(`invalid login guard: expected 401, got ${invalidLogin.status}`);
 const webhookUnconfigured = await fetch(`${baseUrl}/api/billing-webhook`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: '{}' });
