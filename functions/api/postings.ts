@@ -13,6 +13,11 @@ async function accountsExist(db: D1Database, boardId: string, accountIds: string
   return rows.length === unique.length;
 }
 
+async function accountCode(db: D1Database, boardId: string, accountId: string) {
+  const row = await db.prepare('SELECT code,account_type FROM ledger_accounts WHERE id=? AND board_id=? AND active=1').bind(accountId, boardId).first<{ code?: string; account_type?: string }>();
+  return row ? { code: String(row.code || ''), accountType: String(row.account_type || '') } : null;
+}
+
 async function nextVoucher(db: D1Database, boardId: string, voucher: { voucherDate: string; period: string; description: string; source: string; externalReference: string; createdBy: string }, lines: PostingLine[]) {
   if (!periodPattern.test(voucher.period) || !datePattern.test(voucher.voucherDate) || voucher.voucherDate.slice(0, 7) !== voucher.period) throw new Error('voucher_period_invalid');
   if (await db.prepare("SELECT 1 FROM accounting_periods WHERE board_id=? AND period=? AND status='locked'").bind(boardId, voucher.period).first()) throw new Error('period_locked');
@@ -94,6 +99,8 @@ export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
       const employerContribution = employer !== null && gross !== null ? employer - gross : 0;
       const requiredAccounts = [salaryAccount, taxAccount, payableAccount, ...(employerContribution ? [employerExpenseAccount, employerLiabilityAccount] : [])];
       if (gross === null || tax === null || employer === null || gross <= 0 || tax > gross || employer < gross || requiredAccounts.some((account) => !account) || !(await accountsExist(db, boardId, requiredAccounts))) return json({ error: 'payroll_posting_fields_invalid' }, { status: 400 });
+      const withholdingAccount = await accountCode(db, boardId, taxAccount);
+      if (!withholdingAccount || withholdingAccount.accountType !== 'liability' || !/^260\d$/.test(withholdingAccount.code)) return json({ error: 'payroll_withholding_account_invalid', detail: 'Forskuddstrekk må føres på aktiv konto 2600 eller en aktiv 260x-underkonto som virksomheten har godkjent for skattetrekk.' }, { status: 400 });
       const netPay = gross - tax;
       const lines: PostingLine[] = [{ accountId: salaryAccount, description: `Lønn ${text(source.period, 20)}`, debitMinor: gross, creditMinor: 0 }, ...(employerContribution ? [{ accountId: employerExpenseAccount, description: `Arbeidsgiverkostnad ${text(source.period, 20)}`, debitMinor: employerContribution, creditMinor: 0 }] : []), { accountId: taxAccount, description: `Forskuddstrekk ${text(source.period, 20)}`, debitMinor: 0, creditMinor: tax }, { accountId: payableAccount, description: `Skyldig lønn ${text(source.period, 20)}`, debitMinor: 0, creditMinor: netPay }, ...(employerContribution ? [{ accountId: employerLiabilityAccount, description: `Skyldig arbeidsgiverkostnad ${text(source.period, 20)}`, debitMinor: 0, creditMinor: employerContribution }] : [])];
       const snapshot = JSON.stringify({ sourceType: 'payroll_run', source, period, voucherDate, lines }); const proposalId = id('payposting'); const sourceHash = await sha256(snapshot);
