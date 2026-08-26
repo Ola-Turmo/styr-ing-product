@@ -25,17 +25,17 @@ const audiences = [
 ];
 ---
 
-<Layout title="Regnskap for små AS med kontroll" activeNav="home">
+<Layout title="Komplett regnskap for små norske bedrifter" activeNav="home">
   <div class="home">
     <section class="positioning" aria-label="Styr.ing for norske virksomheter">
-      <span>NORSK SAAS FOR SMÅ AS OG ENK</span><strong>Hele regnskapet. Ett rolig sted.</strong><a href="/trust">Sikkerhet og datagrunnlag ↗</a>
+      <span>NORSK REGNSKAPSSYSTEM FOR SMÅ AS OG ENK</span><strong>Hele regnskapet. Ett rolig sted.</strong><a href="/trust">Sikkerhet og datagrunnlag ↗</a>
     </section>
 
     <section class="hero">
       <div class="hero-copy">
         <p class="eyebrow"><i></i>Norsk regnskapsprogram for små AS og ENK</p>
         <h1>Hele regnskapet.<br /><em>Ett rolig sted.</em></h1>
-        <p class="lede">Fra første bilag til faktura, bankavstemming, MVA, lønn, rapporter og årsoppgjør. Styr.ing samler det daglige regnskapet på ett sted, slik at dere ser hva som er gjort, hva som mangler og hva som må godkjennes.</p>
+        <p class="lede">Fra første bilag til faktura, bankavstemming, MVA, lønn, rapporter og årsoppgjør. Styr.ing er et komplett regnskapssystem for små norske virksomheter — samlet på ett sted, slik at dere ser hva som er gjort, hva som mangler og hva som må godkjennes.</p>
         <div class="actions"><a class="button primary" href="/finance">Se regnskapsflaten med eksempeldata ↗</a><a class="button secondary" href="mailto:ola@styr.ing?subject=Demo%20av%20Styr.ing">Bestill en rolig gjennomgang</a></div>
         <div class="proof"><span><b>01</b>Bilag og faktura</span><span><b>02</b>Bank og MVA</span><span><b>03</b>Lønn og rapporter</span></div>
         <p class="hero-note"><span>✓</span> Laget for få personer, mange hatter og en regnskapshverdag som må fungere.</p>
@@ -67,10 +67,10 @@ const audiences = [
     </section>
 
     <section class="modules" id="produkt">
-      <div class="section-intro"><p class="kicker">Regnskap først · mer når dere trenger det</p><h2>Alt det vanlige regnskapet.<br /><em>Samlet og forståelig.</em></h2><p>Bilag, faktura, MVA, lønn, bankgrunnlag og rapportering er kjernen. Når den er på plass, kan dere koble på kunder, prosjekter, styre og kontroll uten å bytte system.</p></div>
+      <div class="section-intro"><p class="kicker">Regnskapet først · styring når dere trenger det</p><h2>Alt det vanlige regnskapet.<br /><em>Samlet og forståelig.</em></h2><p>Bilag, faktura, MVA, lønn, bankgrunnlag, rapporter og årsoppgjør er kjernen i Styr.ing. Når grunnregnskapet er på plass, kan dere koble på kunder, prosjekter, styre og kontroll uten å bytte system.</p></div>
       <p class="module-group-label">Regnskapskjernen</p>
       <div class="module-grid">{modules.slice(0, 6).map(([icon, title, text, href], index) => <a class="module" href={href}><span class="number">{String(index + 1).padStart(2, '0')}</span><span class="icon">{icon}</span><h3>{title}</h3><p>{text}</p><b>Åpne arbeidsflate ↗</b></a>)}</div>
-      <p class="module-group-label secondary-label">Tillegg for virksomhetsstyring</p>
+      <p class="module-group-label secondary-label">Mer styring når grunnregnskapet er på plass</p>
       <div class="module-grid secondary-grid">{modules.slice(6).map(([icon, title, text, href], index) => <a class="module" href={href}><span class="number">{String(index + 7).padStart(2, '0')}</span><span class="icon">{icon}</span><h3>{title}</h3><p>{text}</p><b>Åpne arbeidsflate ↗</b></a>)}</div>
     </section>
 
