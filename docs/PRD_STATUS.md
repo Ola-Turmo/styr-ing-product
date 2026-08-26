@@ -87,6 +87,14 @@ Betalinger kan kobles til åpne kunde-/leverandørposter fra samme regnskapsflat
 - Fakturaskjemaet bruker dynamisk dagens dato og foreslår 14 dagers forfall, også etter at skjemaet nullstilles.
 - Verifisert med `npx tsc --noEmit`, `npm run verify:api`, `npm run verify:source`, `npm run build`, `git diff --check` og `LIVE API SMOKE: PASS (120 checks against https://styr.ing)`.
 
+## Siste rapportforbedring (2026-08-27)
+
+- A-melding, NAV-inntektsmelding og MVA-rapportgrunnlag er nå idempotente ved trygg retry: samme hash returnerer eksisterende aktive grunnlag, mens endrede tall gir en tydelig snapshot-konflikt.
+- D1-indeksen `idx_compliance_submissions_active_unique` tillater bare ett aktivt grunnlag per virksomhet, rapporttype og periode og lukker race condition ved samtidige faner.
+- Produksjonsmigrasjon `20260913_compliance_submission_idempotency.sql` er kjørt og verifisert i `styr-ing-db`.
+- Deploy: `https://f33b5ead.styr-ing.pages.dev` → `https://styr.ing/` (Cloudflare Pages `main`).
+- Verifisert med `npm run verify`, `npm run verify:live` (120 kontroller), HTTP 200 på landing og `/api/health`.
+
 ## Siste kontoaktiveringsforbedring (2026-08-26)
 
 - Invitasjon på styremedlemsiden bruker nå et inline-skjema med e-post, navn, rolle, tydelig 24-timers utløp og kopieringsknapp. Nettleserens flertrinns `prompt`-dialoger er fjernet.
