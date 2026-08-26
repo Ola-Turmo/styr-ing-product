@@ -864,6 +864,7 @@ CREATE TABLE IF NOT EXISTS collection_cases (
 CREATE INDEX IF NOT EXISTS idx_payroll_runs_board ON payroll_runs(board_id,period,status);
 CREATE INDEX IF NOT EXISTS idx_payroll_items_run ON payroll_items(payroll_run_id);
 CREATE INDEX IF NOT EXISTS idx_compliance_submissions_board ON compliance_submissions(board_id,period,status);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_compliance_submissions_active_unique ON compliance_submissions(board_id,submission_type,period) WHERE status IN ('prepared','review','approved','submitted');
 CREATE TABLE IF NOT EXISTS vat_periods (
   id TEXT PRIMARY KEY, board_id TEXT NOT NULL REFERENCES boards(id) ON DELETE CASCADE,
   period TEXT NOT NULL, status TEXT NOT NULL DEFAULT 'open' CHECK(status IN ('open','calculated','approved','prepared')),
