@@ -115,6 +115,13 @@ Betalinger kan kobles til åpne kunde-/leverandørposter fra samme regnskapsflat
 - Deploy: `https://51c0d6c4.styr-ing.pages.dev` → `https://styr.ing/` (Cloudflare Pages `main`).
 - Verifisert med `npm run verify`, `npm run verify:live` (120 kontroller), HTTP 200 på landing, `/finance/` og `/api/health`.
 
+## Siste korrigeringsforbedring (2026-08-27)
+
+- Bokførte bilag kan nå korrigeres fra regnskapsflaten uten sletting eller omskriving. Brukeren velger originalbilaget og oppretter et motsatt, balansert bilag med `reversal:<original-id>` som sporbar kobling.
+- Reverseringer avvises i låste perioder, beholder originalens MVA-koder og er idempotente ved retry eller samtidige faner.
+- Arbeidsflaten viser korrigeringsflyten rett under manuell bokføring, med forklaring tilpasset små virksomheter.
+- Verifisert med `npm run verify`, `npm run verify:api`, `npm run build` og `git diff --check` før deploy.
+
 ## Siste kontoaktiveringsforbedring (2026-08-26)
 
 - Invitasjon på styremedlemsiden bruker nå et inline-skjema med e-post, navn, rolle, tydelig 24-timers utløp og kopieringsknapp. Nettleserens flertrinns `prompt`-dialoger er fjernet.

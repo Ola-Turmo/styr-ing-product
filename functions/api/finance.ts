@@ -701,6 +701,171 @@ export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
     if (!authorization.allowed)
       return json({ error: "write_not_authorized" }, { status: 401 });
     const db = requireDb(env);
+    if (action === "reverse_voucher") {
+      const sourceVoucherId = String(value?.voucherId || value?.sourceVoucherId || "").trim();
+      const requestedDate = String(value?.reversalDate || "").trim();
+      const descriptionOverride = String(value?.description || "").trim();
+      if (!sourceVoucherId)
+        return json({ error: "voucherId_required" }, { status: 400 });
+      const source = await db
+        .prepare(
+          `SELECT id,voucher_number,voucher_date,period,description,status
+           FROM vouchers WHERE id=? AND board_id=? AND status='posted'`,
+        )
+        .bind(sourceVoucherId, boardId)
+        .first<Record<string, unknown>>();
+      if (!source)
+        return json({ error: "posted_voucher_not_found" }, { status: 404 });
+      const sourceLines = (
+        await db
+          .prepare(
+            `SELECT account_id,description,debit_minor,credit_minor,vat_code
+             FROM voucher_lines WHERE voucher_id=? ORDER BY id`,
+          )
+          .bind(sourceVoucherId)
+          .all()
+      ).results as Record<string, unknown>[];
+      if (!sourceLines.length)
+        return json({ error: "voucher_has_no_lines" }, { status: 409 });
+      const reversalDate = requestedDate || String(source.voucher_date || "");
+      if (!validIsoDate(reversalDate))
+        return json({ error: "reversal_date_invalid" }, { status: 400 });
+      const period = reversalDate.slice(0, 7);
+      if (
+        await db
+          .prepare(
+            "SELECT 1 FROM accounting_periods WHERE board_id=? AND period=? AND status='locked'",
+          )
+          .bind(boardId, period)
+          .first()
+      )
+        return json({ error: "period_locked", period }, { status: 409 });
+      const externalReference = `reversal:${sourceVoucherId}`;
+      const existing = await db
+        .prepare(
+          "SELECT id,voucher_number,voucher_date,period FROM vouchers WHERE board_id=? AND external_reference=? AND status='posted'",
+        )
+        .bind(boardId, externalReference)
+        .first<Record<string, unknown>>();
+      if (existing)
+        return json({
+          ok: true,
+          action,
+          sourceVoucherId,
+          voucherId: existing.id,
+          voucherNumber: Number(existing.voucher_number),
+          period: existing.period,
+          reversalDate: existing.voucher_date,
+          idempotent: true,
+        });
+      const reversalId = id("voucher");
+      const description =
+        descriptionOverride ||
+        `Reversering av bilag ${String(source.voucher_number || "")}`;
+      const statements: D1PreparedStatement[] = [
+        db
+          .prepare(
+            "INSERT INTO voucher_sequences (board_id,next_number) SELECT ?,COALESCE(MAX(voucher_number),0)+1 FROM vouchers WHERE board_id=? ON CONFLICT(board_id) DO NOTHING",
+          )
+          .bind(boardId, boardId),
+        db
+          .prepare(
+            "UPDATE voucher_sequences SET next_number=next_number+1,updated_at=datetime('now') WHERE board_id=?",
+          )
+          .bind(boardId),
+        db
+          .prepare(
+            "INSERT INTO vouchers (id,board_id,voucher_number,voucher_date,period,description,source,status,external_reference,created_by) SELECT ?,?,next_number-1,?,?,?,?,?,?,? FROM voucher_sequences WHERE board_id=?",
+          )
+          .bind(
+            reversalId,
+            boardId,
+            reversalDate,
+            period,
+            description,
+            "voucher_reversal",
+            "posted",
+            externalReference,
+            String(authorization.userId || "api"),
+            boardId,
+          ),
+      ];
+      sourceLines.forEach((line) =>
+        statements.push(
+          db
+            .prepare(
+              "INSERT INTO voucher_lines (id,voucher_id,account_id,description,debit_minor,credit_minor,vat_code) VALUES (?,?,?,?,?,?,?)",
+            )
+            .bind(
+              id("line"),
+              reversalId,
+              String(line.account_id),
+              `Reversering · ${String(line.description || description).slice(0, 200)}`,
+              Number(line.credit_minor || 0),
+              Number(line.debit_minor || 0),
+              line.vat_code ? String(line.vat_code) : null,
+            ),
+        ),
+      );
+      try {
+        await db.batch(statements);
+      } catch (error) {
+        if (error instanceof Error && error.message.toLowerCase().includes("unique")) {
+          const raced = await db
+            .prepare(
+              "SELECT id,voucher_number,voucher_date,period FROM vouchers WHERE board_id=? AND external_reference=? AND status='posted'",
+            )
+            .bind(boardId, externalReference)
+            .first<Record<string, unknown>>();
+          if (raced)
+            return json({
+              ok: true,
+              action,
+              sourceVoucherId,
+              voucherId: raced.id,
+              voucherNumber: Number(raced.voucher_number),
+              period: raced.period,
+              reversalDate: raced.voucher_date,
+              idempotent: true,
+            });
+        }
+        throw error;
+      }
+      const created = await db
+        .prepare("SELECT voucher_number FROM vouchers WHERE id=? AND board_id=?")
+        .bind(reversalId, boardId)
+        .first<{ voucher_number: number }>();
+      if (!created)
+        return json({ error: "reversal_created_without_number" }, { status: 503 });
+      await recordAudit(db, {
+        boardId,
+        action: "voucher_reversed",
+        entityType: "voucher",
+        entityId: reversalId,
+        userId: authorization.userId || undefined,
+        details: {
+          sourceVoucherId,
+          sourceVoucherNumber: Number(source.voucher_number),
+          reversalDate,
+          period,
+          lineCount: sourceLines.length,
+          externalReference,
+        },
+      });
+      return json(
+        {
+          ok: true,
+          action,
+          sourceVoucherId,
+          voucherId: reversalId,
+          voucherNumber: Number(created.voucher_number),
+          period,
+          reversalDate,
+          idempotent: false,
+        },
+        { status: 201 },
+      );
+    }
     if (action === "create_account") {
       const code = String(value?.code || "").trim();
       const name = String(value?.name || "").trim();
