@@ -2102,7 +2102,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
         !invoiceNumber ||
         !accountId ||
         !validIsoDate(issueDate) ||
-        (dueDate && !validIsoDate(dueDate))
+        (dueDate && (!validIsoDate(dueDate) || dueDate < issueDate))
       )
         return json({ error: "invoice_fields_invalid" }, { status: 400 });
       if (
@@ -2551,7 +2551,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
         return json({ error: "credit_note_fields_invalid" }, { status: 400 });
       const invoice = await db
         .prepare(
-          "SELECT i.total_minor,i.status,COALESCE((SELECT SUM(c.total_minor) FROM sales_credit_notes c WHERE c.sales_invoice_id=i.id AND c.board_id=i.board_id AND c.status NOT IN ('cancelled')),0) reserved_credit_minor FROM sales_invoices i WHERE i.id=? AND i.board_id=? AND i.status NOT IN ('draft','cancelled')",
+          "SELECT i.total_minor,i.issue_date,i.status,COALESCE((SELECT SUM(c.total_minor) FROM sales_credit_notes c WHERE c.sales_invoice_id=i.id AND c.board_id=i.board_id AND c.status NOT IN ('cancelled')),0) reserved_credit_minor FROM sales_invoices i WHERE i.id=? AND i.board_id=? AND i.status NOT IN ('draft','cancelled')",
         )
         .bind(invoiceId, boardId)
         .first<Record<string, unknown>>();
@@ -2559,6 +2559,11 @@ export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
         return json(
           { error: "invoice_not_found_or_not_issued" },
           { status: 409 },
+        );
+      if (String(invoice.issue_date || "") && issueDate < String(invoice.issue_date))
+        return json(
+          { error: "credit_note_before_invoice", detail: "Kreditnotadato kan ikke være før fakturadato." },
+          { status: 400 },
         );
       const totalMinor = amountMinor + vatMinor;
       const creditableMinor = Math.max(
