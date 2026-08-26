@@ -34,6 +34,8 @@ const checks = [
   ['payroll runs', '/api/payroll?boardId=board-1&view=runs', 200],
   ['payroll checks', '/api/payroll?boardId=board-1&view=checks', 200],
   ['payroll submissions', '/api/payroll?boardId=board-1&view=submissions', 200],
+
+  ['payroll people', '/api/payroll?boardId=board-1&view=people', 200],
   ['field summary', '/api/field?boardId=board-1&view=summary', 200], ['field projects', '/api/field?boardId=board-1&view=projects', 200], ['field facility tasks', '/api/field?boardId=board-1&view=facility_tasks', 200], ['field people', '/api/field?boardId=board-1&view=people', 200],
   ['field time', '/api/field?boardId=board-1&view=time', 200], ['field WIP', '/api/field?boardId=board-1&view=wip', 200],
   ['field invoice drafts', '/api/field?boardId=board-1&view=invoice_drafts', 200],
