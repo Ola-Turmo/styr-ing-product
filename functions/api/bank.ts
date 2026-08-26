@@ -74,20 +74,43 @@ export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
       if (!bankAccountId || !rows.length || rows.length > 500) return json({ error: 'bank_account_and_1_to_500_transactions_required' }, { status: 400 });
       if (!(await db.prepare('SELECT id FROM bank_accounts WHERE id=? AND board_id=?').bind(bankAccountId, boardId).first())) return json({ error: 'bank_account_not_found' }, { status: 404 });
       const statements: D1PreparedStatement[] = []; const accepted: Record<string, unknown>[] = []; const invalid: Array<{ line: number; error: string }> = [];
+      const normalizedRows: Array<{ line: number; transactionDate: string; valueDate: string | null; description: string; externalReference: string; counterparty: string | null; amountMinor: number; currency: string }> = [];
       for (let index = 0; index < rows.length; index += 1) {
         const row = rows[index] || {}; const transactionDate = text(row.transactionDate, 20); const description = text(row.description, 240); const externalReference = text(row.externalReference, 160); const amountMinor = amount(row.amountMinor);
         if (!validIsoDate(transactionDate) || (row.valueDate && !validIsoDate(text(row.valueDate, 20))) || !description || !externalReference || !Number.isInteger(amountMinor) || amountMinor === 0) { invalid.push({ line: index + 1, error: 'valid_date_description_reference_and_nonzero_amount_required' }); continue; }
-        const transactionId = id('banktx'); statements.push(db.prepare('INSERT INTO bank_transactions (id,board_id,bank_account_id,transaction_date,value_date,description,counterparty,amount_minor,currency,external_reference,status) VALUES (?,?,?,?,?,?,?,?,?,?,?)').bind(transactionId, boardId, bankAccountId, transactionDate, text(row.valueDate, 20) || null, description, text(row.counterparty, 160) || null, amountMinor, text(row.currency, 3) || 'NOK', externalReference, 'imported')); accepted.push({ transactionId, line: index + 1, externalReference });
+        normalizedRows.push({ line: index + 1, transactionDate, valueDate: text(row.valueDate, 20) || null, description, externalReference, counterparty: text(row.counterparty, 160) || null, amountMinor, currency: text(row.currency, 3) || 'NOK' });
       }
       if (invalid.length) return json({ error: 'bank_import_validation_failed', invalid, accepted: [] }, { status: 400 });
-      try { await db.batch(statements); } catch (error) { return json({ error: 'bank_import_duplicate_or_failed', detail: error instanceof Error ? error.message : 'import_failed' }, { status: 409 }); }
-      await recordAudit(db, { boardId, action: 'bank_transactions_imported', entityType: 'bank_account', entityId: bankAccountId, userId: authorization.userId || undefined, details: { count: accepted.length, source: 'manual_batch_import', autoPosting: 'disabled' } }); return json({ ok: true, action, bankAccountId, status: 'imported', count: accepted.length, transactions: accepted, autoPosting: 'disabled' }, { status: 201 });
+      const refs = normalizedRows.map((row) => row.externalReference); const existingRows = (await db.prepare(`SELECT id,transaction_date,value_date,description,amount_minor,currency,external_reference FROM bank_transactions WHERE board_id=? AND bank_account_id=? AND external_reference IN (${refs.map(() => '?').join(',')})`).bind(boardId, bankAccountId, ...refs).all()).results as Record<string, unknown>[];
+      const existingByReference = new Map(existingRows.map((row) => [String(row.external_reference), row]));
+      for (const row of normalizedRows) {
+        const existing = existingByReference.get(row.externalReference);
+        if (existing) {
+          if (String(existing.transaction_date) !== row.transactionDate || String(existing.value_date || '') !== String(row.valueDate || '') || Number(existing.amount_minor) !== row.amountMinor || String(existing.currency || 'NOK').toUpperCase() !== row.currency.toUpperCase() || String(existing.description) !== row.description) {
+            invalid.push({ line: row.line, error: 'external_reference_conflict' });
+          } else {
+            accepted.push({ transactionId: existing.id, line: row.line, externalReference: row.externalReference, idempotent: true });
+          }
+          continue;
+        }
+        const transactionId = id('banktx'); statements.push(db.prepare('INSERT INTO bank_transactions (id,board_id,bank_account_id,transaction_date,value_date,description,counterparty,amount_minor,currency,external_reference,status) VALUES (?,?,?,?,?,?,?,?,?,?,?)').bind(transactionId, boardId, bankAccountId, row.transactionDate, row.valueDate, row.description, row.counterparty, row.amountMinor, row.currency, row.externalReference, 'imported')); existingByReference.set(row.externalReference, { id: transactionId, transaction_date: row.transactionDate, value_date: row.valueDate, description: row.description, amount_minor: row.amountMinor, currency: row.currency }); accepted.push({ transactionId, line: row.line, externalReference: row.externalReference, idempotent: false });
+      }
+      if (invalid.length) return json({ error: 'bank_import_duplicate_or_conflict', invalid, accepted: [] }, { status: 409 });
+      if (statements.length) { try { await db.batch(statements); } catch (error) { return json({ error: 'bank_import_duplicate_or_failed', detail: error instanceof Error ? error.message : 'import_failed' }, { status: 409 }); } }
+      const idempotentCount = accepted.filter((row) => row.idempotent).length;
+      await recordAudit(db, { boardId, action: 'bank_transactions_imported', entityType: 'bank_account', entityId: bankAccountId, userId: authorization.userId || undefined, details: { count: accepted.length, insertedCount: accepted.length - idempotentCount, idempotentCount, source: 'manual_batch_import', autoPosting: 'disabled' } }); return json({ ok: true, action, bankAccountId, status: 'imported', count: accepted.length, insertedCount: accepted.length - idempotentCount, idempotentCount, transactions: accepted, autoPosting: 'disabled' }, { status: 201 });
     }
     if (action === 'import_transaction') {
       const bankAccountId = text(v?.bankAccountId, 120); const transactionDate = text(v?.transactionDate, 20); const description = text(v?.description, 240); const externalReference = text(v?.externalReference, 160); const amountMinor = amount(v?.amountMinor);
       if (!bankAccountId || !validIsoDate(transactionDate) || (v?.valueDate && !validIsoDate(text(v.valueDate, 20))) || !description || !externalReference || !Number.isInteger(amountMinor) || amountMinor === 0) return json({ error: 'valid_account_date_description_reference_and_nonzero_amount_required' }, { status: 400 });
       if (!(await db.prepare('SELECT id FROM bank_accounts WHERE id=? AND board_id=?').bind(bankAccountId, boardId).first())) return json({ error: 'bank_account_not_found' }, { status: 404 });
-      const transactionId = id('banktx'); await db.prepare('INSERT INTO bank_transactions (id,board_id,bank_account_id,transaction_date,value_date,description,counterparty,amount_minor,currency,external_reference,status) VALUES (?,?,?,?,?,?,?,?,?,?,?)').bind(transactionId, boardId, bankAccountId, transactionDate, text(v?.valueDate, 20) || null, description, text(v?.counterparty, 160) || null, amountMinor, text(v?.currency, 3) || 'NOK', externalReference, 'imported').run();
+      const existing = await db.prepare('SELECT id,transaction_date,value_date,description,amount_minor,currency FROM bank_transactions WHERE board_id=? AND bank_account_id=? AND external_reference=?').bind(boardId, bankAccountId, externalReference).first<Record<string, unknown>>();
+      const currency = text(v?.currency, 3) || 'NOK';
+      if (existing) {
+        if (String(existing.transaction_date) !== transactionDate || String(existing.value_date || '') !== String(text(v?.valueDate, 20) || '') || Number(existing.amount_minor) !== amountMinor || String(existing.currency || 'NOK').toUpperCase() !== currency.toUpperCase() || String(existing.description) !== description) return json({ error: 'external_reference_conflict', detail: 'Bankreferansen er allerede brukt med andre transaksjonsdata.' }, { status: 409 });
+        return json({ ok: true, action, bankAccountId, transactionId: existing.id, status: 'imported', idempotent: true, autoPosting: 'disabled' }, { status: 200 });
+      }
+      const transactionId = id('banktx'); await db.prepare('INSERT INTO bank_transactions (id,board_id,bank_account_id,transaction_date,value_date,description,counterparty,amount_minor,currency,external_reference,status) VALUES (?,?,?,?,?,?,?,?,?,?,?)').bind(transactionId, boardId, bankAccountId, transactionDate, text(v?.valueDate, 20) || null, description, text(v?.counterparty, 160) || null, amountMinor, currency, externalReference, 'imported').run();
       await recordAudit(db, { boardId, action: 'bank_transaction_imported', entityType: 'bank_transaction', entityId: transactionId, userId: authorization.userId || undefined, details: { source: 'manual_import', autoPosting: 'disabled' } }); return json({ ok: true, action, transactionId, status: 'imported', autoPosting: 'disabled' }, { status: 201 });
     }
     if (action === 'suggest_match') {
