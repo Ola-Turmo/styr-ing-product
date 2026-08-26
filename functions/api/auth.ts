@@ -47,7 +47,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
         db.prepare("UPDATE invite_tokens SET used_at=datetime('now') WHERE board_id=? AND lower(email)=? AND used_at IS NULL AND expires_at>datetime('now')").bind(boardId, email),
         db.prepare("INSERT INTO invite_tokens (id,board_id,email,name,role,token_hash,expires_at,created_by) VALUES (?,?,?,?,?,?,datetime('now','+24 hours'),?)").bind(inviteId, boardId, email, name, role, await sha256(token), boardAuthorization.userId),
       ]);
-      return json({ ok: true, inviteId, boardId, activationUrl: `/activate?token=${encodeURIComponent(token)}`, expiresIn: '24h' }, { status: 201 });
+      return json({ ok: true, inviteId, boardId, activationUrl: `/activate?token=${encodeURIComponent(token)}`, expiresIn: '24h', expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString() }, { status: 201 });
     } catch (error) { return json({ error: 'user_creation_failed', detail: error instanceof Error ? error.message : 'unknown' }, { status: 400 }); }
   }
   if (action === 'activate_invite') {
@@ -59,10 +59,13 @@ export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
       const existing = await db.prepare('SELECT id FROM users WHERE lower(email)=?').bind(invite.email).first<{ id:string }>();
       if (existing) return json({ error: 'existing_account_must_sign_in' }, { status: 409 });
       const userId = `usr-${crypto.randomUUID()}`; const passwordHash = await hashPassword(password);
+      // Claim the token before creating records. The conditional UPDATE is the
+      // single-use guard when two activation requests arrive at the same time.
+      const claim = await db.prepare("UPDATE invite_tokens SET used_at=datetime('now') WHERE id=? AND used_at IS NULL AND expires_at>datetime('now')").bind(invite.id).run();
+      if ((claim.meta?.changes || 0) !== 1) return json({ error: 'invite_invalid_or_expired' }, { status: 410 });
       await db.batch([
         db.prepare('INSERT INTO users (id,email,name,password_hash) VALUES (?,?,?,?)').bind(userId,invite.email,invite.name,passwordHash),
         db.prepare('INSERT INTO user_boards (user_id,board_id,role) VALUES (?,?,?)').bind(userId,invite.board_id,invite.role),
-        db.prepare("UPDATE invite_tokens SET used_at=datetime('now') WHERE id=? AND used_at IS NULL AND expires_at>datetime('now')").bind(invite.id),
       ]);
       const session = await createSession(env,userId,request); return json({ authenticated:true, boardId:invite.board_id }, { headers:{ 'set-cookie': sessionCookie(session) } });
     } catch (error) { return json({ error: 'invite_activation_failed', detail: error instanceof Error ? error.message : 'unknown' }, { status: 503 }); }

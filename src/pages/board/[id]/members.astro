@@ -25,6 +25,16 @@ const members = [
   </div>
 
   <div id="member-status" class="member-status" role="status" aria-live="polite"></div>
+  <section id="invite-panel" class="invite-panel" hidden aria-labelledby="invite-title">
+    <div class="invite-panel-head"><div><h2 id="invite-title">Inviter en kollega</h2><p>Send en sikker engangslenke til personen som skal ha tilgang.</p></div><button id="invite-close" type="button" class="btn-sm">Avbryt</button></div>
+    <form id="invite-form" class="invite-form">
+      <label for="invite-email">E-post</label><input id="invite-email" type="email" autocomplete="email" placeholder="navn@bedrift.no" required />
+      <label for="invite-name">Navn</label><input id="invite-name" type="text" autocomplete="name" placeholder="Navn på personen" minlength="2" required />
+      <label for="invite-role">Tilgang</label><select id="invite-role"><option value="viewer">Leser – kan se dokumenter og møter</option><option value="editor">Redaktør – kan oppdatere styrearbeid</option><option value="owner">Eier – full tilgang</option></select>
+      <button class="btn-primary" type="submit">Opprett invitasjon</button>
+    </form>
+    <div id="invite-result" class="invite-result" hidden role="status" aria-live="polite"><strong>Invitasjonen er klar</strong><p>Lenken kan brukes én gang og utløper om 24 timer.</p><div class="invite-url-row"><input id="invite-url" readonly aria-label="Aktiveringslenke" /><button id="invite-copy" type="button" class="btn-sm">Kopier lenke</button></div><small>Send lenken direkte til mottakeren. Av sikkerhetshensyn lagres den ikke i Styr.ing.</small></div>
+  </section>
   <div id="member-grid" class="member-grid">
     {members.map(m => (
       <div class="member-card">
@@ -98,15 +108,19 @@ const members = [
 </script>
 <script is:inline>
   const inviteButton = document.querySelector('#invite-button');
-  inviteButton?.addEventListener('click', async () => {
-    const email = window.prompt('E-post for den nye brukeren'); if (!email) return;
-    const name = window.prompt('Navn'); if (!name) return;
-    const role = window.prompt('Rolle: owner, editor eller viewer', 'viewer') || 'viewer';
-    const response = await fetch('/api/auth', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ action: 'invite_user', boardId, email, name, role }) });
-    const data = await response.json();
-    if (response.ok) window.prompt('Kopier denne engangslenken og send den til brukeren:', `${location.origin}${data.activationUrl}`);
-    else window.alert(data.error === 'owner_or_editor_required' ? 'Bare eier eller redaktør kan invitere.' : 'Invitasjonen kunne ikke opprettes.');
+  const invitePanel = document.querySelector('#invite-panel'); const inviteForm = document.querySelector('#invite-form'); const inviteResult = document.querySelector('#invite-result'); const inviteUrl = document.querySelector('#invite-url'); const inviteCopy = document.querySelector('#invite-copy'); const inviteClose = document.querySelector('#invite-close');
+  inviteButton?.addEventListener('click', () => { invitePanel.hidden = false; inviteResult.hidden = true; inviteForm.hidden = false; document.querySelector('#invite-email')?.focus(); });
+  inviteClose?.addEventListener('click', () => { invitePanel.hidden = true; });
+  inviteForm?.addEventListener('submit', async (event) => {
+    event.preventDefault(); const submit = inviteForm.querySelector('button[type="submit"]'); submit.disabled = true; submit.textContent = 'Oppretter…'; status.textContent = '';
+    const email = document.querySelector('#invite-email')?.value.trim(); const name = document.querySelector('#invite-name')?.value.trim(); const role = document.querySelector('#invite-role')?.value || 'viewer';
+    try {
+      const response = await fetch('/api/auth', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ action: 'invite_user', boardId, email, name, role }) }); const data = await response.json().catch(() => ({}));
+      if (!response.ok) { status.textContent = data.error === 'owner_or_editor_required' ? 'Bare eier eller redaktør kan invitere.' : data.error === 'valid_email_name_and_boardId_required' ? 'Sjekk e-post, navn og rolle.' : 'Invitasjonen kunne ikke opprettes. Prøv igjen.'; return; }
+      inviteUrl.value = `${location.origin}${data.activationUrl}`; inviteResult.hidden = false; inviteForm.hidden = true; status.textContent = 'Invitasjonen er opprettet.';
+    } catch { status.textContent = 'Kunne ikke kontakte Styr.ing. Prøv igjen om litt.'; } finally { submit.disabled = false; submit.textContent = 'Opprett invitasjon'; }
   });
+  inviteCopy?.addEventListener('click', async () => { try { await navigator.clipboard.writeText(inviteUrl.value); inviteCopy.textContent = 'Kopiert ✓'; setTimeout(() => { inviteCopy.textContent = 'Kopier lenke'; }, 1800); } catch { inviteUrl.select(); document.execCommand('copy'); inviteCopy.textContent = 'Kopiert ✓'; } });
 </script>
 
 <style>
@@ -118,6 +132,20 @@ const members = [
 .btn-primary { background: var(--accent); color: white; border: none; padding: 10px 20px; border-radius: 10px; font-family: system-ui, sans-serif; font-size: 0.85rem; font-weight: 600; cursor: pointer; }
 .demo-control { cursor: default; opacity: 0.72; }
 .member-status { min-height: 1.25rem; margin: -1rem 0 1rem; font-family: system-ui, sans-serif; font-size: 0.8rem; color: var(--accent); }
+.invite-panel { margin: 0 0 1.25rem; padding: 18px; border: 1px solid rgba(31,111,91,.2); border-radius: 14px; background: #f7fbf5; font-family: system-ui, sans-serif; }
+.invite-panel-head { display:flex; justify-content:space-between; gap:16px; align-items:flex-start; }
+.invite-panel h2 { margin:0 0 4px; font-size:1.05rem; }
+.invite-panel p { margin:0 0 12px; color:var(--muted); font-size:.8rem; }
+.invite-form { display:grid; gap:7px; max-width:560px; }
+.invite-form label { font-size:.72rem; font-weight:700; margin-top:6px; }
+.invite-form input, .invite-form select { width:100%; box-sizing:border-box; padding:10px 11px; border:1px solid rgba(16,36,31,.18); border-radius:8px; background:#fff; font: .82rem system-ui,sans-serif; }
+.invite-form .btn-primary { margin-top:8px; justify-self:start; }
+.invite-result { margin-top:14px; padding:13px; border-radius:10px; background:#fff; border:1px solid rgba(31,111,91,.14); }
+.invite-result strong { font-size:.84rem; }
+.invite-result p { margin:4px 0 9px; }
+.invite-result small { display:block; margin-top:8px; color:var(--muted); font-size:.7rem; }
+.invite-url-row { display:flex; gap:7px; }
+.invite-url-row input { flex:1; min-width:0; padding:9px; border:1px solid rgba(16,36,31,.16); border-radius:7px; font: .75rem ui-monospace,monospace; }
 .live-panel { display: flex; justify-content: space-between; gap: 12px; margin: 0 0 1rem; padding: 12px 14px; border: 1px solid rgba(31,111,91,0.16); border-radius: 10px; background: rgba(31,111,91,0.06); font-family: system-ui, sans-serif; font-size: 0.8rem; }
 .live-panel span { color: var(--muted); text-align: right; }
 .role-select { padding: 5px 8px; border: 1px solid rgba(0,0,0,0.12); border-radius: 6px; background: white; font: 0.76rem system-ui, sans-serif; }
@@ -149,6 +177,8 @@ const members = [
 .demo-notice { text-align: center; padding: 1.5rem; margin-top: 2rem; background: rgba(31,111,91,0.06); border-radius: 12px; font-family: system-ui, sans-serif; font-size: 0.85rem; color: var(--muted); }
 
 @media (max-width: 600px) {
+  .invite-url-row { flex-direction:column; }
+  .invite-form .btn-primary { width:100%; }
   .live-panel { flex-direction: column; }
   .live-panel span { text-align: left; }
   .member-card { flex-wrap: wrap; }
