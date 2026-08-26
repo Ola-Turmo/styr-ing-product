@@ -143,7 +143,14 @@ export async function recordAudit(db: D1Database, input: {
   userId?: string;
   ipAddress?: string;
 }) {
-  await db.prepare('INSERT INTO audit_log (id,user_id,board_id,action,entity_type,entity_id,details,ip_address) VALUES (?,?,?,?,?,?,?,?)')
-    .bind(id('audit'), input.userId || null, input.boardId, input.action, input.entityType || null, input.entityId || null, input.details ? JSON.stringify(input.details) : null, input.ipAddress || null)
+  const auditId = id('audit');
+  const details = input.details ? JSON.stringify(input.details) : null;
+  const previous = await db.prepare('SELECT event_hash FROM audit_log WHERE board_id=? ORDER BY created_at DESC,id DESC LIMIT 1').bind(input.boardId).first<{ event_hash: string | null }>();
+  const prevHash = previous?.event_hash || null;
+  const eventPayload = JSON.stringify({ auditId, userId: input.userId || null, boardId: input.boardId, action: input.action, entityType: input.entityType || null, entityId: input.entityId || null, details, ipAddress: input.ipAddress || null, prevHash });
+  const eventHash = await sha256(eventPayload);
+  await db.prepare('INSERT INTO audit_log (id,user_id,board_id,action,entity_type,entity_id,details,ip_address,prev_hash,event_hash) VALUES (?,?,?,?,?,?,?,?,?,?)')
+    .bind(auditId, input.userId || null, input.boardId, input.action, input.entityType || null, input.entityId || null, details, input.ipAddress || null, prevHash, eventHash)
     .run();
+  return { id: auditId, prevHash, eventHash };
 }

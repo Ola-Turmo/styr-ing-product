@@ -256,6 +256,8 @@ CREATE TABLE IF NOT EXISTS audit_log (
   entity_id TEXT,
   details TEXT,
   ip_address TEXT,
+  prev_hash TEXT,
+  event_hash TEXT,
   created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 
@@ -271,6 +273,7 @@ CREATE INDEX IF NOT EXISTS idx_control_items_board ON control_items(board_id);
 CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
 CREATE INDEX IF NOT EXISTS idx_audit_log_user ON audit_log(user_id);
 CREATE INDEX IF NOT EXISTS idx_audit_log_board ON audit_log(board_id);
+CREATE INDEX IF NOT EXISTS idx_audit_log_event_hash ON audit_log(board_id,event_hash);
 CREATE INDEX IF NOT EXISTS idx_demo_requests_status ON demo_requests(status);
 
 -- PRD operating-system extensions. These tables keep operational state separate
