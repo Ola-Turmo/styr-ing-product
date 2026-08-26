@@ -7,7 +7,7 @@ const failures = [];
 let fileCount = 0;
 const malformedSql = [/\bSELECT\s+FROM\b/i, /\bFROM\s+(?:WHERE|LEFT\s+JOIN|RIGHT\s+JOIN|JOIN|ORDER|GROUP|LIMIT)\b/i, /\bAS\s+FROM\b/i, /\bUPDATE\s+SET\s+WHERE\b/i, /\bJOIN\s+ON\s*(?:WHERE|GROUP|ORDER|LIMIT)\b/i, /\bWHERE\s+AND\b/i, /\bCOUNT\(\s*\*\s*\)\s+AS\s+FROM\b/i];
 const routeContracts = {
-  'functions/api/bank.ts': ['import_transactions', 'external_reference_conflict', 'bank_import_duplicate_or_conflict', 'payment_link_conflict', 'idempotent', 'insertedCount'],
+  'functions/api/bank.ts': ['import_transactions', 'external_reference_conflict', 'bank_import_duplicate_or_conflict', 'payment_link_conflict', 'classify_transaction', 'manual_counter_account_id', 'idempotent', 'insertedCount'],
   'functions/api/hcm.ts': ['create_offboarding', 'it_lifecycle_tasks', 'lifecycleTasksSynchronized', 'db.batch'],
   'functions/api/procurement.ts': ['create_order', 'create_receipt', 'create_invoice', 'three_way_match_required', 'approve_invoice', 'requiresHumanApproval', 'payment_reference_conflict', 'idempotent', 'Peppol BIS Billing 3.0', 'line_total_mismatch'],
   'functions/api/finance.ts': ['record_invoice_payment', 'payment_reference_conflict', 'period_close_snapshot_stale', 'persistedClosureId', 'reverse_voucher', 'voucher_reversed', 'idempotent', 'paymentReferenceConflict', 'bank_transaction_id IS NULL', 'save_accounting_profile', 'save_customer_invoice_profile', 'invoice-document', 'sales_invoice_documents', 'validNorwegianMod11', 'invoice_number_exists', 'credit_note_number_exists', 'AuditFileVersion>1.30', 'AuditFileCountry>NO', 'SoftwareCompanyName>Styr.ing', 'GroupingCategory>NA', 'AccountType>GL', 'TaxAccountingBasis>A', 'NumberOfEntries>', 'DebitAmount><Amount>', 'CreditAmount><Amount>'],
