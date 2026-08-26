@@ -130,6 +130,13 @@ Betalinger kan kobles til åpne kunde-/leverandørposter fra samme regnskapsflat
 - Verifisert med `npm run verify`, `npm run verify:api`, `npm run build`, `git diff --check` og `npm run verify:live` (120 kontroller).
 - Produksjonsdeploy: Cloudflare Pages `https://b89fded6.styr-ing.pages.dev` på branch `main`, koblet til `https://styr.ing/`.
 
+## Siste bankposteringsforbedring (2026-08-27)
+
+- Samtidige forsøk på å bokføre samme godkjente bankmatch leser nå tilbake bilaget som vant den unike `bank:<transactionId>`-referansen og returnerer det som en idempotent retry.
+- Bilag, banklinje, betalingskobling og fakturasaldo fullføres gjennom samme kontrollerte sideeffektsett; en konkurrerende fane får ikke lenger en generell databasefeil eller et ekstra bilagsnummer.
+- Verifisert med `npm run verify`, `npm run verify:api`, `git diff --check` og `npm run verify:live` (120 kontroller).
+- Produksjonsdeploy: Cloudflare Pages `https://ea8ffd88.styr-ing.pages.dev` på branch `main`, koblet til `https://styr.ing/`.
+
 ## Siste kontoaktiveringsforbedring (2026-08-26)
 
 - Invitasjon på styremedlemsiden bruker nå et inline-skjema med e-post, navn, rolle, tydelig 24-timers utløp og kopieringsknapp. Nettleserens flertrinns `prompt`-dialoger er fjernet.
