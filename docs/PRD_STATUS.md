@@ -10,7 +10,7 @@ Dette er en implementasjonsstatus, ikke en påstand om regulatorisk godkjenning.
 | Krav | Status | Bevis i løsningen |
 |---|---|---|
 | Bilagsarkiv med dokumentinnhold og kontrollsum | Intern | `functions/api/documents.ts`, `accounting_documents`, Cloudflare R2-binding `DOCS`, tenant-sjekk, SHA-256, opplastingsflate i `app/finance.astro` |
-| Globalt søk i bilagsarkiv | Intern | `functions/api/search.ts` søker nå i `accounting_documents` på filnavn, type og kontrollsum |
+| Globalt regnskapssøk | Intern | `functions/api/search.ts` søker i bilagsarkiv, bokførte bilag, kundefakturaer, leverandørfakturaer og kontoplan; `workspace.astro` viser treffene samlet |
 | Bilag, balanserte linjer og gapless sekvens | Intern | `functions/api/finance.ts`, `voucher_sequences`, atomisk validering |
 | Periodelåsing og kontrollspor | Intern | `finance.ts`, period close-komponentene, audit-logg |
 | Faktura, kreditnota, åpne poster og betaling | Intern | `finance.ts`, `SalesInvoiceQuick`, `ReceivablesPayablesQuick`; faktura, kreditnota og bilag avviser kalender-ugyldige datoer server-side, faktura/EHF krever forfall på eller etter fakturadato, kreditnota kan ikke tilbakedateres før originalfaktura, og betalingsreferanser er idempotente |
