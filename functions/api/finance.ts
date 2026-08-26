@@ -117,6 +117,21 @@ export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
     const authorization = await authorizeBoardWrite(request, env, boardId);
     if (!authorization.allowed) return json({ error: 'write_not_authorized' }, { status: 401 });
     const db = requireDb(env);
+    if (action === 'create_account') {
+      const code = String(value?.code || '').trim(); const name = String(value?.name || '').trim(); const accountType = String(value?.accountType || '').trim(); const vatCode = String(value?.vatCode || '').trim() || null;
+      if (!/^\d{4}$/.test(code) || !name || name.length > 160 || !['asset','liability','equity','revenue','expense'].includes(accountType)) return json({ error: 'account_fields_invalid' }, { status: 400 });
+      try { await db.prepare('INSERT INTO ledger_accounts (id,board_id,code,name,account_type,vat_code,active) VALUES (?,?,?,?,?,?,1)').bind(id('acct'), boardId, code, name, accountType, vatCode).run(); }
+      catch (error) { return json({ error: 'account_code_exists_or_invalid' }, { status: 409 }); }
+      await recordAudit(db, { boardId, action, entityType: 'ledger_account', entityId: code, userId: authorization.userId || undefined, details: { code, accountType } });
+      return json({ ok: true, action, code, name, accountType }, { status: 201 });
+    }
+    if (action === 'create_period') {
+      const period = String(value?.period || '').trim(); if (!periodPattern.test(period)) return json({ error: 'period_invalid' }, { status: 400 });
+      try { await db.prepare('INSERT INTO accounting_periods (id,board_id,period,status) VALUES (?,?,?,\'open\')').bind(id('period'), boardId, period).run(); }
+      catch (error) { return json({ error: 'period_exists_or_invalid' }, { status: 409 }); }
+      await recordAudit(db, { boardId, action, entityType: 'accounting_period', entityId: period, userId: authorization.userId || undefined, details: { period } });
+      return json({ ok: true, action, period, status: 'open' }, { status: 201 });
+    }
     if (action === 'reseal_period') {
       const period = String(value?.period || ''); if (!periodPattern.test(period)) return json({ error: 'period_invalid' }, { status: 400 });
       const existing = await db.prepare('SELECT status FROM accounting_periods WHERE board_id=? AND period=?').bind(boardId, period).first<Record<string, unknown>>();
