@@ -25,6 +25,7 @@ Dette er en implementasjonsstatus, ikke en påstand om regulatorisk godkjenning.
 | MVA-beregning, snapshot og kontroll | Intern | `functions/api/mva.ts`, `VatPeriodQuick`; inngående og utgående 12 %/15 %/25 % klassifiseres med konsekvente koder (`1_12`, `1_15`, `1`, `3_12`, `3_15`, `3`). Godkjent MVA-grunnlag og rapportforberedelse er hash-bundet og idempotent ved retry. |
 | Lønnskjøring og feriepenger/OTP-kontroller | Intern | `functions/api/payroll.ts`, `PayrollQuick`; aktive ansatte registreres i personregisteret, og hver lønnskjøring valideres og lagres med brutto/skattetrekk per ansatt. Rapportgrunnlag får hash og er idempotent ved trygg retry; endrede godkjente tall gir snapshot-konflikt. Altinn, skattekort, NAV og utbetaling er ikke koblet til eksterne tjenester. |
 | Leverandørflyt, mottak og 3-veis match | Intern | `functions/api/procurement.ts`, `SupplierInvoiceQuick`; sammendrag og UI viser restsaldo etter delbetaling og betaling krever godkjent/anvist faktura. Ordre, mottak, leverandørfaktura og EHF avviser kalender-ugyldige datoer server-side |
+| Gjenbrukbart leverandørregister for småbedrifter | Intern | `supplier_parties`, `functions/api/procurement.ts`, `SupplierInvoiceQuick`; leverandørnavn, norsk org.nr., kontakt, betalingsfrist og standard kostnadskonto kan lagres én gang og kobles til nye ordre/fakturaer. Eksisterende fritekstflyt er fortsatt støttet |
 | EHF-grunnlag, kontroll og UBL-eksport | Intern klargjøring | `functions/api/procurement.ts`, `EHFInboxQuick`; linjer, MVA og totaler valideres mot hverandre, og validerte dokumenter kan lastes ned som UBL 2.1 / Peppol BIS Billing 3.0 XML. PEPPOL-transport er ikke konfigurert. |
 | Resultat, balanse, saldobalanse og hovedbok | Intern | `finance.ts`, `AccountingReportsQuick` |
 | SAF-T Financial 1.3 eksport | Intern eksport | Skatteetaten-formatert 1.30 XML med firmaprofil, periodekriterier, hovedbokssaldoer, journal-totalsummer og posterte bilag; innsending er ikke aktivert |
@@ -145,6 +146,14 @@ Betalinger kan kobles til åpne kunde-/leverandørposter fra samme regnskapsflat
 - Ny migrasjon er definert i `d1/migrations/20260914_bank_manual_classification.sql`. I produksjon ble de to additive kolonnene (`manual_counter_account_id` og `classification_note`) lagt til med en kontrollert D1-kommando fordi historisk migreringslogg ikke samsvarer med skjemaet som allerede ligger i `d1/schema.sql`; full replay stopper tidligere på en allerede eksisterende `attested_by`-kolonne. Kolonnene er verifisert i produksjon.
 - Verifisert med `npm run verify`, `npm run verify:api`, `npm run build`, `git diff --check` og `npm run verify:live` (120 kontroller). Landing, `/app/finance/` og `/api/health` svarer HTTP 200.
 - Produksjonsdeploy: Cloudflare Pages `https://2afeabf0.styr-ing.pages.dev` på branch `main`, koblet til `https://styr.ing/`.
+
+## Siste leverandørregisterforbedring (2026-08-27)
+
+- Leverandørregisteret er utvidet med gjenbrukbare leverandørkort for navn, norsk organisasjonsnummer, e-post, betalingsfrist og valgfri standard kostnadskonto. Nye innkjøpsordrer og leverandørfakturaer kan velge en registrert leverandør, mens små engangskjøp fortsatt kan skrives inn manuelt.
+- API-et validerer org.nr. med norsk kontrollsiffer, avviser duplikat per virksomhet, håndhever aktiv konto og virksomhetssperre, og logger opprettelse/oppdatering. Leverandørkoblingen er valgfri og påvirker ikke historiske ordre/fakturaer.
+- Produksjonsskjema: `supplier_parties` og additive `supplier_party_id`-kolonner på ordre/faktura ble lagt til med den kontrollerte migrasjonen `20260915_supplier_parties.sql`. Migreringshistorikken har samme tidligere avvik som beskrevet over; derfor ble denne additive migrasjonen kjørt direkte mot D1 og verifisert med `PRAGMA table_info`.
+- Verifisert med `npm run verify`, `npm run verify:live` (120 kontroller), HTTP 200 på landing og `/api/procurement?view=suppliers`.
+- Produksjonsdeploy: Cloudflare Pages `https://d9e5d023.styr-ing.pages.dev` på branch `main`, koblet til `https://styr.ing/`.
 
 ## Siste kontoaktiveringsforbedring (2026-08-26)
 
