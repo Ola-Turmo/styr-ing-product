@@ -310,3 +310,10 @@ Betalinger kan kobles til åpne kunde-/leverandørposter fra samme regnskapsflat
 - Arbeidsgiverkostnadsteksten viser om kostnaden dekker samlet brutto, før brukeren oppretter utkastet.
 - Dette er kun en klientkontroll for forståelighet; serverens validering av brutto, skattetrekk, ansatte og arbeidsgiverkostnad er fortsatt autoritativ.
 - Produksjon verifisert med `npm run verify:live` (125 kontroller) og HTTP 200/content-kontroll på `/app/finance/` som bekrefter både totalsammendraget og inline-funksjonen. Preview: `https://5e62bf1f.styr-ing.pages.dev`; produksjonsdomene: `https://styr.ing/`; release commit: `d466aed`.
+
+### Firmakort — idempotent kvitteringskobling (2026-08-27)
+
+- Kvitteringer kan nå kobles til firmakortkjøp uten at et nytt klikk eller en retry gir falsk konflikt. Samme transaksjon og samme dokumentreferanse returnerer et eksplisitt idempotent svar.
+- Serveren avviser samtidig kobling mot en annen dokumentreferanse og logger bare én faktisk statusendring til `ready_for_review`. Dette beskytter små virksomheter mot doble dokumentkoblinger ved tregt nett eller gjentatt opplasting.
+- Flyten er fortsatt intern SaaS-funksjonalitet: ingen kortleverandør, OCR eller ekstern betaling aktiveres av dette steget.
+- Verifisert med kildeintegritet, API-integritet, TypeScript, build og live smoke. Preview: `https://bb39e4ae.styr-ing.pages.dev`; produksjonsdomene: `https://styr.ing/`; release commit: `44d0788`.
