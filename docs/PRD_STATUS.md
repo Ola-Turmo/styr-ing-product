@@ -272,3 +272,4 @@ Betalinger kan kobles til åpne kunde-/leverandørposter fra samme regnskapsflat
 - Grunnlaget avvises hvis debet/kredit eller balansen mellom eiendeler, gjeld, egenkapital og årets resultat ikke går opp. Det hindrer at et tomt eller ufullstendig årsoppgjør ser godkjent ut.
 - UI-et viser antall bokførte bilag, noter og om grunnlaget balanserer. Payload-hashen er fortsatt idempotent; endrede bokførte tall gir snapshot-konflikt.
 - Dette er intern klargjøring for små norske virksomheter. Regnskapsfører må fortsatt kontrollere noter og sende manuelt inntil Regnskapsregisteret-adapter er etablert.
+- Produksjon verifisert med `npm run verify:live` (124 kontroller), HTTP 200 på landing og regnskapsflate. Preview: `https://46c9d580.styr-ing.pages.dev`; produksjonsdomene: `https://styr.ing/`; release commit: `daf1ace`.
