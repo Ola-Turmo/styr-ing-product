@@ -9,6 +9,7 @@
 <script is:inline>
   const postingEsc = v => String(v ?? '').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const postingMoney = v => `${(Number(v||0)/100).toLocaleString('nb-NO')} kr`;
+  const postingPeriodInput=document.querySelector('#posting-prepare-form [name="period"]'); if(postingPeriodInput){const now=new Date();postingPeriodInput.value=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;}
   let postingBoardId = new URLSearchParams(location.search).get('boardId') || ''; let postingAccounts=[]; let postingInvoices=[]; let postingCreditNotes=[]; let postingSuppliers=[]; let postingSupplierCreditNotes=[]; let postingPayroll=[];
   const postingStatus=document.querySelector('#posting-status'); const sourceType=document.querySelector('#posting-source-type'); const sourceSelect=document.querySelector('#posting-source-id');
   const postingApi=async(path,opts)=>{const r=await fetch(path,opts),d=await r.json();if(!r.ok)throw new Error(d.error||'Kunne ikke hente bokføringsdata');return d};

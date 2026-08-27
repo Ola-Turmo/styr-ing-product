@@ -11,7 +11,7 @@ import Layout from '../layouts/Layout.astro';
   </main>
 </Layout>
 <script is:inline>
-const treasuryDateInput=document.querySelector('input[name="asOfDate"]');if(treasuryDateInput)treasuryDateInput.value=new Date().toISOString().slice(0,10);
+  const treasuryDateInput=document.querySelector('[data-treasury-action="create_liquidity_snapshot"] [name="asOfDate"]'); if(treasuryDateInput)treasuryDateInput.value=new Date().toISOString().slice(0,10);
 const esc=v=>String(v??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
 const list=document.getElementById('list'),pageStatus=document.getElementById('status');
 const labels={draft:'Utkast',calculated:'Beregnet',review:'Til review',approved:'Godkjent',prepared:'Forberedt',submitted:'Sendt',open:'Åpen',reminder_prepared:'Påminnelse forberedt',paid:'Betalt',closed:'Lukket'};
