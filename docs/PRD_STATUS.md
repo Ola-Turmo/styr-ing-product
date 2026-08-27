@@ -502,3 +502,9 @@ Betalinger kan kobles til åpne kunde-/leverandørposter fra samme regnskapsflat
 - CSV-malen for åpningsbalanse/historikk bruker nå dagens dato og periode, og filnavnet inneholder perioden. Små virksomheter møter ikke lenger en foreldet eksempelperiode når de starter opp senere.
 - Konto-ID-er hentes fortsatt fra valgt virksomhet, og importen beholder balansekontroll, låst-periodekontroll, autorisasjon og idempotens.
 - Verifisert med kildeintegritet, inline JavaScript-syntax, API-integritet, TypeScript, Astro build, `git diff --check`, live smoke (129 kontroller) og HTTP/content-kontroll på preview `https://1845f023.styr-ing.pages.dev` og produksjon `https://styr.ing/`; release commit `629282c`.
+
+### Regnskapsformulareksempler — ingen foreldede standardperioder (2026-08-27)
+
+- Den offentlige økonomiflaten bruker nå generiske `ÅÅÅÅ-MM`/`ÅÅÅÅ`-hjelpetekster i låsing, intercompany, årsoppgjørsnote og valuta. Runtime fyller fortsatt inneværende dato/periode når det er trygt.
+- Små virksomheter møter ikke en misvisende hardkodet 2026-periode i skjemaene; serveren validerer fortsatt alle perioder, datoer, roller og kontrollspor.
+- Verifisert med kildeintegritet, inline JavaScript-syntax, API-integritet, TypeScript, Astro build, `git diff --check`, live smoke (129 kontroller) og HTTP/content-kontroll på preview `https://3501fbcd.styr-ing.pages.dev` og produksjon `https://styr.ing/`; release commit `c698b7e`.
