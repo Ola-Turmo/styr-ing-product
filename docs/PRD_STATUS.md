@@ -294,3 +294,9 @@ Betalinger kan kobles til åpne kunde-/leverandørposter fra samme regnskapsflat
 - Resultat-/balanseberegningen er flyttet til én server-side hjelpefunksjon som brukes av både `prepare_submission` og `view=annual-summary`.
 - Dette hindrer at en egenkapitalpost vises med annet fortegn enn det som faktisk ble kontrollert før godkjenning.
 - Produksjon verifisert med `npm run verify:live` (125 kontroller), direkte årsoppgjørs-API (HTTP 200, `balanced=true`, `balanceDifferenceMinor=0`) og HTTP 200/content-kontroll på regnskapsflaten. Preview: `https://fa3dafdc.styr-ing.pages.dev`; produksjonsdomene: `https://styr.ing/`; release commit: `3e79e0e`.
+
+### Lønn — løpende totalsjekk før kjøring (2026-08-27)
+
+- Lønnskjøringen viser nå samlet brutto, skattetrekk og netto mens beløp per ansatt fylles inn.
+- Arbeidsgiverkostnadsteksten viser om kostnaden dekker samlet brutto, før brukeren oppretter utkastet.
+- Dette er kun en klientkontroll for forståelighet; serverens validering av brutto, skattetrekk, ansatte og arbeidsgiverkostnad er fortsatt autoritativ.
