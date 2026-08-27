@@ -19,6 +19,7 @@ const componentContracts = {
   'src/components/AccountingSetupQuick.astro': ['setup-readiness', 'setup-readiness-list', 'data-readiness="chart"', 'data-readiness="profile"', 'view=invoice-setup', 'view=accounts', 'view=periods', '<script is:inline>', '</script>', '<style>', '</style>'],
   'src/components/PostingQueueQuick.astro': ['id="posting-proposal-list"', 'lines_json', 'postingAccountLabel', 'Kontroller ${lines.length} bilagslinjer', 'Godkjenn kontrollerte linjer', 'debit===creditTotal', '<script is:inline>', '</script>', '<style>', '</style>'],
   'src/pages/app/finance.astro': ['finance-task-start', 'finance-task-grid', 'data-finance-task="invoice"', 'data-finance-task="bank"', 'data-finance-task="payroll"', 'data-finance-tasks="voucher"', 'finance-task-workflow', 'finance-task-clear', 'Start med oppgaven, ikke modulen.'],
+  'src/pages/app.astro': ['primary-finance-callout', 'Regnskap først', 'href="/app/finance"', 'app-stats'],
 };
 
 async function walk(directory) {
