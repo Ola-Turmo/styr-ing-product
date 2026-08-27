@@ -2390,21 +2390,32 @@ export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
       // A retry from a slow browser or webhook must not create a second
       // control item.  The human-facing reference is the idempotency key for
       // this internal workflow (within one tenant and period).
+      const currency = String(value?.currency || "NOK").toUpperCase();
       const existingPosting = await db
         .prepare(
-          "SELECT id,status,target_voucher_id FROM intercompany_postings WHERE board_id=? AND source_entity=? AND target_entity=? AND reference=? AND amount_minor=? AND currency=? AND period=? AND status<>'rejected' ORDER BY created_at DESC LIMIT 1",
+          "SELECT id,status,target_voucher_id,amount_minor,currency,period FROM intercompany_postings WHERE board_id=? AND source_entity=? AND target_entity=? AND reference=? AND status<>'rejected' ORDER BY created_at DESC LIMIT 1",
         )
         .bind(
           boardId,
           sourceEntity,
           targetEntity,
           reference,
-          amount,
-          String(value?.currency || "NOK").toUpperCase(),
-          period,
         )
         .first<Record<string, unknown>>();
-      if (existingPosting)
+      if (existingPosting) {
+        if (
+          Number(existingPosting.amount_minor) !== amount ||
+          String(existingPosting.currency || "NOK").toUpperCase() !== currency ||
+          String(existingPosting.period) !== period
+        )
+          return json(
+            {
+              error: "intercompany_reference_conflict",
+              detail: "Referansen er allerede brukt med et annet beløp, valuta eller periode.",
+              postingId: String(existingPosting.id),
+            },
+            { status: 409 },
+          );
         return json({
           ok: true,
           action,
@@ -2414,6 +2425,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
           idempotent: true,
           requiresHumanApproval: true,
         });
+      }
       const postingId = id("ic");
       await db
         .prepare(
@@ -2426,7 +2438,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
           targetEntity,
           reference,
           amount,
-          String(value?.currency || "NOK").toUpperCase(),
+          currency,
           period,
           "prepared",
           sourceVoucherId,
