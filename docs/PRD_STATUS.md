@@ -287,4 +287,4 @@ Betalinger kan kobles til åpne kunde-/leverandørposter fra samme regnskapsflat
 - Årsoppgjørslisten har nå «Se tall», som henter årets bokførte bilag, resultat, balanse, gjeld/egenkapital og noter fra `GET /api/payroll?view=annual-summary`.
 - Kontrollpanelet viser debet/kredit, antall bilag/noter og tydelig «Balansert» eller «Avvik» før brukeren godkjenner grunnlaget.
 - Oppslaget er read-only og bygger på samme periodiseringsregler som klargjøringen; det aktiverer ikke Regnskapsregisteret eller annen ekstern innsending.
-- Verifisert med `npm run verify`, `git diff --check` og live smoke-test. Preview og produksjonslenke dokumenteres etter deploy.
+- Verifisert med `npm run verify`, `git diff --check`, HTTP 200/content-kontroll og `npm run verify:live` (125 kontroller). Preview: `https://522eac07.styr-ing.pages.dev`; produksjonsdomene: `https://styr.ing/`; release commit: `289d301`.
