@@ -258,3 +258,10 @@ Betalinger kan kobles til åpne kunde-/leverandørposter fra samme regnskapsflat
 - Utkast kan åpnes fra fakturalisten, endres og lagres på nytt med samme kunde-, dato-, linje-, MVA- og kontovalidering som ved opprettelse.
 - API-handlingen `update_invoice_draft` er eksplisitt begrenset til `status='draft'`; fakturaer i kontroll, godkjent eller senere status kan ikke overskrives.
 - Linjene erstattes atomisk i samme batch som fakturahodet, og endringen logges i audit-kjeden. Produksjon verifisert med `npm run verify:live` (124 kontroller) og HTTP 200/content-kontroll på `/app/finance/`. Preview: `https://356f9499.styr-ing.pages.dev`; release commit: `24d6e16`.
+
+### Salgsfaktura — forkast utkast uten hull i nummerrekken (2026-08-27)
+
+- Et fakturautkast kan nå forkastes fra detaljvisningen med en tydelig bekreftelse. Utkastet markeres som `cancelled` i stedet for å slettes, slik at fakturanummer, revisjonsspor og kontrollhistorikk blir bevart.
+- `POST /api/finance` med `action=cancel_invoice_draft` aksepteres bare når fakturaen tilhører virksomheten og fortsatt har status `draft`; fakturaer under kontroll eller allerede godkjent kan ikke forkastes.
+- Handlingen logges som `sales_invoice_draft_cancelled` og er bevisst irreversibel i brukergrensesnittet. Ingen ekstern sending eller betaling påvirkes.
+- Verifisert lokalt med `npm run verify`, `git diff --check` og produksjonsrøyketest etter deploy. Preview og produksjonslenke oppdateres ved publisering av denne releasen.

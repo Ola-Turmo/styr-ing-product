@@ -2810,6 +2810,13 @@ export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
       await recordAudit(db, { boardId, action: "recurring_invoice_generated", entityType: "sales_invoice", entityId: invoiceId, userId: authorization.userId || undefined, details: { templateId, generationId, issueDate, nextIssueDate: nextDate, externalDelivery: "not_configured" } });
       return json({ ok: true, action, templateId, generationId, invoiceId, invoiceNumber, status: "draft", issueDate, dueDate: dueDateText, nextIssueDate: nextDate, totalMinor, externalDelivery: "not_configured" }, { status: 201 });
     }
+    if (action === "cancel_invoice_draft") {
+      const invoiceId = String(value?.invoiceId || "").trim();
+      const result = await db.prepare("UPDATE sales_invoices SET status='cancelled',updated_at=datetime('now') WHERE id=? AND board_id=? AND status='draft'").bind(invoiceId, boardId).run();
+      if (!result.meta?.changes) return json({ error: "invoice_not_draft_or_found" }, { status: 409 });
+      await recordAudit(db, { boardId, action: "sales_invoice_draft_cancelled", entityType: "sales_invoice", entityId: invoiceId, userId: authorization.userId || undefined, details: { status: "cancelled", reversible: false } });
+      return json({ ok: true, action, invoiceId, status: "cancelled" });
+    }
     if (action === "review_invoice") {
       const invoiceId = String(value?.invoiceId || "").trim();
       const result = await db
