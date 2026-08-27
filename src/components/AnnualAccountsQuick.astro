@@ -1,7 +1,7 @@
 <section class="annual-accounts-quick" aria-labelledby="annual-accounts-title">
   <div class="annual-head"><div><span class="section-kicker">Årsoppgjør · kontrollert innsending</span><h2 id="annual-accounts-title">Klargjør årsregnskapet.</h2><p>Samle årets kontrollgrunnlag etter at rapporter og noter er gjennomgått. Styr.ing sender ikke til Regnskapsregisteret uten en separat, godkjent adapter.</p></div><span class="annual-boundary">Manuell innsending</span></div>
   <div class="annual-grid">
-    <form id="annual-prepare-form"><h3>1. Forbered grunnlag</h3><label>Regnskapsår<input name="period" type="number" min="2000" max="2100" required /></label><button type="submit">Klargjør årsregnskap</button><small>Grunnlaget henter bokførte bilag og årsoppgjørsnoter for året, med kontrollsum.</small></form>
+    <form id="annual-prepare-form"><h3>1. Forbered grunnlag</h3><label>Regnskapsår<input id="annual-period" name="period" type="number" min="2000" max="2100" required /></label><button type="submit">Klargjør årsregnskap</button><small>Grunnlaget henter bokførte bilag og årsoppgjørsnoter for året, med kontrollsum.</small></form>
     <form id="annual-approve-form"><h3>2. Godkjenn grunnlag</h3><label>Årsregnskap<select id="annual-submission-id" name="submissionId" required><option value="">Henter grunnlag…</option></select></label><button type="submit">Godkjenn for innsending</button><small>Godkjenning endrer intern status. Ekstern innsending skjer separat.</small></form>
   </div>
   <p id="annual-status" class="annual-status" role="status" aria-live="polite"></p>
@@ -10,7 +10,8 @@
 </section>
 <script is:inline>
   const annualEsc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  let annualBoardId=new URLSearchParams(location.search).get('boardId')||''; const annualStatus=document.querySelector('#annual-status');
+  let annualBoardId=new URLSearchParams(location.search).get('boardId')||''; const annualStatus=document.querySelector('#annual-status'); const annualPeriod=document.querySelector('#annual-period');
+  if(annualPeriod&&!annualPeriod.value)annualPeriod.value=String(new Date().getFullYear());
   const annualResolve=async()=>{if(annualBoardId)return annualBoardId;try{const a=await(await fetch('/api/auth')).json();annualBoardId=a.boards?.[0]?.id||''}catch{}return annualBoardId||(location.pathname==='/finance/'?'board-1':'')};
   const annualApi=async(payload)=>{const r=await fetch('/api/payroll',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({...payload,boardId:annualBoardId})});const d=await r.json();if(!r.ok)throw Error(d.detail||d.error||'Kunne ikke oppdatere årsoppgjøret');return d};
   const annualMoney=v=>`${(Number(v||0)/100).toLocaleString('nb-NO',{minimumFractionDigits:2,maximumFractionDigits:2})} kr`;
