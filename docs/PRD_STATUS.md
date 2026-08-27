@@ -203,3 +203,11 @@ Betalinger kan kobles til åpne kunde-/leverandørposter fra samme regnskapsflat
 - Produksjon verifisert etter deploy med lokal full verifisering, live smoke (123 kontroller) og HTTP-kontroll av landing, `/app/finance/` og produktregister-endepunktet. Preview: `https://c94e51d2.styr-ing.pages.dev`; produksjonsdomene: `https://styr.ing/`. Release commit: `a176d29`.
 - Fakturautkastet har nå en valgfri produktvelger som henter aktive varer/tjenester fra samme register og fyller inn beskrivelse, pris og MVA. Linjen kan fortsatt overstyres manuelt, og fakturaen går gjennom vanlig kontroll/godkjenning.
 - Produktkortet har også et valgfritt forslag til aktiv inntektskonto. Når et produkt velges i fakturalinjen, følger kontoen med til bokføringsforslaget; manglende konto blokkerer ikke manuell fakturering.
+
+### Regnskapsprioritert offentlig produktkart (2026-08-27)
+
+- Hovednavigasjonen starter nå med `Regnskap`, etterfulgt av `Produkt`, abonnement og tillit. CTA-en bruker tydelig handlingstekst: `Prøv regnskapsdemo`.
+- Produktkartet viser `Komplett regnskap` som én bred, fremhevet kjerneflate først. Styre, risiko, mennesker, drift, kunder, prosjekt og AI ligger samlet under en lukket `Utvid med styring`-seksjon.
+- Copy forklarer eksplisitt at utvidelsene er valgfrie og bygger på regnskapet, slik at små norske AS og ENK møter det de trenger i hverdagen før nye moduler.
+- Verifisert lokalt med `npm run verify` og HTTP 200/content-kontroll på `https://styr.ing/` og `https://styr.ing/capabilities/`.
+- Preview: `https://40f60a54.styr-ing.pages.dev`; produksjonsdomene: `https://styr.ing/`. Release commit: `742a341`.
