@@ -107,6 +107,17 @@ import TransparencyQuick from '../components/TransparencyQuick.astro';
       font-size: 0.8rem;
       text-align: center;
     }
+    .page-boundary {
+      display: block;
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 10px 24px;
+      color: var(--muted);
+      background: #fff4cf;
+      border-bottom: 1px solid rgba(138,117,0,0.18);
+      font: 600 .72rem/1.4 system-ui, sans-serif;
+    }
+    .page-boundary a { color: var(--accent); text-decoration: underline; }
     a { color: var(--accent); text-decoration: none; }
     a:hover { color: #0d4a3a; }
     :focus-visible {
