@@ -555,3 +555,11 @@ Betalinger kan kobles til åpne kunde-/leverandørposter fra samme regnskapsflat
 - En egen regnskapsgrunnlagsstripe forklarer at styre, prosjekt og øvrig virksomhetsstyring kommer etter at grunnregnskapet er på plass.
 - Offentlige sider med `board-1` er beholdt som illustrasjonsdata/preview. Innloggede `/app/*`-flater velger tenant fra `/api/auth` og sender valgt `boardId` videre til API-ene.
 - Publisert til Cloudflare Pages-prosjektet `styr-ing`; produksjonssjekk `https://styr.ing/` returnerte HTTP 200 og inneholder både ny CTA og regnskapsgrunnlagsstripe.
+
+### Offentlig regnskapsdemo — lesebar grense (2026-08-27)
+
+- Alle skriveformularer på `/finance/` deaktiveres umiddelbart i nettleseren og merkes som lesedemo med fiktive data.
+- Brukere som er innlogget får direkte lenke til `/app/finance`; øvrige får lenke til `/login?next=%2Fapp%2Ffinance`.
+- Dette er en UX-/sikkerhetsforbedring for småbedrifter: demoen inviterer ikke lenger til en handling som ender i uforståelig `401`.
+- Verifisert med `npm run verify:source`, `npm run verify:api`, `npm run build`, live smoke (129 kontroller), HTTP 200 og innholdskontroll på `https://styr.ing/finance/` og preview `https://3ce4fe7f.styr-ing.pages.dev/finance/`.
+- Release commit: `84d76a3`.
