@@ -381,6 +381,12 @@ Betalinger kan kobles til åpne kunde-/leverandørposter fra samme regnskapsflat
 - Restbeløpet beregnes etter registrerte betalinger og bokførte kreditnotaer, og vises kun for valgt virksomhet.
 - Verifisert med full lokal verifikasjon, live smoke (125 kontroller), HTTP/content-kontroll på produksjon og preview. Preview: `https://38732b84.styr-ing.pages.dev`; produksjonsdomene: `https://styr.ing/`; release commit: `a15975f`.
 
+### Lønn — kostnadsoppsummering for siste kjøring (2026-08-27)
+- Lønnsflaten viser nå siste kjørings brutto, netto utbetaling, arbeidsgiverpåslag og beregnede feriepenger/OTP i et kompakt sammendrag før brukeren går videre til kontroll og rapportgrunnlag.
+- Tallene hentes fra de samme tenant-avgrensede lønnskjøringene og kontrollene som allerede brukes av arbeidsflyten. Påslaget er kun oppgitt arbeidsgiverkostnad minus brutto; det er ikke en ny beregning av arbeidsgiveravgift.
+- Kopien presiserer fortsatt at satsene må kontrolleres og at A-melding, NAV og utbetaling ikke sendes automatisk.
+- Verifisert med kildeintegritet, inline JavaScript-syntax, API-integritet, TypeScript, Astro build og konseptgrensekontroll. Preview/deploy utføres etter commit.
+
 ### Leverandørgjeld — aldersfordeling i betalingsbildet (2026-08-27)
 - Godkjente åpne leverandørposter vises nå i ikke forfalt, 1–30, 31–60 og 61+ dager, med restbeløp og antall fakturaer.
 - Beregningen bruker faktisk rest etter delbetaling og avgrenser aldersbildet til matchede, godkjente eller bokførte poster. Mottatte fakturaer som fortsatt krever kontroll telles ikke som klare betalingsforpliktelser i dette bildet.
