@@ -219,3 +219,10 @@ Betalinger kan kobles til åpne kunde-/leverandørposter fra samme regnskapsflat
 - Bilagsarkivet viser nå filnavn og størrelse før opplasting, stopper filer over 10 MB i nettleseren og gir norsk tilbakemelding. Hintet nullstilles etter vellykket opplasting.
 - Dette forbedrer den vanlige «last opp kvittering → knytt til regnskap»-flyten uten å endre lagring, tenant-isolasjon eller R2-grensen i API-et.
 - Produksjon verifisert med `npm run verify` og `npm run verify:live` (123 kontroller). Preview: `https://277d82e4.styr-ing.pages.dev`; release commit: `f911fb9`.
+
+### Bankimport — kontroller CSV før innlesing (2026-08-27)
+
+- Bankimporten viser nå filnavn, antall gyldige linjer, inn-/ut-antall, nettobeløp og de fem første transaksjonene før brukeren importerer.
+- Ugyldige linjer og filer over 10 MB varsles i forhåndsvisningen. Ingen banklinjer skrives før brukeren uttrykkelig trykker «Importer kontoutdrag».
+- Forbedringen er prioritert som en vanlig regnskapsoppgave for små virksomheter; den endrer ikke kontrollsporet eller kravet om manuell godkjenning før bokføring.
+- Produksjon verifisert med `npm run verify`, `git diff --check`, HTTP 200/content-kontroll på `/app/finance/` og `npm run verify:live` (123 kontroller). Preview: `https://509e1a82.styr-ing.pages.dev`; release commit: `ce4133c`.
