@@ -520,3 +520,9 @@ Betalinger kan kobles til åpne kunde-/leverandørposter fra samme regnskapsflat
 - Fakturaflyten forklarer nå at «Registrer betaling» lagrer betalingsgrunnlaget, mens bankavstemming fortsatt må godkjennes før hovedboken oppdateres. Dette er samme kontrollmodell som API-et håndhever.
 - Betalinger beholder delbetaling, restsaldo, kreditnota-fradrag, referansekonflikt og idempotent retry; ingen automatisk bankføring eller ekstern betaling fremstilles som aktiv.
 - Verifisert med kildeintegritet, inline JavaScript-syntax, API-integritet, TypeScript, Astro build, `git diff --check`, live smoke (129 kontroller), HTTP 200 og innholdskontroll på preview `https://2f7bb01d.styr-ing.pages.dev/finance/` og produksjon `https://styr.ing/finance/`; release commit `d5fe57a`.
+
+### Reskontro — registrert betaling vises som ikke avstemt (2026-08-27)
+
+- Reskontrospørringen viser nå separat `pending_manual_payment_minor` for manuelt registrerte innbetalinger som ennå ikke er koblet til en banklinje og bokført. Brukeren ser derfor både restsaldo og hva som venter på avstemming.
+- Manuell betalingsreferanse er påkrevd i UI, mens en valgt banktransaksjon bruker bankens referanse automatisk. Dette hindrer gjenbruk av «MANUELL» ved delbetalinger og bevarer idempotens per referanse.
+- Verifisert med kildeintegritet, inline JavaScript-syntax, API-integritet, TypeScript, Astro build, `git diff --check`, live smoke (129 kontroller), HTTP 200 og innholdskontroll på preview `https://6e1eaf08.styr-ing.pages.dev/app/finance/` og produksjon `https://styr.ing/app/finance/`; release commit `a0e0c03`.
