@@ -621,3 +621,5 @@ Betalinger kan kobles til åpne kunde-/leverandørposter fra samme regnskapsflat
 - Live smoke passerer med 133 kontroller mot `https://styr.ing`; dette dekker offentlige regnskapssider, innlogging/invitasjonsfeil, API-kontrakter og SMB-pris-/copy-grenser.
 - Samme build er publisert til Cloudflare Pages-prosjektet `styr-ing`; deploy-preview `https://06b128a7.styr-ing.pages.dev` og produksjon `https://styr.ing/` svarer.
 - Regnskapskjernen prioriterer fortsatt bokføring, bilag, faktura, bankavstemming/MVA, lønn og rapporter. Styre-, prosjekt-, risiko- og eksterne adapterflater er sekundære og merket som ikke konfigurert der leverandøravtale/credentials mangler.
+- Lokal seed-kvalitet er nå maskinelt verifisert: `npm run verify:seed` kontrollerer alle 77 INSERT-setninger mot de 128 tabellene i `d1/schema.sql` og avviser ugyldig INSERT-format.
+- En fersk lokal D1-instans er kjørt gjennom både `d1/schema.sql` (260 kommandoer) og `d1/seed.sql` (77 kommandoer) uten SQL-feil; kontrollspørringer bekreftet demo-board, bilag og lønnskjøring. Dette er en lokal/demo-sjekk og endrer ikke produksjonsdata.

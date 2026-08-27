@@ -8,8 +8,9 @@
     "preview": "astro preview",
     "verify:source": "node scripts/verify-source-integrity.mjs && node scripts/verify-inline-scripts.mjs",
     "verify:api": "node scripts/verify-api-integrity.mjs && node scripts/verify-api-syntax.mjs && tsc --noEmit",
+    "verify:seed": "node scripts/verify-seed-integrity.mjs",
     "verify:live": "node scripts/smoke-api.mjs",
-    "verify": "npm run verify:source && npm run verify:api && npm run build && node scripts/verify-concept-boundary.mjs",
+    "verify": "npm run verify:source && npm run verify:api && npm run verify:seed && npm run build && node scripts/verify-concept-boundary.mjs",
     "verify:concept-boundary": "npm run build && node scripts/verify-concept-boundary.mjs",
     "deploy": "npm run build && wrangler pages deploy dist --project-name styr-ing --branch main"
   },
