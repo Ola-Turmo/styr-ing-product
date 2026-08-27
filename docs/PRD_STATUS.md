@@ -489,3 +489,10 @@ Betalinger kan kobles til åpne kunde-/leverandørposter fra samme regnskapsflat
 - Dette gjør kjerneflyten mer forståelig for små norske virksomheter: Styr.ing lover ikke at en faktura, lønnskjøring eller rapport allerede er sendt til en ekstern mottaker når adapteren ikke er konfigurert.
 - Ekstern sending er fortsatt ikke aktivert for Stripe, bank, Altinn/Skatteetaten, EHF/PEPPOL, NAV eller andre adaptere; brukeren får i stedet et tydelig klargjort grunnlag og kontrollspor.
 - Verifisert med `npm run verify:source`, `npm run verify:api`, `npm run build`, `git diff --check`, live smoke (129 kontroller) og HTTP/content-kontroll på preview `https://49890c5e.styr-ing.pages.dev` og produksjon `https://styr.ing/`; release commit `0f76365`.
+
+### SMB-oppsett — fem konkrete startkontroller (2026-08-27)
+
+- Første oppsett viser nå fem kontroller: kontoplan, regnskapsår, virksomhetsprofil, kunderegister og bankkonto. Kunderegisteret er skilt ut fordi en virksomhet kan være klar til å føre uten å være klar til å utstede en komplett faktura.
+- Bankkonto-feltet forklarer at koblingen er manuell, at siste fire siffer er valgfritt, og at 1920 normalt brukes som hovedbokskonto. Dette gjør første bankavstemming forståelig uten å love en aktiv bankintegrasjon.
+- Klarhetsstatus og lenker oppdateres fra tenant-avgrensede API-data; oppsettet er veiledende og erstatter ikke regnskapsfaglig kontroll.
+- Verifisert med kildeintegritet, inline JavaScript-syntax, API-integritet, TypeScript, Astro build, `git diff --check`, live smoke (129 kontroller) og HTTP/content-kontroll på preview `https://daedadd9.styr-ing.pages.dev` og produksjon `https://styr.ing/`; release commit `0d85ef6`.
