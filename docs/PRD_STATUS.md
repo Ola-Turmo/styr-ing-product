@@ -300,3 +300,4 @@ Betalinger kan kobles til åpne kunde-/leverandørposter fra samme regnskapsflat
 - Lønnskjøringen viser nå samlet brutto, skattetrekk og netto mens beløp per ansatt fylles inn.
 - Arbeidsgiverkostnadsteksten viser om kostnaden dekker samlet brutto, før brukeren oppretter utkastet.
 - Dette er kun en klientkontroll for forståelighet; serverens validering av brutto, skattetrekk, ansatte og arbeidsgiverkostnad er fortsatt autoritativ.
+- Produksjon verifisert med `npm run verify:live` (125 kontroller) og HTTP 200/content-kontroll på `/app/finance/` som bekrefter både totalsammendraget og inline-funksjonen. Preview: `https://5e62bf1f.styr-ing.pages.dev`; produksjonsdomene: `https://styr.ing/`; release commit: `d466aed`.
