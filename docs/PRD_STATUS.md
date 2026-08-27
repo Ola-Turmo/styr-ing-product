@@ -358,3 +358,8 @@ Betalinger kan kobles til åpne kunde-/leverandørposter fra samme regnskapsflat
 - SAF-T Financial 1.3-eksport er nå tilgjengelig direkte under rapportene i kundeområdet, med fra/til-periode, XML-nedlasting, kontrollsum og antall bilagslinjer.
 - Autoriserte brukere kan registrere eksporten i tenant-avgrenset historikk og se de fem siste kontrollsporene. Eksporten bygger kun på bokførte bilag; innsending til Skatteetaten er fortsatt ikke konfigurert.
 - Verifisert med kildeintegritet, inline JavaScript-syntax, API-integritet, TypeScript, Astro build, konseptgrense og live smoke (125 kontroller). Preview: `https://ac944cfc.styr-ing.pages.dev`; produksjonsdomene: `https://styr.ing/`; release commit: `58b2cb0`.
+
+### MVA i statusoversikten (2026-08-27)
+- Kundeområdets statusoversikt teller nå MVA-perioder med status beregnet, godkjent eller klargjort, og åpner MVA-arbeidsflyten direkte fra kortet.
+- Tallet kommer fra den valgte virksomhetens tenant-avgrensede MVA-API og inngår i samlet antall kontrollpunkter. Ingen ekstern innsending er aktivert.
+- Verifisert med full lokal verifikasjon, live smoke (125 kontroller) og HTTP/content-kontroll på preview og produksjon. Preview: `https://6c45a124.styr-ing.pages.dev`; produksjonsdomene: `https://styr.ing/`; release commit: `abad532`.
