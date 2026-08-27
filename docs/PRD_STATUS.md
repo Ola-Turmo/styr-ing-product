@@ -232,4 +232,4 @@ Betalinger kan kobles til åpne kunde-/leverandørposter fra samme regnskapsflat
 - MVA-perioder har nå en «Se grunnlag»-visning med bokførte bilag, dato, konto, tekst, retning, sats, beregningsgrunnlag og MVA-beløp.
 - Kontrollsummens begynnelse vises sammen med kildene, slik at en liten virksomhet eller regnskapsfører kan forklare totalsummen før godkjenning.
 - Detaljvisningen bruker eksisterende `GET /api/mva?view=detail` og endrer ikke godkjennings- eller innsendingstrinnet.
-- Produksjon verifisert med `npm run verify`, `git diff --check`, HTTP 200/content-kontroll på `/app/finance/` og `npm run verify:live` (123 kontroller). Preview: `https://bc565e5f.styr-ing.pages.dev`; release commit: `81b3117`.
+- Produksjon verifisert med `npm run verify`, `git diff --check`, HTTP 200/content-kontroll på `/app/finance/` og `npm run verify:live` (124 kontroller, inkludert detalj-endepunktet). Preview: `https://bc565e5f.styr-ing.pages.dev`; release commit: `81b3117` (smoke-test commit `9896041`).
