@@ -49,6 +49,8 @@ CRM/revenue, styre/govenance, HCM, IT, felt, HMS/ESG, treasury, kort, risiko, co
 
 ## Verifikasjon utført
 
+- Navigasjonsforbedring for små norske virksomheter: primærmenyen viser nå «Regnskap», «Funksjoner», «Priser» og «Sikkerhet», mens øvrige arbeidsflater ligger samlet under «Mer». Dette holder regnskapet som førstevalg uten å skjule eksisterende funksjoner på store eller små skjermer. Preview: `https://65a8b0ec.styr-ing.pages.dev`; produksjon: `https://styr.ing/`; kildecommit `a254131`.
+
 - `npm run verify:source` — PASS (54 sider, 47 nettleserskript)
 - `npm run verify:api` — PASS (43 API-moduler)
 - `npx tsc --noEmit` — PASS
