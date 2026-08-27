@@ -264,4 +264,4 @@ Betalinger kan kobles til åpne kunde-/leverandørposter fra samme regnskapsflat
 - Et fakturautkast kan nå forkastes fra detaljvisningen med en tydelig bekreftelse. Utkastet markeres som `cancelled` i stedet for å slettes, slik at fakturanummer, revisjonsspor og kontrollhistorikk blir bevart.
 - `POST /api/finance` med `action=cancel_invoice_draft` aksepteres bare når fakturaen tilhører virksomheten og fortsatt har status `draft`; fakturaer under kontroll eller allerede godkjent kan ikke forkastes.
 - Handlingen logges som `sales_invoice_draft_cancelled` og er bevisst irreversibel i brukergrensesnittet. Ingen ekstern sending eller betaling påvirkes.
-- Verifisert lokalt med `npm run verify`, `git diff --check` og produksjonsrøyketest etter deploy. Preview og produksjonslenke oppdateres ved publisering av denne releasen.
+- Verifisert lokalt med `npm run verify`, `git diff --check` og `npm run verify:live` (124 kontroller). Preview: `https://42fc4454.styr-ing.pages.dev`; produksjonsdomene: `https://styr.ing/`; release commit: `e8ddecb`.
