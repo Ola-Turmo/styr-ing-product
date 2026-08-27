@@ -49,6 +49,8 @@ CRM/revenue, styre/govenance, HCM, IT, felt, HMS/ESG, treasury, kort, risiko, co
 
 ## Verifikasjon utført
 
+- Bankavstemming — komplett avvisningsløp: forslag kan nå avvises med obligatorisk forklaring, avvisningen logges i kontrollsporet, og samme banklinje kan deretter plasseres manuelt på valgt hovedbokskonto. Dette gjør feil match-forslag håndterbare for små virksomheter uten å åpne for automatisk bokføring. Preview: `https://0f6ecb8f.styr-ing.pages.dev`; produksjon: `https://styr.ing/`; kildecommit `a6c296b`.
+
 - Navigasjonsforbedring for små norske virksomheter: primærmenyen viser nå «Regnskap», «Funksjoner», «Priser» og «Sikkerhet», mens øvrige arbeidsflater ligger samlet under «Mer». Dette holder regnskapet som førstevalg uten å skjule eksisterende funksjoner på store eller små skjermer. Preview: `https://65a8b0ec.styr-ing.pages.dev`; produksjon: `https://styr.ing/`; kildecommit `a254131`.
 - Navigasjons-stabilitetsfix: dropdown-styling og åpen-tilstand bruker nå riktig `details > summary`-struktur, slik at «Mer»-menyen er lesbar og funksjonell på desktop, zoomede visninger og mobil. Preview: `https://04e4cb28.styr-ing.pages.dev`; produksjon: `https://styr.ing/`; kildecommit `6f4198f`.
 
