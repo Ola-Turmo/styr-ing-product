@@ -532,3 +532,9 @@ Betalinger kan kobles til åpne kunde-/leverandørposter fra samme regnskapsflat
 - Betalingsskjemaet forklarer nå at tomt beløp betyr hele restsaldoen, mens delbetaling må være mindre enn restsaldo. Dette reduserer feilregistreringer i små virksomheter.
 - Manuell betalingsreferanse er obligatorisk og valideres av API-et; valgt banktransaksjon gjør feltet valgfritt fordi bankens referanse brukes automatisk. «MANUELL» brukes ikke lenger som skjult standard.
 - Verifisert med kildeintegritet, inline JavaScript-syntax, API-integritet, TypeScript, Astro build, `git diff --check`, live smoke (129 kontroller), HTTP 200 og innholdskontroll på preview `https://8abd0c3e.styr-ing.pages.dev/app/finance/` og produksjon `https://styr.ing/app/finance/`; release commit `d2304d3`.
+
+### Reskontro — leverandørbetalinger viser ventende avstemming (2026-08-27)
+
+- Leverandørgjeld har nå samme `pending_manual_payment_minor`-status som kundefordringer. En liten virksomhet kan se at en utført betaling er registrert, men ikke bankavstemt eller bokført ennå.
+- API-spørringen summerer bare aktive (`status <> 'reversed'`) betalingsposter og holder tenant-filteret på plass; den faktiske restsaldoen endres fortsatt kun av kontrollert betaling/bankbokføring.
+- Verifisert med kildeintegritet, inline JavaScript-syntax, API-integritet, TypeScript, Astro build, `git diff --check`, live smoke (129 kontroller), HTTP 200 og innholdskontroll på preview `https://cfddc68b.styr-ing.pages.dev/app/finance/` og produksjon `https://styr.ing/app/finance/`; release commit `5c06cf6`.
