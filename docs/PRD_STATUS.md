@@ -337,3 +337,8 @@ Betalinger kan kobles til åpne kunde-/leverandørposter fra samme regnskapsflat
 - Eksisterende kort-/transaksjons- og godkjenningskall blir automatisk tenant-avgrenset; brukeren kan ikke lenger få feil virksomhet fra den tidligere demo-ID-en `board-1`.
 - Ingen betalings- eller kortutstedelsesfunksjon er aktivert; kontrollsporet og menneskelig godkjenning er uendret.
 - Verifisert med kildeintegritet, inline JavaScript-syntax, API-integritet, TypeScript, build og live smoke (125 kontroller). Preview: `https://b9f62e73.styr-ing.pages.dev`; produksjonsdomene: `https://styr.ing/`; release commit: `930a74a`.
+
+### Salgsfaktura og purring — ingen demo-fallback i kundeområdet (2026-08-27)
+- Salgsfakturaens produktvelger og kansellering av utkast bruker nå den validerte virksomhetskonteksten fra kundeområdet.
+- Purringsutkast krever eksplisitt valgt virksomhet og stopper uten fallback til offentlig demo-ID. Dette hindrer at en kunde uten ferdig kontekst leser eller skriver mot feil virksomhet.
+- Verifisert med kildeintegritet, inline JavaScript-syntax, API-integritet, TypeScript, build og live smoke (125 kontroller). Preview: `https://e3a4f2d3.styr-ing.pages.dev`; produksjonsdomene: `https://styr.ing/`; release commit: `8b24168`.
