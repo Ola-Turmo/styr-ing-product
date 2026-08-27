@@ -35,18 +35,26 @@ import Layout from '../layouts/Layout.astro';
   </main>
 </Layout>
 <script is:inline>
-  const set = (id, value) => { const node = document.getElementById(id); if (node) node.textContent = String(value ?? '–'); };
-  const getJson = (url) => fetch(url).then((response) => response.ok ? response.json() : Promise.reject(new Error('preview unavailable')));
+  const setMetric = (id, value) => {
+    const node = document.getElementById(id);
+    if (node) node.textContent = String(value ?? '–');
+  };
+
+  const getJson = (url) => fetch(url).then((response) => {
+    if (!response.ok) throw new Error('preview_unavailable');
+    return response.json();
+  });
+
   Promise.allSettled([
     getJson('/api/finance?boardId=board-1&view=accounts'),
     getJson('/api/finance?boardId=board-1&view=vouchers'),
     getJson('/api/bank?boardId=board-1&view=summary'),
-    getJson('/api/mva?boardId=board-1&view=periods')
+    getJson('/api/mva?boardId=board-1&view=periods'),
   ]).then(([accounts, vouchers, bank, vat]) => {
-    if (accounts.status === 'fulfilled') set('account-count', accounts.value.data?.length ?? 0);
-    if (vouchers.status === 'fulfilled') set('voucher-count', vouchers.value.data?.length ?? 0);
-    if (bank.status === 'fulfilled') set('bank-open-count', bank.value.data?.openCount ?? bank.value.data?.open_count ?? 0);
-    if (vat.status === 'fulfilled') set('vat-period-count', vat.value.data?.length ?? 0);
+    if (accounts.status === 'fulfilled') setMetric('account-count', accounts.value.data?.length ?? 0);
+    if (vouchers.status === 'fulfilled') setMetric('voucher-count', vouchers.value.data?.length ?? 0);
+    if (bank.status === 'fulfilled') setMetric('bank-open-count', bank.value.data?.openCount ?? bank.value.data?.open_count ?? 0);
+    if (vat.status === 'fulfilled') setMetric('vat-period-count', vat.value.data?.length ?? 0);
   });
 </script>
 <style>
