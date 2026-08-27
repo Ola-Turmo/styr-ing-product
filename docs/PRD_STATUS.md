@@ -19,6 +19,7 @@ Dette er en implementasjonsstatus, ikke en påstand om regulatorisk godkjenning.
 - `approve_intercompany` beholder tenant-sjekk, kontovalidering, periode-lås og unik `external_reference` på speilbilaget. Godkjenning er fortsatt eksplisitt menneskelig handling og oppretter kun internt balansert bilag.
 - Verifisert med `npm run verify:source`, `npm run verify:api`, `npm run build`, `git diff --check` og live smoke (129 kontroller).
 - Produksjon: [styr.ing](https://styr.ing/) · deploy-preview: `https://61319fc1.styr-ing.pages.dev` · commit `1f39e28`.
+- Intercompany-komponenten følger nå `boardId` i URL-en (valgt virksomhet i `/app/finance`) før den faller tilbake til første tilgjengelige virksomhet. Dette hindrer at flerbedriftsbrukere oppretter kontrollspor i feil tenant. Produksjonsdeploy etter endringen: `https://1eb3fc4c.styr-ing.pages.dev` · commit `15cc29e`.
 
 ## Regnskapskjerne — prioritert for norske småbedrifter
 
