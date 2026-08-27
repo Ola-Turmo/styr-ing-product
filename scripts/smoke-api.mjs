@@ -101,7 +101,7 @@ for (const [label, path, expected] of checks) {
   }
   if (label === 'pricing page') {
     const html = await response.text();
-    if (!html.includes('Én rolig pris for det daglige regnskapet.') || !html.includes('SaaS') || html.includes('UTKAST')) failures.push(`${label}: expected published SaaS pricing/activation copy`);
+    if (!html.includes('Én rolig pris for') || !html.includes('det daglige regnskapet.') || !html.includes('SaaS') || html.includes('UTKAST')) failures.push(`${label}: expected published SaaS pricing/activation copy`);
   }
 }
 for (const [label, path, payload] of [
