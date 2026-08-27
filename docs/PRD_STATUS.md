@@ -385,7 +385,7 @@ Betalinger kan kobles til åpne kunde-/leverandørposter fra samme regnskapsflat
 - Lønnsflaten viser nå siste kjørings brutto, netto utbetaling, arbeidsgiverpåslag og beregnede feriepenger/OTP i et kompakt sammendrag før brukeren går videre til kontroll og rapportgrunnlag.
 - Tallene hentes fra de samme tenant-avgrensede lønnskjøringene og kontrollene som allerede brukes av arbeidsflyten. Påslaget er kun oppgitt arbeidsgiverkostnad minus brutto; det er ikke en ny beregning av arbeidsgiveravgift.
 - Kopien presiserer fortsatt at satsene må kontrolleres og at A-melding, NAV og utbetaling ikke sendes automatisk.
-- Verifisert med kildeintegritet, inline JavaScript-syntax, API-integritet, TypeScript, Astro build og konseptgrensekontroll. Preview/deploy utføres etter commit.
+- Verifisert med kildeintegritet, inline JavaScript-syntax, API-integritet, TypeScript, Astro build, live smoke (125 kontroller) og HTTP/content-kontroll på produksjon og preview. Preview: `https://4d2d4ed4.styr-ing.pages.dev`; produksjonsdomene: `https://styr.ing/`; release commit: `760b315`.
 
 ### Leverandørgjeld — aldersfordeling i betalingsbildet (2026-08-27)
 - Godkjente åpne leverandørposter vises nå i ikke forfalt, 1–30, 31–60 og 61+ dager, med restbeløp og antall fakturaer.
