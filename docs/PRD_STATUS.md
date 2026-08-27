@@ -265,3 +265,10 @@ Betalinger kan kobles til åpne kunde-/leverandørposter fra samme regnskapsflat
 - `POST /api/finance` med `action=cancel_invoice_draft` aksepteres bare når fakturaen tilhører virksomheten og fortsatt har status `draft`; fakturaer under kontroll eller allerede godkjent kan ikke forkastes.
 - Handlingen logges som `sales_invoice_draft_cancelled` og er bevisst irreversibel i brukergrensesnittet. Ingen ekstern sending eller betaling påvirkes.
 - Verifisert lokalt med `npm run verify`, `git diff --check` og `npm run verify:live` (124 kontroller). Preview: `https://42fc4454.styr-ing.pages.dev`; produksjonsdomene: `https://styr.ing/`; release commit: `e8ddecb`.
+
+### Årsoppgjør — grunnlag fra bokførte tall og noter (2026-08-27)
+
+- Årsregnskapsklargjøring henter nå bokførte bilag for hele året og årsoppgjørsnoter fra samme virksomhet, og bygger resultat-, balanse- og kontrollsummer inn i snapshotet.
+- Grunnlaget avvises hvis debet/kredit eller balansen mellom eiendeler, gjeld, egenkapital og årets resultat ikke går opp. Det hindrer at et tomt eller ufullstendig årsoppgjør ser godkjent ut.
+- UI-et viser antall bokførte bilag, noter og om grunnlaget balanserer. Payload-hashen er fortsatt idempotent; endrede bokførte tall gir snapshot-konflikt.
+- Dette er intern klargjøring for små norske virksomheter. Regnskapsfører må fortsatt kontrollere noter og sende manuelt inntil Regnskapsregisteret-adapter er etablert.
