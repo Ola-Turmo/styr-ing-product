@@ -12,6 +12,7 @@ const componentContracts = {
 'src/components/ProductCatalogQuick.astro': ['id="product-catalog-form"', 'id="product-catalog-list"', 'id="product-edit-form"', 'product-edit-trigger', 'revenueAccountId', 'update_product', 'create_product', 'view=products', '<script is:inline>', '</script>', '<style>', '</style>'],
 'src/components/SalesInvoiceQuick.astro': ['data-invoice-action="create_invoice"', 'id="invoice-lines"', 'invoice-product-picker', 'revenueAccountId', 'view=products', '<script is:inline>', '</script>'],
 'src/components/BankReconciliationQuick.astro': ['data-bank-action="import_transactions"', 'id="bank-statement-file"', 'id="bank-import-preview"', 'parseBankCsv', 'renderBankImportPreview', '<script is:inline>', '</script>', '<style>', '</style>'],
+'src/components/VatPeriodQuick.astro': ['id="vat-periods"', 'id="vat-detail"', 'data-vat-detail', 'vatLoadDetail', 'view=detail', '<script is:inline>', '</script>', '<style>', '</style>'],
 };
 
 async function walk(directory) {
