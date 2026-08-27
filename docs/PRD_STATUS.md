@@ -324,3 +324,10 @@ Betalinger kan kobles til åpne kunde-/leverandørposter fra samme regnskapsflat
 - Små virksomheter trenger dermed ikke kopiere tekniske database-ID-er for å knytte PDF eller skannet faktura til riktig kjøp. Dokumentet lagres fortsatt tenant-avgrenset i R2 med SHA-256-kontrollsum og audit-spor.
 - Flyten endrer ikke fakturastatus, godkjenning, betaling eller bokføring automatisk. EHF/PEPPOL-transport og OCR er fortsatt ikke konfigurert.
 - Verifisert med kildeintegritet, inline JavaScript-syntax, API-integritet, TypeScript og build. Preview: `https://d07373e2.styr-ing.pages.dev`; produksjonsdomene: `https://styr.ing/`; release commit: `33a561a`.
+
+### Salgsfaktura — dokumentvalg uten intern ID (2026-08-27)
+
+- Bilagsarkivet viser nå åpne salgsfakturaer når brukeren velger «Salgsfaktura» som kildetype. Valget viser fakturanummer, kunde og beløp og setter riktig faktura-ID ved opplasting.
+- Dette gjør dokumentasjon av utsendte fakturaer enklere for små virksomheter, uten kopiering av tekniske ID-er. Kontrollsum, tenant-sperre og audit-spor fra dokumentarkivet beholdes.
+- Opplastingen er kun intern dokumentasjon; den sender ikke fakturaen, endrer status eller bokfører automatisk.
+- Verifisert med kildeintegritet, inline JavaScript-syntax, API-integritet, TypeScript, build og live smoke (125 kontroller). Preview: `https://1f0bff72.styr-ing.pages.dev`; produksjonsdomene: `https://styr.ing/`; release commit: `9443093`.
