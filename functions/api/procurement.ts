@@ -1,7 +1,7 @@
 import { authorizeBoardRead, authorizeBoardWrite, body, json, recordAudit, requireDb, type Env } from './_lib';
 
 const views = new Set(['summary', 'suppliers', 'orders', 'receipts', 'invoices', 'invoice-lines', 'credit-notes', 'ehf', 'ehf-xml']);
-const actions = ['create_supplier', 'update_supplier', 'create_order', 'approve_order', 'create_receipt', 'create_invoice', 'create_credit_note', 'review_credit_note', 'approve_credit_note', 'match_invoice', 'attest_invoice', 'assign_invoice', 'record_invoice_payment', 'receive_ehf', 'validate_ehf', 'link_ehf_invoice'];
+const actions = ['create_supplier', 'update_supplier', 'create_order', 'approve_order', 'create_receipt', 'create_invoice', 'link_invoice_order', 'create_credit_note', 'review_credit_note', 'approve_credit_note', 'match_invoice', 'attest_invoice', 'assign_invoice', 'record_invoice_payment', 'receive_ehf', 'validate_ehf', 'link_ehf_invoice'];
 const txt = (v: unknown, max = 200) => String(v ?? '').trim().slice(0, max);
 const num = (v: unknown) => Number.isFinite(Number(v)) && Number(v) >= 0 ? Math.round(Number(v)) : null;
 const isoDate = (v: unknown) => {
@@ -110,6 +110,19 @@ export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
       const invoiceId = newId('si'); const statements = [db.prepare("INSERT INTO supplier_invoices (id,board_id,purchase_order_id,invoice_number,supplier_name,supplier_party_id,amount_minor,vat_minor,currency,due_date,status,match_status,created_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,datetime('now'))").bind(invoiceId, boardId, purchaseOrderId, invoiceNumber, supplierName, supplierPartyId, amountMinor, vatMinor, currency, dueDate, 'received', 'unmatched')];
       for (const line of normalized) statements.push(db.prepare('INSERT INTO supplier_invoice_lines (id,board_id,supplier_invoice_id,line_number,description,quantity,unit_price_minor,vat_rate,vat_code,net_minor,vat_minor,total_minor,account_id) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)').bind(newId('sil'), boardId, invoiceId, line.lineNumber, line.description, line.quantity, line.unitPriceMinor, line.vatRate, line.vatCode, line.netMinor, line.vatMinor, line.totalMinor, line.accountId));
       await db.batch(statements); await recordAudit(db, { boardId, action: 'supplier_invoice_created', entityType: 'supplier_invoice', entityId: invoiceId, userId: auth.userId || undefined, details: { purchaseOrderId, supplierPartyId, lineCount: normalized.length, amountMinor, vatMinor } }); return json({ ok: true, action, invoiceId, supplierPartyId, status: 'received', matchStatus: 'unmatched', amountMinor, vatMinor, lineCount: normalized.length }, { status: 201 });
+    }
+    if (action === 'link_invoice_order') {
+      const invoiceId = txt(v?.invoiceId, 100), purchaseOrderId = txt(v?.purchaseOrderId, 100);
+      if (!invoiceId || !purchaseOrderId) return json({ error: 'invoice_and_order_required' }, { status: 400 });
+      const invoice = await db.prepare("SELECT id,supplier_party_id,supplier_name,status,match_status,purchase_order_id FROM supplier_invoices WHERE id=? AND board_id=? AND status IN ('received','exception')").bind(invoiceId, boardId).first<Record<string, unknown>>();
+      if (!invoice) return json({ error: 'invoice_not_linkable_or_found' }, { status: 409 });
+      const order = await db.prepare("SELECT id,supplier_party_id,supplier_name,status FROM purchase_orders WHERE id=? AND board_id=? AND status IN ('approved','partially_received')").bind(purchaseOrderId, boardId).first<Record<string, unknown>>();
+      if (!order) return json({ error: 'purchase_order_not_approved_or_found' }, { status: 409 });
+      if (invoice.supplier_party_id && order.supplier_party_id && String(invoice.supplier_party_id) !== String(order.supplier_party_id)) return json({ error: 'supplier_mismatch', detail: 'Faktura og ordre tilhører ulike leverandører.' }, { status: 409 });
+      if (!invoice.supplier_party_id && !order.supplier_party_id && txt(invoice.supplier_name).toLocaleLowerCase() !== txt(order.supplier_name).toLocaleLowerCase()) return json({ error: 'supplier_mismatch', detail: 'Leverandørnavnet på faktura og ordre må være likt når leverandørregister ikke er brukt.' }, { status: 409 });
+      await db.prepare("UPDATE supplier_invoices SET purchase_order_id=?,match_status='unmatched',status='received',updated_at=datetime('now') WHERE id=? AND board_id=? AND status IN ('received','exception')").bind(purchaseOrderId, invoiceId, boardId).run();
+      await recordAudit(db, { boardId, action: 'supplier_invoice_order_linked', entityType: 'supplier_invoice', entityId: invoiceId, userId: auth.userId || undefined, details: { purchaseOrderId, previousPurchaseOrderId: invoice.purchase_order_id || null, previousStatus: invoice.status, previousMatchStatus: invoice.match_status, requiresThreeWayMatch: true } });
+      return json({ ok: true, action, invoiceId, purchaseOrderId, status: 'received', matchStatus: 'unmatched', requiresThreeWayMatch: true });
     }
     if (action === 'create_credit_note') {
       const supplierInvoiceId = txt(v?.supplierInvoiceId, 120), creditNoteNumber = txt(v?.creditNoteNumber, 80), issueDate = isoDate(v?.issueDate), description = txt(v?.description), amountMinor = num(v?.amountMinor), vatMinor = num(v?.vatMinor ?? 0), currency = (txt(v?.currency, 3) || 'NOK').toUpperCase();
