@@ -469,4 +469,4 @@ Betalinger kan kobles til åpne kunde-/leverandørposter fra samme regnskapsflat
 
 - MVA, bokføringsforslag, årsoppgjørsnoter, åpenhetslov-grunnlag, likviditetsbilde og eierregister setter nå dato/år til inneværende kalenderperiode når flaten lastes. Dette fjerner foreldede 2026-eksempler for små virksomheter som åpner løsningen senere.
 - Runtime-defaultene er kun brukerhjelp; serverens validering av perioder, datoer, roller og kontrollspor er uendret. Åpningsbalanse i CSV-mal er fortsatt merket som eksempel og er ikke en produksjonsføring.
-- Verifisert med kildeintegritet, inline JavaScript-syntax (204 skript), API-integritet, TypeScript, Astro build (63 sider), `git diff --check`, live smoke (129 kontroller) og HTTP-kontroll på preview `https://2696f745.styr-ing.pages.dev` og produksjon `https://styr.ing/`; release commit `29eab8f`.
+- Verifisert med kildeintegritet, inline JavaScript-syntax (204 skript), API-integritet, TypeScript, Astro build (63 sider), `git diff --check`, live smoke (129 kontroller) og HTTP-kontroll på preview `https://33339701.styr-ing.pages.dev` og produksjon `https://styr.ing/`; release commit `d023236`.
