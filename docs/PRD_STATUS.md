@@ -331,3 +331,9 @@ Betalinger kan kobles til åpne kunde-/leverandørposter fra samme regnskapsflat
 - Dette gjør dokumentasjon av utsendte fakturaer enklere for små virksomheter, uten kopiering av tekniske ID-er. Kontrollsum, tenant-sperre og audit-spor fra dokumentarkivet beholdes.
 - Opplastingen er kun intern dokumentasjon; den sender ikke fakturaen, endrer status eller bokfører automatisk.
 - Verifisert med kildeintegritet, inline JavaScript-syntax, API-integritet, TypeScript, build og live smoke (125 kontroller). Preview: `https://1f0bff72.styr-ing.pages.dev`; produksjonsdomene: `https://styr.ing/`; release commit: `9443093`.
+
+### Kort og utlegg — virksomhetskontekst for flerbedriftsbrukere (2026-08-27)
+- Kortflaten velger nå aktiv virksomhet fra `/api/auth` og faller tilbake til første tilgjengelige virksomhet dersom URL-en mangler eller peker på en utilgjengelig virksomhet.
+- Eksisterende kort-/transaksjons- og godkjenningskall blir automatisk tenant-avgrenset; brukeren kan ikke lenger få feil virksomhet fra den tidligere demo-ID-en `board-1`.
+- Ingen betalings- eller kortutstedelsesfunksjon er aktivert; kontrollsporet og menneskelig godkjenning er uendret.
+- Verifisert med kildeintegritet, inline JavaScript-syntax, API-integritet, TypeScript, build og live smoke (125 kontroller). Preview: `https://b9f62e73.styr-ing.pages.dev`; produksjonsdomene: `https://styr.ing/`; release commit: `930a74a`.
