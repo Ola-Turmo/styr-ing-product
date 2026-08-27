@@ -452,3 +452,10 @@ Betalinger kan kobles til åpne kunde-/leverandørposter fra samme regnskapsflat
 - Dette er kun en trygg forhåndsutfylling i demo/UI. API-et validerer fortsatt datoer og perioder, og bokførings-, avstemmings- og likviditetsreglene er uendret.
 - Verifisert med kildeintegritet, inline JavaScript-syntax, API-integritet, TypeScript, Astro build, live smoke (128 kontroller) og HTTP/content-kontroll mot produksjon. Preview: `https://6e60cd1f.styr-ing.pages.dev`; produksjonsdomene: `https://styr.ing/`; release commit: `c7631fc`.
 - Etterfølgende konsistensfix i `8d62320` fjernet også den statiske eksempelverdien fra HTML-fallbacken i den offentlige bilagsformen; runtime-defaulten og produksjonsflyten er uendret.
+
+### Reskontroeksport — del kontrollgrunnlaget med regnskapsfører (2026-08-27)
+
+- Kundeområdet har nå egne nedlastinger for kundefordringer og leverandørgjeld i norsk semikolonseparert CSV med UTF-8 BOM, slik at filene åpnes riktig i Excel og kan deles med regnskapsfører.
+- Eksporten bruker de samme tenant-avgrensede postene som betalingsbildet, inkluderer forfall, status, total, betalt, kreditert/rest og betalingsreferanse, og er lesende: ingen betaling, bokføring eller ekstern sending skjer.
+- API-et krever fortsatt virksomhets-ID og lesetilgang; manglende virksomhet returnerer `boardId_required`, og produksjonskontroll viser `text/csv` med attachment-filnavn for begge eksporttypene.
+- Verifisert med kildeintegritet, inline JavaScript-syntax, API-integritet, TypeScript, Astro build, `git diff --check`, live smoke (128 kontroller) og HTTP/content-kontroll. Preview: `https://a77247f5.styr-ing.pages.dev`; produksjonsdomene: `https://styr.ing/`; release commit: `09bad8d`.
