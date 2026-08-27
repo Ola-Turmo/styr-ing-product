@@ -22,6 +22,26 @@ const asMinor = (value: unknown) =>
     ? Number(value)
     : null;
 
+const csvValue = (value: unknown) =>
+  `"${String(value ?? "").replace(/"/g, '""')}"`;
+
+const csvResponse = (
+  filename: string,
+  columns: string[],
+  rows: Record<string, unknown>[],
+) => {
+  const csv = `\uFEFF${columns.join(";")}\n${rows
+    .map((row) => columns.map((column) => csvValue(row[column])).join(";"))
+    .join("\n")}`;
+  return new Response(csv, {
+    headers: {
+      "content-type": "text/csv; charset=utf-8",
+      "content-disposition": `attachment; filename="${filename}"`,
+      "cache-control": "no-store",
+    },
+  });
+};
+
 const validNorwegianMod11 = (value: string, weights: number[]) => {
   if (!/^\d+$/.test(value) || value.length !== weights.length + 1) return false;
   const sum = weights.reduce(
@@ -517,7 +537,7 @@ async function boardData(
     return (
       await db
         .prepare(
-          "SELECT i.id,i.invoice_number,i.supplier_name,i.due_date,i.amount_minor,i.currency,i.status,i.match_status,i.attested_at,i.assigned_at,i.paid_at,i.payment_reference,(SELECT pl.id FROM payment_links pl WHERE pl.entity_type='supplier_invoice' AND pl.entity_id=i.id AND pl.board_id=i.board_id ORDER BY pl.linked_at DESC LIMIT 1) payment_link_id,(SELECT pl.bank_transaction_id FROM payment_links pl WHERE pl.entity_type='supplier_invoice' AND pl.entity_id=i.id AND pl.board_id=i.board_id ORDER BY pl.linked_at DESC LIMIT 1) bank_transaction_id,(SELECT pl.status FROM payment_links pl WHERE pl.entity_type='supplier_invoice' AND pl.entity_id=i.id AND pl.board_id=i.board_id ORDER BY pl.linked_at DESC LIMIT 1) payment_link_status,CASE WHEN i.status='paid' THEN 'paid' WHEN i.due_date < date('now') THEN 'overdue' WHEN i.status IN ('received','exception') THEN 'needs_review' WHEN i.status IN ('matched','approved') THEN 'ready_to_pay' ELSE i.status END AS payment_status FROM supplier_invoices i WHERE i.board_id=? ORDER BY CASE WHEN i.status='paid' THEN 3 WHEN i.due_date < date('now') THEN 0 ELSE 1 END,i.due_date",
+          "SELECT i.id,i.invoice_number,i.supplier_name,i.due_date,i.amount_minor,i.paid_minor,i.currency,i.status,i.match_status,i.attested_at,i.assigned_at,i.paid_at,i.payment_reference,(SELECT pl.id FROM payment_links pl WHERE pl.entity_type='supplier_invoice' AND pl.entity_id=i.id AND pl.board_id=i.board_id ORDER BY pl.linked_at DESC LIMIT 1) payment_link_id,(SELECT pl.bank_transaction_id FROM payment_links pl WHERE pl.entity_type='supplier_invoice' AND pl.entity_id=i.id AND pl.board_id=i.board_id ORDER BY pl.linked_at DESC LIMIT 1) bank_transaction_id,(SELECT pl.status FROM payment_links pl WHERE pl.entity_type='supplier_invoice' AND pl.entity_id=i.id AND pl.board_id=i.board_id ORDER BY pl.linked_at DESC LIMIT 1) payment_link_status,CASE WHEN i.status='paid' THEN 'paid' WHEN i.due_date < date('now') THEN 'overdue' WHEN i.status IN ('received','exception') THEN 'needs_review' WHEN i.status IN ('matched','approved') THEN 'ready_to_pay' ELSE i.status END AS payment_status FROM supplier_invoices i WHERE i.board_id=? ORDER BY CASE WHEN i.status='paid' THEN 3 WHEN i.due_date < date('now') THEN 0 ELSE 1 END,i.due_date",
         )
         .bind(boardId)
         .all()
@@ -602,6 +622,44 @@ export const onRequestGet: PagesFunction<Env> = async ({ env, request }) => {
     return json({ error: "board_access_denied" }, { status: 403 });
   try {
     const db = requireDb(env);
+    if (url.searchParams.get("format") === "csv" && ["receivables", "payables"].includes(view)) {
+      const rows = (await boardData(env, boardId, view)) as Record<string, unknown>[];
+      if (view === "receivables") {
+        return csvResponse(
+          `styr-ing-kundefordringer-${new Date().toISOString().slice(0, 10)}.csv`,
+          [
+            "invoice_number",
+            "company_name",
+            "issue_date",
+            "due_date",
+            "status",
+            "collection_status",
+            "total_minor",
+            "paid_minor",
+            "credited_minor",
+            "outstanding_minor",
+            "payment_reference",
+          ],
+          rows,
+        );
+      }
+      return csvResponse(
+        `styr-ing-leverandorgjeld-${new Date().toISOString().slice(0, 10)}.csv`,
+        [
+          "invoice_number",
+          "supplier_name",
+          "due_date",
+          "status",
+          "payment_status",
+          "match_status",
+          "amount_minor",
+          "paid_minor",
+          "currency",
+          "payment_reference",
+        ],
+        rows,
+      );
+    }
     if (view === "saf-t") {
       const from = url.searchParams.get("from") || "1900-01";
       const to = url.searchParams.get("to") || "2999-12";
@@ -668,8 +726,6 @@ export const onRequestGet: PagesFunction<Env> = async ({ env, request }) => {
                 "periodBalanceMinor",
                 "closingBalanceMinor",
               ];
-        const csvValue = (value: unknown) =>
-          `"${String(value ?? "").replace(/"/g, '""')}"`;
         const csv = `\uFEFF${columns.join(";")}\n${(report.rows as Record<string, unknown>[]).map((row) => columns.map((column) => csvValue(row[column])).join(";")).join("\n")}`;
         return new Response(csv, {
           headers: {
