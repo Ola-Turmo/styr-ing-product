@@ -3532,12 +3532,18 @@ export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
     const lines = Array.isArray(voucher.lines)
       ? (voucher.lines as Record<string, unknown>[])
       : [];
+    const documentIds = Array.isArray(voucher.documentIds)
+      ? [...new Set(voucher.documentIds.map((item) => String(item || "").trim()).filter(Boolean))]
+      : voucher.documentId
+        ? [String(voucher.documentId).trim()]
+        : [];
     if (
       !validIsoDate(voucherDate) ||
       !periodPattern.test(period) ||
       !description ||
       description.length > 200 ||
       externalReference.length > 120 ||
+      documentIds.length > 20 ||
       lines.length < 2 ||
       lines.length > 100
     )
@@ -3618,6 +3624,19 @@ export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
     ).results;
     if (accountRows.length !== accountIds.length)
       return json({ error: "account_not_found" }, { status: 400 });
+    if (documentIds.length) {
+      const documentPlaceholders = documentIds.map(() => "?").join(",");
+      const documentRows = (
+        await db
+          .prepare(`SELECT id,entity_id FROM accounting_documents WHERE board_id=? AND id IN (${documentPlaceholders})`)
+          .bind(boardId, ...documentIds)
+          .all()
+      ).results as Array<Record<string, unknown>>;
+      if (documentRows.length !== documentIds.length)
+        return json({ error: "voucher_document_not_found" }, { status: 404 });
+      if (documentRows.some((row) => row.entity_id && String(row.entity_id) !== ""))
+        return json({ error: "voucher_document_already_linked" }, { status: 409 });
+    }
     const canonicalLines = (rows: Array<Record<string, unknown>>) =>
       rows
         .map((line) => [
@@ -3728,6 +3747,13 @@ export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
             line.credit,
             line.vatCode,
           ),
+      ),
+    );
+    documentIds.forEach((documentId) =>
+      statements.push(
+        db
+          .prepare("UPDATE accounting_documents SET entity_type='voucher',entity_id=? WHERE id=? AND board_id=? AND (entity_id IS NULL OR entity_id='')")
+          .bind(voucherId, documentId, boardId),
       ),
     );
     try {
