@@ -3,6 +3,14 @@
 Sist kontrollert: 2026-08-27  
 Kilde: `norwegian_styrearbeid_saas_prd.html` (versjon 8.0.0)
 
+## Posisjoneringsgrunnlag for norsk SMB-forside (2026-08-27)
+
+- Forsiden prioriterer nå komplett regnskap som hovedprodukt: bilag, faktura, bank, MVA, lønn, rapporter og årsoppgjør. Styre-, HCM-, CRM-, IT- og kontrollflater er fortsatt tilgjengelige, men presenteres som utvidelser etter regnskapskjernen.
+- Målgruppen er formulert som små AS og ENK, inkludert eiere som driver selv, små team og virksomheter som samarbeider med regnskapsfører. Dette er et bevisst valg basert på SSBs virksomhetsstatistikk: tabell 07091 viser for 2026 103 298 bedrifter med 1–4 ansatte, 40 367 med 5–9 ansatte og 448 658 uten ansatte (hele landet, alle næringer). Kilde: [SSB tabell 07091](https://data.ssb.no/api/v0/no/table/07091).
+- Budskapet følger den faktiske norske regnskapshverdagen og pliktbildet: Altinn beskriver regnskap som en løpende oppgave for virksomheten, mens markedsledende norske løsninger fremhever regnskap, faktura, bank, MVA, lønn og årsoppgjør før tillegg. Kilder: [Altinn – Regnskap](https://info.altinn.no/starte-og-drive/regnskap-og-revisjon/regnskap/), [Fiken](https://fiken.no/), [Conta](https://conta.no/), [Tripletex](https://www.tripletex.no/).
+- Forsiden lover ikke aktive eksterne innsendinger, bankkoblinger eller betalinger. Den offentlige flaten bruker fortsatt illustrasjonsdata, og adapterstatus er synlig i arbeidsflytene.
+- Release: `https://8ccb4637.styr-ing.pages.dev` → `https://styr.ing/`; kildecommit `393d10b`. Verifisert med `npm run verify:source`, `npm run verify:api`, `npm run build`, HTTP/content-kontroll og `npm run verify:live` (128 kontroller).
+
 Dette er en implementasjonsstatus, ikke en påstand om regulatorisk godkjenning. «Intern» betyr at arbeidsflyten, datamodellen og autorisasjonskontrollen finnes i Styr.ing. «Adapter» betyr at leverandør, credentials, kontrakt, overvåking og juridisk godkjenning fortsatt må etableres.
 
 ## Regnskapskjerne — prioritert for norske småbedrifter
