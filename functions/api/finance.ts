@@ -1935,22 +1935,67 @@ export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
       if (!periodPattern.test(from) || !periodPattern.test(to) || from > to)
         return json({ error: "period_range_invalid" }, { status: 400 });
       const result = await buildSafT(db, boardId, from, to);
-      const exportId = id("saft");
-      await db
+      const existing = await db
         .prepare(
-          "INSERT INTO saf_t_exports (id,board_id,period_from,period_to,status,row_count,checksum,created_by) VALUES (?,?,?,?,?,?,?,?)",
+          "SELECT id,status,row_count,checksum,created_by,created_at FROM saf_t_exports WHERE board_id=? AND period_from=? AND period_to=? AND checksum=? LIMIT 1",
         )
-        .bind(
-          exportId,
-          boardId,
+        .bind(boardId, from, to, result.checksum)
+        .first<Record<string, unknown>>();
+      if (existing) {
+        return json({
+          ok: true,
+          action,
+          exportId: existing.id,
           from,
           to,
-          "prepared",
-          result.rowCount,
-          result.checksum,
-          authorization.userId || "authorized-user",
-        )
-        .run();
+          rowCount: Number(existing.row_count || 0),
+          checksum: String(existing.checksum || result.checksum),
+          status: String(existing.status || "prepared"),
+          idempotent: true,
+          createdAt: existing.created_at || null,
+          downloadUrl: `/api/finance?boardId=${encodeURIComponent(boardId)}&view=saf-t&from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`,
+        });
+      }
+      const exportId = id("saft");
+      try {
+        await db
+          .prepare(
+            "INSERT INTO saf_t_exports (id,board_id,period_from,period_to,status,row_count,checksum,created_by) VALUES (?,?,?,?,?,?,?,?)",
+          )
+          .bind(
+            exportId,
+            boardId,
+            from,
+            to,
+            "prepared",
+            result.rowCount,
+            result.checksum,
+            authorization.userId || "authorized-user",
+          )
+          .run();
+      } catch (error) {
+        if (!(error instanceof Error) || !error.message.toLowerCase().includes("unique")) throw error;
+        const raced = await db
+          .prepare(
+            "SELECT id,status,row_count,checksum,created_at FROM saf_t_exports WHERE board_id=? AND period_from=? AND period_to=? AND checksum=? LIMIT 1",
+          )
+          .bind(boardId, from, to, result.checksum)
+          .first<Record<string, unknown>>();
+        if (!raced) throw error;
+        return json({
+          ok: true,
+          action,
+          exportId: raced.id,
+          from,
+          to,
+          rowCount: Number(raced.row_count || 0),
+          checksum: String(raced.checksum || result.checksum),
+          status: String(raced.status || "prepared"),
+          idempotent: true,
+          createdAt: raced.created_at || null,
+          downloadUrl: `/api/finance?boardId=${encodeURIComponent(boardId)}&view=saf-t&from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`,
+        });
+      }
       await recordAudit(db, {
         boardId,
         action: "saf_t_export_prepared",

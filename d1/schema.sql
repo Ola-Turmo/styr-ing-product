@@ -627,6 +627,7 @@ CREATE INDEX IF NOT EXISTS idx_vouchers_board_date ON vouchers(board_id, voucher
 CREATE INDEX IF NOT EXISTS idx_voucher_sequences_board ON voucher_sequences(board_id);
 CREATE INDEX IF NOT EXISTS idx_voucher_lines_voucher ON voucher_lines(voucher_id);
 CREATE INDEX IF NOT EXISTS idx_saf_t_exports_board ON saf_t_exports(board_id, created_at);
+CREATE UNIQUE INDEX IF NOT EXISTS uq_saf_t_exports_content ON saf_t_exports(board_id, period_from, period_to, checksum);
 
 -- HCM, talent, handbook and learning workflows.
 CREATE TABLE IF NOT EXISTS job_requisitions (
