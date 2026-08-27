@@ -439,3 +439,9 @@ Betalinger kan kobles til åpne kunde-/leverandørposter fra samme regnskapsflat
 - Beregningen bruker faktisk rest etter delbetaling og avgrenser aldersbildet til matchede, godkjente eller bokførte poster. Mottatte fakturaer som fortsatt krever kontroll telles ikke som klare betalingsforpliktelser i dette bildet.
 - Kunde- og leverandørsiden av arbeidskapitalen er dermed synlig i samme SMB-regnskapsflyt uten en separat rapport.
 - Verifisert med full lokal verifikasjon, live smoke (125 kontroller) og HTTP/content-kontroll på produksjon og preview. Preview: `https://01de97b4.styr-ing.pages.dev`; produksjonsdomene: `https://styr.ing/`; release commit: `74e9d7b`.
+
+### Regnskapsperioder — dynamiske SMB-standarder (2026-08-27)
+
+- Periodeavslutning starter nå på inneværende måned, og årsoppgjør på inneværende år. Tidligere statiske eksempelverdier kunne gi små virksomheter feil utgangspunkt når de åpnet arbeidsflaten senere.
+- Dette er kun en tryggere forhåndsutfylling i brukerflaten. API-et validerer fortsatt periode og år, og bokførings-, kontroll- og låsereglene er uendret.
+- Verifisert med kildeintegritet, inline JavaScript-syntax, API-integritet, TypeScript, Astro build, live smoke (128 kontroller) og HTTP/content-kontroll. Preview: `https://febc3e37.styr-ing.pages.dev`; produksjonsdomene: `https://styr.ing/`; release commit: `78e5e8e`.
