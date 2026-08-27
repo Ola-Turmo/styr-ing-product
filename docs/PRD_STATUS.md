@@ -353,3 +353,8 @@ Betalinger kan kobles til åpne kunde-/leverandørposter fra samme regnskapsflat
 - Styringsmodulene ligger fortsatt samlet under tilleggene, slik at små AS og ENK møter det komplette regnskapet først.
 - Endringen er kun posisjonering og navigasjon; ingen backend- eller bokføringslogikk er endret.
 - Verifisert med kildeintegritet, inline JavaScript-syntax, API-integritet, TypeScript, Astro build og live smoke (125 kontroller). Preview: `https://3ecc3c67.styr-ing.pages.dev`; produksjonsdomene: `https://styr.ing/`; release commit: `48c03e3`.
+
+### SAF-T i innlogget rapportflate (2026-08-27)
+- SAF-T Financial 1.3-eksport er nå tilgjengelig direkte under rapportene i kundeområdet, med fra/til-periode, XML-nedlasting, kontrollsum og antall bilagslinjer.
+- Autoriserte brukere kan registrere eksporten i tenant-avgrenset historikk og se de fem siste kontrollsporene. Eksporten bygger kun på bokførte bilag; innsending til Skatteetaten er fortsatt ikke konfigurert.
+- Verifisert med kildeintegritet, inline JavaScript-syntax, API-integritet, TypeScript, Astro build, konseptgrense og live smoke (125 kontroller). Preview: `https://ac944cfc.styr-ing.pages.dev`; produksjonsdomene: `https://styr.ing/`; release commit: `58b2cb0`.
