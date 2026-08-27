@@ -1215,7 +1215,8 @@ export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
         addressLine1 = String(value?.addressLine1 || "").trim(),
         postalCode = String(value?.postalCode || "").trim(),
         city = String(value?.city || "").trim(),
-        email = String(value?.email || "").trim() || null;
+        email = String(value?.email || "").trim() || null,
+        paymentTermsDays = Number(value?.paymentTermsDays ?? 14);
       if (
         !accountId ||
         !companyName ||
@@ -1229,7 +1230,8 @@ export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
         !/^[0-9]{4}$/.test(postalCode) ||
         !city ||
         city.length > 100 ||
-        (email && (!email.includes("@") || email.length > 200))
+        (email && (!email.includes("@") || email.length > 200)) ||
+        !Number.isInteger(paymentTermsDays) || paymentTermsDays < 0 || paymentTermsDays > 365
       )
         return json(
           {
@@ -1241,6 +1243,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
               "addressLine1",
               "postalCode",
               "city",
+              "paymentTermsDays",
             ],
           },
           { status: 400 },
@@ -3530,19 +3533,15 @@ export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
     ).results;
     if (accountRows.length !== accountIds.length)
       return json({ error: "account_not_found" }, { status: 400 });
-    const canonicalLines = (
-      rows: Record<string, unknown>[] | typeof normalized,
-    ) =>
+    const canonicalLines = (rows: Array<Record<string, unknown>>) =>
       rows
-        .map((line) =>
-          [
-            String(line.account_id ?? line.accountId ?? ""),
-            String(line.description ?? ""),
-            Number(line.debit_minor ?? line.debit ?? 0),
-            Number(line.credit_minor ?? line.credit ?? 0),
-            String(line.vat_code ?? line.vatCode ?? ""),
-          ].join("\u001f"),
-        )
+        .map((line) => [
+          String(line.account_id ?? line.accountId ?? ""),
+          String(line.description ?? ""),
+          Number(line.debit_minor ?? line.debit ?? 0),
+          Number(line.credit_minor ?? line.credit ?? 0),
+          String(line.vat_code ?? line.vatCode ?? ""),
+        ].join("\u001f"))
         .sort()
         .join("\u001e");
     const findExistingReference = async () =>

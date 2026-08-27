@@ -77,6 +77,10 @@ for (const [label, path, expected] of checks) {
     const payload = await response.json();
     if (!payload.data || !payload.data.seller || !Array.isArray(payload.data.customers)) failures.push(`${label}: expected seller and customer profile data`);
   }
+  if (label === 'product catalog') {
+    const payload = await response.json();
+    if (!Array.isArray(payload.data)) failures.push(`${label}: expected product rows`);
+  }
 }
 for (const [label, path, payload] of [
   ['event mesh write guard', '/api/events', { boardId: 'board-1' }], ['assistant write guard', '/api/assistant', { boardId: 'board-1', question: 'status' }], ['MCP write guard', '/api/mcp', { jsonrpc: '2.0', id: 1, method: 'tools/list' }],

@@ -9,6 +9,7 @@ let scriptCount = 0;
 const componentContracts = {
   'src/components/EHFInboxQuick.astro': ['name="currency"', 'value="NOK"', 'name="documentRef"', 'name="supplierName"'],
   'src/components/ReceivablesPayablesQuick.astro': ['<section class="cash-control"', 'id="cash-payment-form"', 'id="collection-case-form"', '<script is:inline>', '</script>', '<style>', '</style>'],
+  'src/components/ProductCatalogQuick.astro': ['id="product-catalog-form"', 'id="product-catalog-list"', 'action = \'create_product\'', 'view=products', '<script is:inline>', '</script>', '<style>', '</style>'],
 };
 
 async function walk(directory) {
@@ -34,6 +35,10 @@ async function walk(directory) {
 }
 
 await walk(root);
+for (const [file, tokens] of Object.entries(componentContracts)) {
+  const source = await readFile(resolve(file), 'utf8');
+  for (const token of tokens) if (!source.includes(token)) failures.push(`${file}: mangler nødvendig brukerfelt (${token})`);
+}
 if (failures.length) {
   console.error(`SOURCE INTEGRITY: FAIL (${failures.length})`);
   failures.forEach((failure) => console.error(`- ${failure}`));
