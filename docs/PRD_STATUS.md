@@ -470,3 +470,9 @@ Betalinger kan kobles til åpne kunde-/leverandørposter fra samme regnskapsflat
 - MVA, bokføringsforslag, årsoppgjørsnoter, åpenhetslov-grunnlag, likviditetsbilde og eierregister setter nå dato/år til inneværende kalenderperiode når flaten lastes. Dette fjerner foreldede 2026-eksempler for små virksomheter som åpner løsningen senere.
 - Runtime-defaultene er kun brukerhjelp; serverens validering av perioder, datoer, roller og kontrollspor er uendret. Åpningsbalanse i CSV-mal er fortsatt merket som eksempel og er ikke en produksjonsføring.
 - Verifisert med kildeintegritet, inline JavaScript-syntax (204 skript), API-integritet, TypeScript, Astro build (63 sider), `git diff --check`, live smoke (129 kontroller) og HTTP-kontroll på preview `https://33339701.styr-ing.pages.dev` og produksjon `https://styr.ing/`; release commit `d023236`.
+
+### SAF-T — årsintervall følger inneværende år (2026-08-27)
+
+- Nedlasting og registrering av SAF-T i den offentlige regnskapsflaten bruker nå inneværende kalenderår automatisk, slik at små virksomheter ikke starter med et foreldet eksempelintervall.
+- Lenken er fortsatt lesende i demoen, mens registrering krever autorisasjon; API-et validerer fortsatt tenant, periode og kontrollspor.
+- Verifisert med kildeintegritet, inline JavaScript-syntax, API-integritet, TypeScript, Astro build (63 sider), live smoke (129 kontroller) og HTTP/content-kontroll på preview `https://5def36c7.styr-ing.pages.dev` og produksjon `https://styr.ing/`; release commit `b833ec4`.
