@@ -54,6 +54,7 @@ const checks = [
 ];
 checks.push(['MVA detail', '/api/mva?boardId=board-1&view=detail&period=2026-08', 200]);
 const failures = [];
+checks.push(['pricing page', '/abonnement/', 200]);
 for (const [label, path, expected] of checks) {
   const response = await fetch(`${baseUrl}${path}`);
   if (response.status !== expected) failures.push(`${label}: expected ${expected}, got ${response.status}`);
@@ -85,6 +86,22 @@ for (const [label, path, expected] of checks) {
   if (label === 'public finance page') {
     const html = await response.text();
     if (!html.includes('Fra bilag til') || !html.includes('Offentlig forhåndsvisning')) failures.push(`${label}: expected accounting-first preview copy`);
+  }
+  if (label === 'public landing page') {
+    const html = await response.text();
+    if (!html.includes('NORSK REGNSKAP FOR SMÅ AS OG ENK') || !html.includes('Bilag') || !html.includes('MVA')) failures.push(`${label}: expected SMB accounting-first hero and core capabilities`);
+  }
+  if (label === 'customer workspace shell') {
+    const html = await response.text();
+    if (!html.includes('Regnskap først') || !html.includes('/app/finance')) failures.push(`${label}: expected accounting-first workspace entry point`);
+  }
+  if (label === 'tenant finance workspace shell') {
+    const html = await response.text();
+    if (!html.includes('Start med oppgaven, ikke modulen.') || !html.includes('Bilagsarkiv')) failures.push(`${label}: expected task-based accounting workspace shell`);
+  }
+  if (label === 'pricing page') {
+    const html = await response.text();
+    if (!html.includes('Én rolig pris for det daglige regnskapet.') || !html.includes('SaaS') || html.includes('UTKAST')) failures.push(`${label}: expected published SaaS pricing/activation copy`);
   }
 }
 for (const [label, path, payload] of [

@@ -11,7 +11,7 @@ const componentContracts = {
   'src/components/ReceivablesPayablesQuick.astro': ['<section class="cash-control"', 'id="cash-payment-form"', 'id="collection-case-form"', 'cash-aging', 'aging-current', 'aging-30', 'aging-60', 'aging-old', 'payable-aging-current', 'payable-aging-30', 'payable-aging-60', 'payable-aging-old', 'renderAging', 'renderPayableAging', '<script is:inline>', '</script>', '<style>', '</style>'],
 'src/components/ProductCatalogQuick.astro': ['id="product-catalog-form"', 'id="product-catalog-list"', 'id="product-edit-form"', 'product-edit-trigger', 'revenueAccountId', 'update_product', 'create_product', 'view=products', '<script is:inline>', '</script>', '<style>', '</style>'],
   'src/components/SalesInvoiceQuick.astro': ['data-invoice-action="create_invoice"', 'id="invoice-lines"', 'invoice-product-picker', 'revenueAccountId', 'view=products', 'id="invoice-draft-total"', 'updateInvoiceDraftTotal', 'update_invoice_draft', 'invoice-edit-draft', 'cancel_invoice_draft', 'invoice-cancel-draft', '<script is:inline>', '</script>'],
-'src/components/BankReconciliationQuick.astro': ['data-bank-action="import_transactions"', 'id="bank-statement-file"', 'id="bank-import-preview"', 'parseBankCsv', 'renderBankImportPreview', '<script is:inline>', '</script>', '<style>', '</style>'],
+'src/components/BankReconciliationQuick.astro': ['data-bank-action="create_account"', 'data-bank-action="import_transactions"', 'data-bank-action="suggest_match"', 'data-bank-action="approve_match"', 'data-bank-action="reject_match"', 'data-bank-action="post_match"', 'id="bank-statement-file"', 'id="bank-import-preview"', 'parseBankCsv', 'renderBankImportPreview', 'counterAccountId', '<script is:inline>', '</script>', '<style>', '</style>'],
   'src/components/VatPeriodQuick.astro': ['id="vat-periods"', 'id="vat-detail"', 'data-vat-detail', 'vatLoadDetail', 'view=detail', '<script is:inline>', '</script>', '<style>', '</style>'],
   'src/components/SupplierInvoiceQuick.astro': ['data-supplier-action="create_invoice"', 'data-supplier-action="approve_order"', 'supplier-approve-order', 'lineAccountId', 'data-supplier-line-account', 'default_expense_account_id', 'supplierRefreshLineAccounts', 'supplier-invoice-total', 'updateSupplierInvoiceTotal', '<script is:inline>', '</script>', '<style>', '</style>'],
   'src/components/AnnualAccountsQuick.astro': ['annual-approve-form', 'annual-summary', 'annualShowDetail', 'annual-detail', 'annualSummary', '<script is:inline>', '</script>', '<style>', '</style>'],
@@ -50,6 +50,15 @@ await walk(root);
 for (const [file, tokens] of Object.entries(componentContracts)) {
   const source = await readFile(resolve(file), 'utf8');
   for (const token of tokens) if (!source.includes(token)) failures.push(`${file}: mangler nødvendig brukerfelt (${token})`);
+  if (file === 'src/components/BankReconciliationQuick.astro') {
+    const tags = ['<section', '</section>', '<script', '</script>', '<style', '</style>'];
+    for (const tag of tags) {
+      const count = source.split(tag).length - 1;
+      if (count !== 1) failures.push(`${file}: forventet nøyaktig én ${tag}-tagg, fant ${count}`);
+    }
+    const forms = ['create_account', 'import_transactions', 'suggest_match', 'approve_match', 'reject_match', 'post_match'];
+    for (const action of forms) if ((source.match(new RegExp(`data-bank-action=["']${action}["']`, 'g')) || []).length !== 1) failures.push(`${file}: forventet én ${action}-arbeidsflyt`);
+  }
 }
 if (failures.length) {
   console.error(`SOURCE INTEGRITY: FAIL (${failures.length})`);
