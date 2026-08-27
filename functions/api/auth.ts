@@ -1,4 +1,4 @@
-import { authorizeBoardWrite, authorizeWrite, body, bytesToBase64, createSession, destroySession, getSession, hashPassword, json, requireDb, sessionCookie, sha256, verifyPassword, type Env } from './_lib';
+import { authorizeBoardWrite, authorizeWrite, body, bytesToBase64, createSession, destroySession, getSession, hashPassword, json, recordAudit, requireDb, sessionCookie, sha256, verifyPassword, type Env } from './_lib';
 
 function publicUser(user: { id: string; email: string; name: string; role: string }) {
   return { id: user.id, email: user.email, name: user.name, role: user.role };
@@ -56,18 +56,22 @@ export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
     try {
       const db = requireDb(env); const invite = await db.prepare("SELECT id,board_id,email,name,role FROM invite_tokens WHERE token_hash=? AND used_at IS NULL AND expires_at>datetime('now')").bind(await sha256(token)).first<{ id:string; board_id:string; email:string; name:string; role:string }>();
       if (!invite) return json({ error: 'invite_invalid_or_expired' }, { status: 410 });
-      const existing = await db.prepare('SELECT id FROM users WHERE lower(email)=?').bind(invite.email).first<{ id:string }>();
-      if (existing) return json({ error: 'existing_account_must_sign_in' }, { status: 409 });
-      const userId = `usr-${crypto.randomUUID()}`; const passwordHash = await hashPassword(password);
+      const existing = await db.prepare('SELECT id,password_hash FROM users WHERE lower(email)=?').bind(invite.email).first<{ id:string; password_hash:string }>();
+      if (existing && !(await verifyPassword(password, existing.password_hash))) return json({ error: 'invite_account_password_invalid' }, { status: 401 });
+      const userId = existing?.id || `usr-${crypto.randomUUID()}`; const passwordHash = existing ? null : await hashPassword(password);
       // Claim the token before creating records. The conditional UPDATE is the
       // single-use guard when two activation requests arrive at the same time.
       const claim = await db.prepare("UPDATE invite_tokens SET used_at=datetime('now') WHERE id=? AND used_at IS NULL AND expires_at>datetime('now')").bind(invite.id).run();
       if ((claim.meta?.changes || 0) !== 1) return json({ error: 'invite_invalid_or_expired' }, { status: 410 });
-      await db.batch([
-        db.prepare('INSERT INTO users (id,email,name,password_hash) VALUES (?,?,?,?)').bind(userId,invite.email,invite.name,passwordHash),
-        db.prepare('INSERT INTO user_boards (user_id,board_id,role) VALUES (?,?,?)').bind(userId,invite.board_id,invite.role),
-      ]);
-      const session = await createSession(env,userId,request); return json({ authenticated:true, boardId:invite.board_id }, { headers:{ 'set-cookie': sessionCookie(session) } });
+      const statements = existing
+        ? [db.prepare('INSERT INTO user_boards (user_id,board_id,role) VALUES (?,?,?) ON CONFLICT(user_id,board_id) DO NOTHING').bind(userId,invite.board_id,invite.role)]
+        : [
+            db.prepare('INSERT INTO users (id,email,name,password_hash) VALUES (?,?,?,?)').bind(userId,invite.email,invite.name,passwordHash),
+            db.prepare('INSERT INTO user_boards (user_id,board_id,role) VALUES (?,?,?)').bind(userId,invite.board_id,invite.role),
+          ];
+      await db.batch(statements);
+      await recordAudit(db, { boardId: invite.board_id, action: existing ? 'membership.invite_accepted' : 'membership.account_activated', entityType: 'user_board', entityId: userId, userId, details: { role: invite.role, existingAccount: Boolean(existing), inviteId: invite.id }, ipAddress: request.headers.get('cf-connecting-ip') || undefined });
+      const session = await createSession(env,userId,request); return json({ authenticated:true, boardId:invite.board_id, existingAccount:Boolean(existing) }, { headers:{ 'set-cookie': sessionCookie(session) } });
     } catch (error) { return json({ error: 'invite_activation_failed', detail: error instanceof Error ? error.message : 'unknown' }, { status: 503 }); }
   }
   if (action !== 'login') return json({ error: 'self_service_registration_disabled' }, { status: 403 });

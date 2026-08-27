@@ -208,7 +208,11 @@ const documentUploadGuard = await fetch(`${baseUrl}/api/documents`, { method: 'P
 if (documentUploadGuard.status !== 401) failures.push(`accounting document upload guard: expected 401, got ${documentUploadGuard.status}`);
 const invalidLogin = await fetch(`${baseUrl}/api/auth`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ action: 'login', email: 'nobody@example.invalid', password: 'not-a-real-password' }) });
 if (invalidLogin.status !== 401) failures.push(`invalid login guard: expected 401, got ${invalidLogin.status}`);
+const invalidInviteStatus = await fetch(`${baseUrl}/api/auth?action=invite_status&token=smoke-invalid-token`);
+if (invalidInviteStatus.status !== 410) failures.push(`invalid invite status guard: expected 410, got ${invalidInviteStatus.status}`);
+const invalidInviteActivation = await fetch(`${baseUrl}/api/auth`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ action: 'activate_invite', token: 'smoke-invalid-token', password: 'not-a-real-password' }) });
+if (invalidInviteActivation.status !== 410) failures.push(`invalid invite activation guard: expected 410, got ${invalidInviteActivation.status}`);
 const webhookUnconfigured = await fetch(`${baseUrl}/api/billing-webhook`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: '{}' });
 if (![400, 503].includes(webhookUnconfigured.status)) failures.push(`billing webhook guard: expected 400 or 503, got ${webhookUnconfigured.status}`);
 if (failures.length) { console.error(`LIVE API SMOKE: FAIL (${failures.length})`); failures.forEach((failure) => console.error(`- ${failure}`)); process.exit(1); }
-console.log(`LIVE API SMOKE: PASS (${checks.length + 3} checks against ${baseUrl})`);
+console.log(`LIVE API SMOKE: PASS (${checks.length + 5} checks against ${baseUrl})`);

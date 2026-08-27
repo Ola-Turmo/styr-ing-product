@@ -19,6 +19,7 @@ const routeContracts = {
   'functions/api/governance.ts': ['review_contract', 'activate_mandate', 'create_contract_review', 'accept_redline', 'approve_grant'],
   'functions/api/forecast.ts': ['sales_credit_notes', 'substr(collection_cases.reference,15)', 'openCollectionsMinor'],
   'functions/api/cards.ts': ['attach_receipt', 'receipt_reference_conflict', 'receipt_already_attached', 'idempotent', 'vatRate', 'netMinor', 'vatMinor'],
+  'functions/api/auth.ts': ['activate_invite', 'invite_account_password_invalid', 'verifyPassword', 'membership.invite_accepted', 'ON CONFLICT(user_id,board_id) DO NOTHING', 'existingAccount'],
 };
 
 async function walk(directory) {

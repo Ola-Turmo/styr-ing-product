@@ -22,6 +22,7 @@ const componentContracts = {
   'src/components/CardLedgerQuick.astro': ['id="card-ledger-form"', 'id="card-vat-rate"', 'id="card-vat-account"', 'vatRate', 'vatMinor', 'netMinor', '<script is:inline>', '</script>', '<style>', '</style>'],
  'src/pages/app/finance.astro': ['finance-task-start', 'finance-task-grid', 'data-finance-task="invoice"', 'data-finance-task="receipt"', 'data-finance-task="bank"', 'data-finance-task="payroll"', 'data-finance-tasks="voucher"', 'finance-task-workflow', 'finance-task-clear', 'Start med oppgaven, ikke modulen.', 'financeCount', 'data-overview-task="bank"', 'data-overview-task="supplier"', 'data-overview-task="payroll"', 'data-overview-task="vat"', 'data-overview-task="invoice"', 'metric-vat', 'metric-receivables', 'metric-receivables-detail', 'document-entity-type', 'document-card-transaction', 'document-supplier-invoice', 'document-sales-invoice', 'attach_receipt', 'loadCardReceiptOptions', 'loadSupplierInvoices', 'loadSalesInvoices'],
   'src/pages/app.astro': ['primary-finance-callout', 'Regnskap først', 'href="/app/finance"', 'app-stats'],
+  'src/pages/activate.astro': ['id="activate-form"', 'Godta invitasjonen', 'invite_account_password_invalid', 'Har du allerede Styr.ing-konto', 'existingAccount', '<script is:inline>', '</script>', '<style>', '</style>'],
 };
 
 async function walk(directory) {
