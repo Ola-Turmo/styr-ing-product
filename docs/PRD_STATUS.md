@@ -57,6 +57,8 @@ CRM/revenue, styre/govenance, HCM, IT, felt, HMS/ESG, treasury, kort, risiko, co
 
 - Dokumentasjon i bilagsflyten — åpne kvitteringer og andre arkiverte dokumenter kan velges direkte når et manuelt bilag bokføres. API-et verifiserer tenant-eierskap, at referansen faktisk finnes i riktig register og hindrer gjenbruk, og kobler dokumentet i samme D1-batch som bilag og linjer; audit-detaljene inneholder dokument-ID-ene. Preview: `https://a5a4db45.styr-ing.pages.dev/app/finance/`; produksjon: `https://styr.ing/app/finance/`; kildecommit `26e88c2`. Kilde/API/build passerer, og preview/produksjon viser feltet «Dokumentasjon (valgfritt)».
 
+- Bankgrense tydeliggjort for små virksomheter — bankimporten viser eksplisitt at tilkobling, automatisk betaling og automatisk bokføring ikke er aktivert; hver linje må fortsatt kontrolleres og bokføres manuelt. Preview: `https://62b260d5.styr-ing.pages.dev/`; produksjon: `https://styr.ing/`; kildecommit `e8fd7bd`. Produksjonssider returnerer HTTP 200.
+
 - Leverandørordre-kobling — en mottatt eller avviksmerket leverandørfaktura uten ordre kan nå kobles til en godkjent ordre fra samme leverandør. Koblingen nullstiller matchstatus til `unmatched`, krever ny treveis matching og skriver tidligere status/ordre i audit-sporet. Preview: `https://1c490523.styr-ing.pages.dev`; produksjon: `https://styr.ing/`; kildecommit `0bc0a16`.
 
 - Leverandøridentitet — ordre-koblingen sammenligner nå normaliserte leverandørnavn også når én side bruker leverandørregister og den andre fritekst. Ulike leverandører avvises før kobling. Preview: `https://a91a90c9.styr-ing.pages.dev`; produksjon: `https://styr.ing/`; kildecommit `f4d412c`; smoke-testen dekker autorisasjonsvakten (`127/127`).
