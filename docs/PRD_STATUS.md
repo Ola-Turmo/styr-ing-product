@@ -459,3 +459,8 @@ Betalinger kan kobles til åpne kunde-/leverandørposter fra samme regnskapsflat
 - Eksporten bruker de samme tenant-avgrensede postene som betalingsbildet, inkluderer forfall, status, total, betalt, kreditert/rest og betalingsreferanse, og er lesende: ingen betaling, bokføring eller ekstern sending skjer.
 - API-et krever fortsatt virksomhets-ID og lesetilgang; manglende virksomhet returnerer `boardId_required`, og produksjonskontroll viser `text/csv` med attachment-filnavn for begge eksporttypene.
 - Verifisert med kildeintegritet, inline JavaScript-syntax, API-integritet, TypeScript, Astro build, `git diff --check`, live smoke (128 kontroller) og HTTP/content-kontroll. Preview: `https://a77247f5.styr-ing.pages.dev`; produksjonsdomene: `https://styr.ing/`; release commit: `09bad8d`.
+### Lønn — oppsettsjekk før kjøring (2026-08-27)
+
+- Lønnsflaten viser nå før-kjøring status for grunnkontoene 5000, 2600/260x, 2930, 5400 og 2770 samt om virksomhetens bankopplysning er satt.
+- Sjekken er tenant-avgrenset og bruker kun interne konto- og profilregistre. Den fremstiller ikke skattetrekkskonto, banktilkobling, Altinn, NAV eller utbetaling som live; `bankAdapter` returnerer fortsatt `not_configured`.
+- Verifisert med kildeintegritet, inline JavaScript-syntax, API-integritet, TypeScript, Astro build, `git diff --check`, live smoke (129 kontroller) og HTTP/content-kontroll. Preview: `https://875e85b5.styr-ing.pages.dev`; produksjonsdomene: `https://styr.ing/`; release commit: `44e52c6`.
