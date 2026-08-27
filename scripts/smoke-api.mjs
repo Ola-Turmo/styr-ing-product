@@ -147,6 +147,7 @@ for (const [label, path, payload] of [
   ['procurement order creation guard', '/api/procurement', { boardId: 'board-1', action: 'create_order', orderNumber: 'UNAUTH', supplierName: 'Unauthorised', totalMinor: 100, currency: 'NOK' }],
   ['procurement receipt creation guard', '/api/procurement', { boardId: 'board-1', action: 'create_receipt', purchaseOrderId: 'fixture-not-used', receivedDate: '2026-08-25', status: 'confirmed' }],
   ['procurement invoice creation guard', '/api/procurement', { boardId: 'board-1', action: 'create_invoice', invoiceNumber: 'UNAUTH', supplierName: 'Unauthorised', amountMinor: 100, currency: 'NOK', dueDate: '2026-08-25' }],
+  ['procurement invoice order link guard', '/api/procurement', { boardId: 'board-1', action: 'link_invoice_order', invoiceId: 'fixture-not-used', purchaseOrderId: 'fixture-not-used' }],
   ['supplier credit note write guard', '/api/procurement', { boardId: 'board-1', action: 'create_credit_note', supplierInvoiceId: 'fixture-not-used', creditNoteNumber: 'UNAUTH', issueDate: '2026-08-25', description: 'Unauthorised', amountMinor: 100, vatMinor: 0, currency: 'NOK' }],
   ['EHF receive guard', '/api/procurement', { boardId: 'board-1', action: 'receive_ehf', documentRef: 'UNAUTH', supplierName: 'Unauthorised', invoiceNumber: 'UNAUTH', issueDate: '2026-08-25', dueDate: '2026-09-01', amountMinor: 100, currency: 'NOK' }],
   ['EHF validate guard', '/api/procurement', { boardId: 'board-1', action: 'validate_ehf', ehfId: 'fixture-not-used' }],
