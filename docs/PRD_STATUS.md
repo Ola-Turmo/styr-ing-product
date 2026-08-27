@@ -380,3 +380,9 @@ Betalinger kan kobles til åpne kunde-/leverandørposter fra samme regnskapsflat
 - Fordringsgrunnlaget inkluderer bare godkjente/sendte/forfalte fakturaer med positiv restsaldo. Utkast og fakturaer til kontroll er fortsatt synlige i arbeidsflyten, men telles ikke som reelle krav mot kunden.
 - Restbeløpet beregnes etter registrerte betalinger og bokførte kreditnotaer, og vises kun for valgt virksomhet.
 - Verifisert med full lokal verifikasjon, live smoke (125 kontroller), HTTP/content-kontroll på produksjon og preview. Preview: `https://38732b84.styr-ing.pages.dev`; produksjonsdomene: `https://styr.ing/`; release commit: `a15975f`.
+
+### Leverandørgjeld — aldersfordeling i betalingsbildet (2026-08-27)
+- Godkjente åpne leverandørposter vises nå i ikke forfalt, 1–30, 31–60 og 61+ dager, med restbeløp og antall fakturaer.
+- Beregningen bruker faktisk rest etter delbetaling og avgrenser aldersbildet til matchede, godkjente eller bokførte poster. Mottatte fakturaer som fortsatt krever kontroll telles ikke som klare betalingsforpliktelser i dette bildet.
+- Kunde- og leverandørsiden av arbeidskapitalen er dermed synlig i samme SMB-regnskapsflyt uten en separat rapport.
+- Verifisert med full lokal verifikasjon, live smoke (125 kontroller) og HTTP/content-kontroll på produksjon og preview. Preview: `https://01de97b4.styr-ing.pages.dev`; produksjonsdomene: `https://styr.ing/`; release commit: `74e9d7b`.
