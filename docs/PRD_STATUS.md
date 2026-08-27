@@ -76,6 +76,13 @@ Periodeavslutning ligger nå i den daglige regnskapsflyten i `app/finance`: kont
 
 Betalinger kan kobles til åpne kunde-/leverandørposter fra samme regnskapsflate. `ReceivablesPayablesQuick` krever retning og eksakt beløp, oppretter en kontrollert betalingskobling i bank-API-et og sender deretter brukeren til bankavstemming for endelig bokføring. En kobling endrer ikke saldoen; `functions/api/bank.ts` oppdaterer fakturastatus først etter at det balanserte bankbilaget er opprettet. Bilag, bankstatus, åpne-poster-status og betalingsstatus lagres i samme D1-batch, og en idempotent retry reparerer eventuelle manglende sideeffekter. Matchforslag, godkjenning, idempotent postering og audit-spor er internt implementert. Direkte banktilkoblinger og automatisk betaling er fortsatt ikke konfigurert.
 
+### Leverandørkreditnota — komplett kontrollert regnskapsflyt (2026-08-27)
+- Små virksomheter kan nå registrere kreditnota fra leverandør mot en godkjent/matchet leverandørfaktura, med beløp, MVA, valuta, dato, unik kreditnotareferanse og kontrollert restgrense.
+- Flyten følger samme fireøyneprinsipp som øvrig regnskap: utkast → kontroll → godkjenning → bilagsforslag → godkjenning av balanserte linjer → bokføring. Kreditnotaen reduserer kostnad og inngående MVA mot leverandørgjeld, med kildehash, idempotent ekstern referanse og audit-spor.
+- Hovedbokskøen har nå «Leverandørkreditnota» som kilde, og leverandørkreditnotaer inngår i forslagssammendraget og live-smoketesten. Ingen automatisk leverandørrefusjon eller ekstern betalingsadapter er aktivert.
+- Migrasjon `d1/migrations/20260919_supplier_credit_notes.sql` er kjørt direkte og verifisert i `styr-ing-db` før applikasjonsdeploy.
+- Verifisert med `npm run verify` (kilde/API/TypeScript/build/konseptgrense), `git diff --check` og `npm run verify:live` — 126/126 kontroller mot `https://styr.ing`. Preview: `https://b8446e22.styr-ing.pages.dev`; produksjonsdomene: `https://styr.ing/`; release commits: `86d7e3c`, `6f7d13d`.
+
 ## Neste leveranse før reell kunde
 
 1. Koble og godkjenne én konkret e-postleverandør; intern engangsaktivering, klokke-/utløpsstatus og replay-avvisning er implementert, men utsending og leverandør-overvåking mangler.
