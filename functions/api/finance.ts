@@ -318,7 +318,7 @@ async function boardData(
     return (
       await db
         .prepare(
-          "SELECT id,company_name,org_number,stage,currency FROM crm_accounts WHERE board_id=? AND stage NOT IN ('lost') ORDER BY company_name",
+          "SELECT a.id,a.company_name,COALESCE(p.org_number,a.org_number) org_number,a.stage,a.currency,COALESCE(p.payment_terms_days,14) payment_terms_days FROM crm_accounts a LEFT JOIN customer_invoice_profiles p ON p.board_id=a.board_id AND p.account_id=a.id WHERE a.board_id=? AND a.stage NOT IN ('lost') ORDER BY a.company_name",
         )
         .bind(boardId)
         .all()
@@ -327,7 +327,7 @@ async function boardData(
     return (
       await db
         .prepare(
-          "SELECT a.id,a.company_name,a.org_number,a.stage,a.currency,COALESCE(p.org_number,a.org_number) customer_org_number,COALESCE(p.customer_type,'business') customer_type,p.address_line1,p.postal_code,p.city,p.country_code,p.email,CASE WHEN p.account_id IS NULL THEN 0 WHEN p.address_line1 IS NOT NULL AND p.postal_code IS NOT NULL AND p.city IS NOT NULL AND (COALESCE(p.customer_type,'business')='private' OR COALESCE(p.org_number,a.org_number) IS NOT NULL) THEN 1 ELSE 0 END profile_complete FROM crm_accounts a LEFT JOIN customer_invoice_profiles p ON p.board_id=a.board_id AND p.account_id=a.id WHERE a.board_id=? AND a.stage NOT IN ('lost') ORDER BY a.company_name",
+          "SELECT a.id,a.company_name,a.org_number,a.stage,a.currency,COALESCE(p.org_number,a.org_number) customer_org_number,COALESCE(p.customer_type,'business') customer_type,p.address_line1,p.postal_code,p.city,p.country_code,p.email,COALESCE(p.payment_terms_days,14) payment_terms_days,CASE WHEN p.account_id IS NULL THEN 0 WHEN p.address_line1 IS NOT NULL AND p.postal_code IS NOT NULL AND p.city IS NOT NULL AND (COALESCE(p.customer_type,'business')='private' OR COALESCE(p.org_number,a.org_number) IS NOT NULL) THEN 1 ELSE 0 END profile_complete FROM crm_accounts a LEFT JOIN customer_invoice_profiles p ON p.board_id=a.board_id AND p.account_id=a.id WHERE a.board_id=? AND a.stage NOT IN ('lost') ORDER BY a.company_name",
         )
         .bind(boardId)
         .all()
@@ -342,7 +342,7 @@ async function boardData(
         .first(),
       db
         .prepare(
-          "SELECT a.id,a.company_name,COALESCE(p.org_number,a.org_number) org_number,COALESCE(p.customer_type,'business') customer_type,p.address_line1,p.postal_code,p.city,p.country_code,p.email FROM crm_accounts a LEFT JOIN customer_invoice_profiles p ON p.board_id=a.board_id AND p.account_id=a.id WHERE a.board_id=? AND a.stage NOT IN ('lost') ORDER BY a.company_name",
+          "SELECT a.id,a.company_name,COALESCE(p.org_number,a.org_number) org_number,COALESCE(p.customer_type,'business') customer_type,p.address_line1,p.postal_code,p.city,p.country_code,p.email,COALESCE(p.payment_terms_days,14) payment_terms_days FROM crm_accounts a LEFT JOIN customer_invoice_profiles p ON p.board_id=a.board_id AND p.account_id=a.id WHERE a.board_id=? AND a.stage NOT IN ('lost') ORDER BY a.company_name",
         )
         .bind(boardId)
         .all(),
@@ -1074,12 +1074,13 @@ export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
       const postalCode = String(value?.postalCode || "").trim();
       const city = String(value?.city || "").trim();
       const email = String(value?.email || "").trim() || null;
+      const paymentTermsDays = Number(value?.paymentTermsDays ?? 14);
       if (
         !companyName || companyName.length > 200 ||
         (customerType === "business" && !validOrgNumber(orgNumber)) ||
         (customerType === "private" && orgNumber && !validOrgNumber(orgNumber)) ||
         !addressLine1 || addressLine1.length > 200 || !/^[0-9]{4}$/.test(postalCode) ||
-        !city || city.length > 100 || (email && (!email.includes("@") || email.length > 200))
+        !city || city.length > 100 || (email && (!email.includes("@") || email.length > 200)) || !Number.isInteger(paymentTermsDays) || paymentTermsDays < 0 || paymentTermsDays > 365
       ) return json({ error: "customer_fields_invalid", required: ["companyName", "customerType", "addressLine1", "postalCode", "city"] }, { status: 400 });
       if (orgNumber) {
         const duplicate = await db.prepare("SELECT a.id FROM crm_accounts a LEFT JOIN customer_invoice_profiles p ON p.board_id=a.board_id AND p.account_id=a.id WHERE a.board_id=? AND COALESCE(p.org_number,a.org_number)=? AND a.stage NOT IN ('lost') LIMIT 1").bind(boardId, orgNumber).first();
@@ -1088,7 +1089,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
       const accountId = id("cust");
       await db.batch([
         db.prepare("INSERT INTO crm_accounts (id,board_id,company_name,org_number,stage,currency) VALUES (?,?,?,?,'prospect','NOK')").bind(accountId, boardId, companyName, orgNumber || null),
-        db.prepare("INSERT INTO customer_invoice_profiles (board_id,account_id,org_number,customer_type,address_line1,postal_code,city,country_code,email,updated_by,updated_at) VALUES (?,?,?, ?,?,?,?,'NO',?,?,datetime('now'))").bind(boardId, accountId, orgNumber || null, customerType, addressLine1, postalCode, city, email, authorization.userId || "service"),
+        db.prepare("INSERT INTO customer_invoice_profiles (board_id,account_id,org_number,customer_type,address_line1,postal_code,city,country_code,email,payment_terms_days,updated_by,updated_at) VALUES (?,?,?, ?,?,?,?,'NO',?,?,?,datetime('now'))").bind(boardId, accountId, orgNumber || null, customerType, addressLine1, postalCode, city, email, paymentTermsDays, authorization.userId || "service"),
       ]);
       await recordAudit(db, { boardId, action, entityType: "crm_account", entityId: accountId, userId: authorization.userId || undefined, details: { companyName, customerType, hasOrgNumber: Boolean(orgNumber), profileComplete: true } });
       return json({ ok: true, action, status: "created", id: accountId, accountId, companyName, customerType }, { status: 201 });
@@ -1100,7 +1101,8 @@ export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
         postalCode = String(value?.postalCode || "").trim(),
         city = String(value?.city || "").trim(),
         bankAccount = String(value?.bankAccount || "").replace(/\s/g, ""),
-        email = String(value?.email || "").trim() || null;
+        email = String(value?.email || "").trim() || null,
+        paymentTermsDays = Number(value?.paymentTermsDays ?? 14);
       if (
         !legalName ||
         legalName.length > 200 ||
@@ -1111,7 +1113,8 @@ export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
         !city ||
         city.length > 100 ||
         !validBankAccount(bankAccount) ||
-        (email && (!email.includes("@") || email.length > 200))
+        (email && (!email.includes("@") || email.length > 200)) ||
+        !Number.isInteger(paymentTermsDays) || paymentTermsDays < 0 || paymentTermsDays > 365
       )
         return json(
           {
@@ -1122,6 +1125,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
               "addressLine1",
               "postalCode",
               "city",
+              "paymentTermsDays",
               "bankAccount",
             ],
           },
@@ -1211,7 +1215,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
       }
       await db.batch([
         db.prepare("UPDATE crm_accounts SET company_name=?,org_number=?,updated_at=datetime('now') WHERE id=? AND board_id=?").bind(companyName, orgNumber || null, accountId, boardId),
-        db.prepare("INSERT INTO customer_invoice_profiles (board_id,account_id,org_number,customer_type,address_line1,postal_code,city,country_code,email,updated_by,updated_at) VALUES (?,?,?, ?,? ,? ,?,'NO',?,?,datetime('now')) ON CONFLICT(board_id,account_id) DO UPDATE SET org_number=excluded.org_number,customer_type=excluded.customer_type,address_line1=excluded.address_line1,postal_code=excluded.postal_code,city=excluded.city,country_code=excluded.country_code,email=excluded.email,updated_by=excluded.updated_by,updated_at=datetime('now')").bind(boardId, accountId, orgNumber || null, customerType, addressLine1, postalCode, city, email, authorization.userId || "service"),
+        db.prepare("INSERT INTO customer_invoice_profiles (board_id,account_id,org_number,customer_type,address_line1,postal_code,city,country_code,email,payment_terms_days,updated_by,updated_at) VALUES (?,?,?, ?,? ,? ,?,'NO',?,?,?,datetime('now')) ON CONFLICT(board_id,account_id) DO UPDATE SET org_number=excluded.org_number,customer_type=excluded.customer_type,address_line1=excluded.address_line1,postal_code=excluded.postal_code,city=excluded.city,country_code=excluded.country_code,email=excluded.email,payment_terms_days=excluded.payment_terms_days,updated_by=excluded.updated_by,updated_at=datetime('now')").bind(boardId, accountId, orgNumber || null, customerType, addressLine1, postalCode, city, email, paymentTermsDays, authorization.userId || "service"),
       ]);
       await recordAudit(db, {
         boardId,
