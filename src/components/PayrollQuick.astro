@@ -45,6 +45,8 @@
     set('#payroll-total-compliance-detail', check ? `${check.period} · ${check.status}` : 'Beregn kontrollgrunnlag under');
   };
   loadPayrollTotals().catch(() => {});
+  // Refresh after a payroll action has had time to commit on the server.
+  document.querySelectorAll('[data-payroll-action]').forEach(form => form.addEventListener('submit', () => window.setTimeout(() => loadPayrollTotals().catch(() => {}), 350)));
 </script>
 <script is:inline>
   const payrollItemsEsc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); const payrollItemsMoney=v=>`${(Number(v||0)/100).toLocaleString('nb-NO')} kr`; let payrollItemsBoard=new URLSearchParams(location.search).get('boardId')||''; const payrollItemsStatus=document.querySelector('#payroll-quick-status');
