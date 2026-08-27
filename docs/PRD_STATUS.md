@@ -64,6 +64,7 @@ CRM/revenue, styre/govenance, HCM, IT, felt, HMS/ESG, treasury, kort, risiko, co
 - Oppsett-veiviser-release: `https://6f7bb978.styr-ing.pages.dev` → `https://styr.ing/`, kildecommit `c87de67`. Førstegangsoppsettet viser nå live-status for kontoplan, regnskapsår, virksomhetsprofil og bankkonto, med lenker til riktig neste handling. Veiviseren er informativ og ikke-blokkerende; preview- og produksjonsinnhold er kontrollert, og `npm run verify:live` passerer med 125 kontroller.
 - Handlingsbare-statuskort-release: `https://c9e039ce.styr-ing.pages.dev` → `https://styr.ing/`, kildecommit `7bd8761`. Statuskortene for bilag, bankposter, leverandøravvik og lønn åpner nå riktig oppgave direkte; preview/produksjon bekreftet, `npm run verify` og `npm run verify:live` (125 kontroller) passerer.
 - Kundeområde-regnskap-først-release: `https://aa23e369.styr-ing.pages.dev` → `https://styr.ing/`, kildecommit `5ca56ef`. Etter innlogging vises den komplette regnskapsflaten før generiske styre-/risikokort; øvrige arbeidsflater er fortsatt tilgjengelige under. Preview/produksjon bekreftet og `npm run verify:live` passerer med 125 kontroller.
+- Oversikts-tallfix-release: `https://6bb7c41d.styr-ing.pages.dev` → `https://styr.ing/`, kildecommit `79303bb`. D1-aggregater normaliseres nå konsekvent før de vises i statuskortene, slik at åpne lønnskontroller og øvrige tellinger aldri faller gjennom som `NaN`. Preview/produksjon bekreftet og `npm run verify:live` passerer med 125 kontroller.
 
 ## Brukerflyt — månedsavslutning
 
