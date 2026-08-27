@@ -246,3 +246,9 @@ Betalinger kan kobles til åpne kunde-/leverandørposter fra samme regnskapsflat
 - Åpne bokføringsforslag viser nå alle debet-/kreditlinjer, konto, tekst, summer og kildehash før godkjenning.
 - Godkjenningsknappen er deaktivert hvis forslaget mangler linjer eller ikke balanserer. Dette gjør kontrollsteget forståelig for små virksomheter og regnskapsfører.
 - Produksjon verifisert med `npm run verify`, `npm run verify:live` (124 kontroller) og HTTP 200/content-kontroll på `/app/finance/`. Preview: `https://05a22114.styr-ing.pages.dev`; release commit: `3a7caa9`.
+
+### Salgsfaktura — løpende totalsjekk i utkast (2026-08-27)
+
+- Fakturautkastet viser netto, MVA og «Å betale» i NOK mens linjene fylles ut.
+- Summeringen oppdateres ved endring av antall, pris, MVA-sats, produktvalg og når nye linjer legges til. Dette gir små virksomheter en enkel kontroll før utkastet lagres.
+- Produksjon verifisert med `npm run verify:live` (124 kontroller) og HTTP 200/content-kontroll på `/app/finance/`. Preview: `https://c296f207.styr-ing.pages.dev`; release commit: `f573bf5`.
