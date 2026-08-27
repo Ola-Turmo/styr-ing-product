@@ -30,6 +30,12 @@ Dette er en implementasjonsstatus, ikke en påstand om regulatorisk godkjenning.
 - Innloggede brukere ser virksomhetsnavn i en synlig arbeidsflategrense, og handlinger sender `boardId` for den kontrollerte virksomheten. Ekstern Altinn-, bank-, NAV- og inkassosending er fortsatt ikke konfigurert.
 - Verifisert med `npm run verify:source`, `npm run verify:api`, `npm run build`, `git diff --check`, HTTP 200/content-kontroll og live smoke (129 kontroller). Produksjon: [styr.ing/treasury](https://styr.ing/treasury/) · preview `https://099f8393.styr-ing.pages.dev/treasury/` · commit `c4115ac`.
 
+### Inntektsplanlegging — tenant og rolle (2026-08-27)
+
+- `/revenue/` bruker nå innlogget virksomhetsvalg fra `/api/auth` for lesing og periodiseringshandlinger. Forespurt `boardId` brukes bare når brukeren faktisk har medlemskap; ellers velges første autoriserte virksomhet.
+- Offentlig visning er en lesedemo med fiktive data. Periodiseringsformularene er deaktivert før tilgangskontroll og viser innloggingslenke når brukeren ikke er autentisert. API-et beholder server-side autorisasjon og bokføring er fortsatt separat kontrollsteg.
+- Verifisert med `npm run verify:source`, `npm run verify:api`, `npm run build`, HTTP 200/content-kontroll og live smoke (129 kontroller). Produksjon: [styr.ing/revenue](https://styr.ing/revenue/) · preview `https://d0a1dce3.styr-ing.pages.dev/revenue/` · commit `2de0bcc`.
+
 ## Regnskapskjerne — prioritert for norske småbedrifter
 
 | Krav | Status | Bevis i løsningen |
