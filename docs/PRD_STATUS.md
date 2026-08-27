@@ -153,7 +153,7 @@ Betalinger kan kobles til åpne kunde-/leverandørposter fra samme regnskapsflat
 - API-et validerer org.nr. med norsk kontrollsiffer, avviser duplikat per virksomhet, håndhever aktiv konto og virksomhetssperre, og logger opprettelse/oppdatering. Leverandørkoblingen er valgfri og påvirker ikke historiske ordre/fakturaer.
 - Produksjonsskjema: `supplier_parties` og additive `supplier_party_id`-kolonner på ordre/faktura ble lagt til med den kontrollerte migrasjonen `20260915_supplier_parties.sql`. Migreringshistorikken har samme tidligere avvik som beskrevet over; derfor ble denne additive migrasjonen kjørt direkte mot D1 og verifisert med `PRAGMA table_info`.
 - Verifisert med `npm run verify`, `npm run verify:live` (120 kontroller), HTTP 200 på landing og `/api/procurement?view=suppliers`.
-- Produksjonsdeploy: Cloudflare Pages `https://d9e5d023.styr-ing.pages.dev` på branch `main`, koblet til `https://styr.ing/`.
+- Produksjonsdeploy: Cloudflare Pages `https://51843f11.styr-ing.pages.dev` på branch `main`, koblet til `https://styr.ing/`.
 
 ## Siste kontoaktiveringsforbedring (2026-08-26)
 
