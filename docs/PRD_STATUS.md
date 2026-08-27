@@ -615,3 +615,9 @@ Betalinger kan kobles til åpne kunde-/leverandørposter fra samme regnskapsflat
 - Siden viser ikke oppdiktede priser eller aktiv betaling. Den forklarer at pris, omfang, abonnement og databehandleravtale bekreftes før aktivering, og leder til regnskapsdemo eller direkte kontakt.
 - Tillegg som styre, prosjekt, kunder, risiko og eksterne integrasjoner er sekundære og merket som avhengige av separat avtale/konfigurasjon.
 - Verifisert med `npm run verify:source`, `npm run build`, `git diff --check`, live smoke (130 kontroller), HTTP 200 og DOM/content-kontroll på produksjon `https://styr.ing/abonnement/`; preview `https://eb0ef397.styr-ing.pages.dev`; release commit `cb9ebcc`.
+
+### Produksjonsvalidering — SMB-regnskapskjerne og Cloudflare (2026-08-28)
+- Verifisert etter siste auth-/invitasjonsendring med `npm run verify:source`, `npm run verify:api`, `npm run build` og `git diff --check`.
+- Live smoke passerer med 133 kontroller mot `https://styr.ing`; dette dekker offentlige regnskapssider, innlogging/invitasjonsfeil, API-kontrakter og SMB-pris-/copy-grenser.
+- Samme build er publisert til Cloudflare Pages-prosjektet `styr-ing`; deploy-preview `https://06b128a7.styr-ing.pages.dev` og produksjon `https://styr.ing/` svarer.
+- Regnskapskjernen prioriterer fortsatt bokføring, bilag, faktura, bankavstemming/MVA, lønn og rapporter. Styre-, prosjekt-, risiko- og eksterne adapterflater er sekundære og merket som ikke konfigurert der leverandøravtale/credentials mangler.
