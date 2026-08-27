@@ -514,3 +514,9 @@ Betalinger kan kobles til åpne kunde-/leverandørposter fra samme regnskapsflat
 - Aktiveringsskjemaet låser knappen mens forespørselen pågår, viser en forståelig nettverksfeil og åpner for ny innsending når forbindelsen feiler. Dette reduserer risikoen for at små virksomheter tror invitasjonen er brukt når problemet bare var midlertidig nettverk.
 - Engangstoken, 24-timers utløp, server-side claim og årsakene `invalid`/`used`/`expired` er uendret; en ny innsending kan ikke omgå single-use-vakten.
 - Verifisert med kildeintegritet, inline JavaScript-syntax, API-integritet, TypeScript, Astro build, `git diff --check`, live smoke (129 kontroller) og produksjonskontroll på `https://styr.ing/`; preview `https://db5f3166.styr-ing.pages.dev`; release commit `668a001`.
+
+### Betalinger — avstemming før hovedbok (2026-08-27)
+
+- Fakturaflyten forklarer nå at «Registrer betaling» lagrer betalingsgrunnlaget, mens bankavstemming fortsatt må godkjennes før hovedboken oppdateres. Dette er samme kontrollmodell som API-et håndhever.
+- Betalinger beholder delbetaling, restsaldo, kreditnota-fradrag, referansekonflikt og idempotent retry; ingen automatisk bankføring eller ekstern betaling fremstilles som aktiv.
+- Verifisert med kildeintegritet, inline JavaScript-syntax, API-integritet, TypeScript, Astro build, `git diff --check`, live smoke (129 kontroller), HTTP 200 og innholdskontroll på preview `https://2f7bb01d.styr-ing.pages.dev/finance/` og produksjon `https://styr.ing/finance/`; release commit `d5fe57a`.
