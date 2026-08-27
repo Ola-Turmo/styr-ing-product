@@ -584,3 +584,8 @@ Betalinger kan kobles til åpne kunde-/leverandørposter fra samme regnskapsflat
 - EHF-komponenten viser samme grense både på `/procurement/` og i `/app/finance/`; eksterne PEPPOL-sendinger og bokføring er fortsatt ikke fremstilt som aktive.
 - Verifisert med `npm run verify:source`, `npm run verify:api`, `npm run build`, `git diff --check`, live smoke (129 kontroller) og HTTP 200/content-kontroll på produksjon og preview `https://c99942d5.styr-ing.pages.dev`.
 - Release commit: `6f8b704`.
+### Offentlig økonomi-side — regnskap først for småbedrifter (2026-08-27)
+- `/finance/` er bygget om til en ren, lesbar inngang til SaaS-produktets regnskapskjerne: bokføring, faktura, bankavstemming/MVA, lønn og rapporter.
+- Offentlig side viser kun fiktiv status via GET-kall og har ingen skriveformularer. All endring skjer etter innlogging på `/app/finance/`, med tydelig grense og innloggings-CTA.
+- Norsk copy prioriterer små virksomheters hverdag og setter avanserte funksjoner i bakgrunnen. Produksjon `https://styr.ing/finance/`, preview `https://04f6d2fc.styr-ing.pages.dev/finance/`; release commit `0de5e56`.
+- Verifisert med `npm run verify:source`, `npm run verify:api`, `npm run build`, `git diff --check`, live smoke (129 kontroller), HTTP 200 og innholdskontroll.
