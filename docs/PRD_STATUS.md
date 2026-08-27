@@ -195,3 +195,9 @@ Betalinger kan kobles til åpne kunde-/leverandørposter fra samme regnskapsflat
 - Kundekortet lagrer også betalingsfrist (0–365 dager, standard 14), og feltet er tilgjengelig i `customer-register`/`invoice-setup` for å gi riktig forfallsdato i videre fakturaflyt.
 - Når en kunde velges i nytt fakturautkast, beregnes forfallsdatoen fra kundens lagrede betalingsfrist hvis feltet er tomt. Brukeren kan fortsatt overstyre datoen før utkastet lagres.
 - Additiv D1-migrasjon `20260916_customer_payment_terms.sql` er kjørt og bekreftet i produksjon med `PRAGMA table_info(customer_invoice_profiles)`.
+### Produkt- og tjenesteregister (2026-08-27)
+
+- Tenant-scoped D1-tabell `product_services` med varenummer, navn, beskrivelse, pris i øre, MVA-sats, inntektskonto og aktiv/inaktiv-status.
+- `GET /api/finance?boardId=...&view=products` og skrivehandlingene `create_product` / `update_product` er tilgjengelige med validering, duplikatkontroll og audit-logg.
+- Fakturaflyten har et lite SMB-skjema for å lagre produkter/tjenester og velge dem på nye fakturautkast; pris, navn og MVA fylles automatisk på første linje.
+- Produksjon verifisert på `https://styr.ing` (live smoke: 123 kontroller). Release commit: `c5e9054`.
