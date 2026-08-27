@@ -281,3 +281,10 @@ Betalinger kan kobles til åpne kunde-/leverandørposter fra samme regnskapsflat
 - Leverandørfakturaen viser netto, MVA og «Å betale» løpende per linje, med samme avrundingsregel som serveren bruker ved registrering. Bare godkjente ordre kan kobles som grunnlag.
 - Flyten er fortsatt SaaS-intern og manuell: ingen ekstern bestilling, bankbetaling eller EHF-transport aktiveres av denne endringen.
 - Verifisert med `npm run verify`, `git diff --check`, rendret regnskapsside og `npm run verify:live` (124 kontroller). Preview: `https://cd2db669.styr-ing.pages.dev`; produksjonsdomene: `https://styr.ing/`; release commit: `60e7ff8`.
+
+### Årsoppgjør — lesbart kontrollgrunnlag (2026-08-27)
+
+- Årsoppgjørslisten har nå «Se tall», som henter årets bokførte bilag, resultat, balanse, gjeld/egenkapital og noter fra `GET /api/payroll?view=annual-summary`.
+- Kontrollpanelet viser debet/kredit, antall bilag/noter og tydelig «Balansert» eller «Avvik» før brukeren godkjenner grunnlaget.
+- Oppslaget er read-only og bygger på samme periodiseringsregler som klargjøringen; det aktiverer ikke Regnskapsregisteret eller annen ekstern innsending.
+- Verifisert med `npm run verify`, `git diff --check` og live smoke-test. Preview og produksjonslenke dokumenteres etter deploy.

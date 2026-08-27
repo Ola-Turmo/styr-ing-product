@@ -33,7 +33,7 @@ const checks = [
   ['payroll summary', '/api/payroll?boardId=board-1&view=summary', 200],
   ['payroll runs', '/api/payroll?boardId=board-1&view=runs', 200],
   ['payroll checks', '/api/payroll?boardId=board-1&view=checks', 200],
-  ['payroll submissions', '/api/payroll?boardId=board-1&view=submissions', 200],
+  ['payroll submissions', '/api/payroll?boardId=board-1&view=submissions', 200], ['annual accounts summary', '/api/payroll?boardId=board-1&view=annual-summary&period=2026', 200],
 
   ['payroll people', '/api/payroll?boardId=board-1&view=people', 200],
   ['field summary', '/api/field?boardId=board-1&view=summary', 200], ['field projects', '/api/field?boardId=board-1&view=projects', 200], ['field facility tasks', '/api/field?boardId=board-1&view=facility_tasks', 200], ['field people', '/api/field?boardId=board-1&view=people', 200],
