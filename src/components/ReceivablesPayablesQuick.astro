@@ -21,6 +21,15 @@
       <article class="warn"><small>61+ dager</small><strong id="aging-old">—</strong><span id="aging-old-count">—</span></article>
     </div>
   </div>
+  <div class="cash-aging cash-aging-payables" aria-label="Aldersfordeling for åpen leverandørgjeld">
+    <div class="cash-aging-head"><h3>Hva skal ut — og når?</h3><span>Godkjente leverandørposter med restsaldo</span></div>
+    <div class="cash-aging-grid">
+      <article><small>Ikke forfalt</small><strong id="payable-aging-current">—</strong><span id="payable-aging-current-count">—</span></article>
+      <article><small>1–30 dager</small><strong id="payable-aging-30">—</strong><span id="payable-aging-30-count">—</span></article>
+      <article><small>31–60 dager</small><strong id="payable-aging-60">—</strong><span id="payable-aging-60-count">—</span></article>
+      <article class="warn"><small>61+ dager</small><strong id="payable-aging-old">—</strong><span id="payable-aging-old-count">—</span></article>
+    </div>
+  </div>
   <div class="cash-control-grid">
     <div><h3>Inn · kundefordringer</h3><div id="cash-receivables" class="cash-list" aria-live="polite"><p>Henter åpne poster …</p></div></div>
     <div><h3>Ut · leverandørgjeld</h3><div id="cash-payables" class="cash-list" aria-live="polite"><p>Henter åpne poster …</p></div></div>
@@ -72,10 +81,16 @@
     rows.filter((row) => cashRemaining(row, 'receivable') > 0).forEach((row) => { if (!row.due_date) { buckets.current.push(row); return; } const due = new Date(`${row.due_date}T00:00:00`); const age = Math.floor((today - due) / 86400000); if (age <= 0) buckets.current.push(row); else if (age <= 30) buckets.days30.push(row); else if (age <= 60) buckets.days60.push(row); else buckets.old.push(row); });
     [['current', 'aging-current'], ['days30', 'aging-30'], ['days60', 'aging-60'], ['old', 'aging-old']].forEach(([key, id]) => { const amount = buckets[key].reduce((sum, row) => sum + cashRemaining(row, 'receivable'), 0); document.querySelector(`#${id}`).textContent = cashMoney(amount); document.querySelector(`#${id}-count`).textContent = `${buckets[key].length} ${buckets[key].length === 1 ? 'faktura' : 'fakturaer'}`; });
   };
+  const renderPayableAging = (rows) => {
+    const today = new Date(); today.setHours(0, 0, 0, 0); const buckets = { current: [], days30: [], days60: [], old: [] };
+    rows.filter((row) => ['approved', 'booked', 'matched'].includes(String(row.status)) && cashRemaining(row, 'payable') > 0).forEach((row) => { if (!row.due_date) { buckets.current.push(row); return; } const due = new Date(`${row.due_date}T00:00:00`); const age = Math.floor((today - due) / 86400000); if (age <= 0) buckets.current.push(row); else if (age <= 30) buckets.days30.push(row); else if (age <= 60) buckets.days60.push(row); else buckets.old.push(row); });
+    [['current', 'payable-aging-current'], ['days30', 'payable-aging-30'], ['days60', 'payable-aging-60'], ['old', 'payable-aging-old']].forEach(([key, id]) => { const amount = buckets[key].reduce((sum, row) => sum + cashRemaining(row, 'payable'), 0); document.querySelector(`#${id}`).textContent = cashMoney(amount); document.querySelector(`#${id}-count`).textContent = `${buckets[key].length} ${buckets[key].length === 1 ? 'faktura' : 'fakturaer'}`; });
+  };
   const renderCash = () => {
     const receivables = cashReceivables.filter((row) => cashRemaining(row, 'receivable') > 0); const payables = cashPayables.filter((row) => cashRemaining(row, 'payable') > 0); const overdue = [...receivables.filter((row) => row.collection_status === 'overdue'), ...payables.filter((row) => row.payment_status === 'overdue')];
     document.querySelector('#cash-receivable-total').textContent = cashMoney(receivables.reduce((sum, row) => sum + cashRemaining(row, 'receivable'), 0)); document.querySelector('#cash-receivable-open').textContent = `${receivables.length} åpne poster`; document.querySelector('#cash-payable-total').textContent = cashMoney(payables.reduce((sum, row) => sum + cashRemaining(row, 'payable'), 0)); document.querySelector('#cash-payable-open').textContent = `${payables.length} åpne poster`; document.querySelector('#cash-overdue-total').textContent = cashMoney(overdue.reduce((sum, row) => sum + cashRemaining(row, row.collection_status ? 'receivable' : 'payable'), 0)); document.querySelector('#cash-overdue-count').textContent = `${overdue.length} forfalte poster`;
     renderAging(receivables);
+    renderPayableAging(payables);
     document.querySelector('#cash-receivables').innerHTML = receivables.length ? receivables.map((row) => `<article class="${row.collection_status === 'overdue' ? 'overdue' : ''}"><div><strong>${cashEsc(row.invoice_number)} · ${cashEsc(row.company_name || 'Kunde')}</strong><small>Forfall ${cashEsc(row.due_date || 'ikke satt')} · ${cashEsc(cashLabel(row.collection_status))}${Number(row.credited_minor || 0) ? ` · kreditert ${cashMoney(row.credited_minor)}` : ''}</small></div><b>${cashMoney(cashRemaining(row, 'receivable'))}</b></article>`).join('') : '<p>Ingen åpne kundefakturaer.</p>';
     document.querySelector('#cash-payables').innerHTML = payables.length ? payables.map((row) => `<article class="${row.payment_status === 'overdue' ? 'overdue' : ''}"><div><strong>${cashEsc(row.invoice_number)} · ${cashEsc(row.supplier_name || 'Leverandør')}</strong><small>Forfall ${cashEsc(row.due_date || 'ikke satt')} · ${cashEsc(cashLabel(row.payment_status))}</small></div><b>${cashMoney(cashRemaining(row, 'payable'))}</b></article>`).join('') : '<p>Ingen åpne leverandørfakturaer.</p>';
     fillPaymentOptions();
