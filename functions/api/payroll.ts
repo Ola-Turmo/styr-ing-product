@@ -26,6 +26,23 @@ export const onRequestGet: PagesFunction<Env> = async ({ env, request }) => {
       const [runs, checks, pending] = await Promise.all([db.prepare('SELECT COUNT(*) AS count, COALESCE(SUM(gross_minor),0) AS gross_minor FROM payroll_runs WHERE board_id=?').bind(boardId).first(), db.prepare('SELECT COUNT(*) AS count FROM payroll_compliance_checks WHERE board_id=?').bind(boardId).first(), db.prepare("SELECT COUNT(*) AS count FROM payroll_compliance_checks WHERE board_id=? AND status IN ('calculated','review')").bind(boardId).first()]);
       return json({ boardId, view, data: { runs, checks, pending } });
     }
+    if (view === 'readiness') {
+      const [accounts, profile] = await Promise.all([
+        db.prepare("SELECT code,name,account_type,active FROM ledger_accounts WHERE board_id=? AND active=1 AND (code IN ('5000','2930','5400','2770') OR code GLOB '260[0-9]') ORDER BY code").bind(boardId).all(),
+        db.prepare('SELECT bank_account FROM accounting_profiles WHERE board_id=?').bind(boardId).first<Record<string, unknown>>(),
+      ]);
+      const rows = accounts.results as Record<string, unknown>[];
+      const find = (codes: string[]) => rows.find((row) => codes.includes(String(row.code))) || null;
+      return json({ boardId, view, data: {
+        salary: find(['5000']),
+        withholding: find(rows.filter((row) => /^260\d$/.test(String(row.code))).map((row) => String(row.code))),
+        payable: find(['2930']),
+        employerExpense: find(['5400']),
+        employerLiability: find(['2770']),
+        bankAccountConfigured: Boolean(profile?.bank_account),
+        bankAdapter: 'not_configured',
+      } });
+    }
     if (view === 'annual-summary') {
       const period = txt(u.searchParams.get('period'), 4);
       if (!/^\d{4}$/.test(period)) return json({ error: 'annual_period_invalid', detail: 'Bruk regnskapsår i formatet YYYY.' }, { status: 400 });
