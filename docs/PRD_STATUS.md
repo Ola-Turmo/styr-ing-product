@@ -594,3 +594,9 @@ Betalinger kan kobles til åpne kunde-/leverandørposter fra samme regnskapsflat
 - `/login/` er restaurert til en eksplisitt, syntaktisk ren innloggingsflyt med sikker lokal `next`-redirect, tydelig norsk feilmelding og deaktivert knapp under forespørsel.
 - `/activate/` og `functions/api/auth.ts` beholder engangstoken, 24-timers utløp og atomisk claim ved samtidige aktiveringer. Ugyldig, brukt og utløpt token får separate statusårsaker.
 - Produksjonssjekk: `/login/`, `/activate/`, `/api/auth` og `/api/auth?action=invite_status&token=invalid-token` returnerer forventet respons; preview `https://69375348.styr-ing.pages.dev`; release commit `6604157`.
+
+### Pris- og aktiveringsreise — SaaS/regnskap først (2026-08-27)
+- `/abonnement/` er gjort om fra et juridisk utkast til en tydelig aktiveringsside for små AS og ENK: komplett regnskap er grunnpakken, med bilag, faktura, bank, MVA, lønn og rapporter forklart først.
+- Siden viser ikke oppdiktede priser eller aktiv betaling. Den forklarer at pris, omfang, abonnement og databehandleravtale bekreftes før aktivering, og leder til regnskapsdemo eller direkte kontakt.
+- Tillegg som styre, prosjekt, kunder, risiko og eksterne integrasjoner er sekundære og merket som avhengige av separat avtale/konfigurasjon.
+- Verifisert med `npm run verify:source`, `npm run build`, `git diff --check`, live smoke (130 kontroller), HTTP 200 og DOM/content-kontroll på produksjon `https://styr.ing/abonnement/`; preview `https://eb0ef397.styr-ing.pages.dev`; release commit `cb9ebcc`.
