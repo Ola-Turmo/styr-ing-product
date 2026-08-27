@@ -946,6 +946,13 @@ CREATE TABLE IF NOT EXISTS supplier_invoices (
 CREATE INDEX IF NOT EXISTS idx_purchase_orders_board ON purchase_orders(board_id,status,created_at);
 CREATE INDEX IF NOT EXISTS idx_goods_receipts_board ON goods_receipts(board_id,received_date);
 CREATE INDEX IF NOT EXISTS idx_supplier_invoices_board ON supplier_invoices(board_id,status,due_date);
+CREATE TABLE IF NOT EXISTS procurement_approval_policies (
+  board_id TEXT PRIMARY KEY REFERENCES boards(id) ON DELETE CASCADE,
+  require_four_eyes_from_minor INTEGER NOT NULL DEFAULT 0 CHECK(require_four_eyes_from_minor >= 0),
+  owner_override_allowed INTEGER NOT NULL DEFAULT 1 CHECK(owner_override_allowed IN (0,1)),
+  updated_by TEXT,
+  updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
 CREATE TABLE IF NOT EXISTS supplier_parties (
   id TEXT PRIMARY KEY,
   board_id TEXT NOT NULL REFERENCES boards(id) ON DELETE CASCADE,

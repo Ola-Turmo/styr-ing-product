@@ -53,6 +53,8 @@ CRM/revenue, styre/govenance, HCM, IT, felt, HMS/ESG, treasury, kort, risiko, co
 
 - Treveis-match styrket — mottak kan flytte en godkjent ordre til `received`, kobling/matching bruker bare gyldige ordrestatusser, og matching avviser nå eksplisitt manglende bekreftet mottak, leverandøravvik eller beløpsavvik. Avvik lagres i audit-sporet med konkrete årsaker. Preview: `https://9b41a636.styr-ing.pages.dev`; produksjon: `https://styr.ing/`; kildecommit `c4abce2`. `npm run verify:live` passerer med 127 kontroller.
 
+- SMB-fullmaktsmatrise — eier kan nå sette beløpsgrense for fireøyne-kontroll og velge om eier kan overstyre alene. Regelen lagres tenant-avgrenset i D1, vises i både regnskaps- og innkjøpsflaten, håndheves server-side før anvisning og logges i audit-sporet. Standard er 0 kr (to ulike personer), med eieroverstyring aktivert for å unngå blokkering i enmannsforetak. Migrasjon `20260920_procurement_approval_policy.sql`; produksjonstabell verifisert i `styr-ing-db`.
+
 - Leverandørordre-kobling — en mottatt eller avviksmerket leverandørfaktura uten ordre kan nå kobles til en godkjent ordre fra samme leverandør. Koblingen nullstiller matchstatus til `unmatched`, krever ny treveis matching og skriver tidligere status/ordre i audit-sporet. Preview: `https://1c490523.styr-ing.pages.dev`; produksjon: `https://styr.ing/`; kildecommit `0bc0a16`.
 
 - Leverandøridentitet — ordre-koblingen sammenligner nå normaliserte leverandørnavn også når én side bruker leverandørregister og den andre fritekst. Ulike leverandører avvises før kobling. Preview: `https://a91a90c9.styr-ing.pages.dev`; produksjon: `https://styr.ing/`; kildecommit `f4d412c`; smoke-testen dekker autorisasjonsvakten (`127/127`).
