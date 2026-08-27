@@ -445,3 +445,9 @@ Betalinger kan kobles til åpne kunde-/leverandørposter fra samme regnskapsflat
 - Periodeavslutning starter nå på inneværende måned, og årsoppgjør på inneværende år. Tidligere statiske eksempelverdier kunne gi små virksomheter feil utgangspunkt når de åpnet arbeidsflaten senere.
 - Dette er kun en tryggere forhåndsutfylling i brukerflaten. API-et validerer fortsatt periode og år, og bokførings-, kontroll- og låsereglene er uendret.
 - Verifisert med kildeintegritet, inline JavaScript-syntax, API-integritet, TypeScript, Astro build, live smoke (128 kontroller) og HTTP/content-kontroll. Preview: `https://febc3e37.styr-ing.pages.dev`; produksjonsdomene: `https://styr.ing/`; release commit: `78e5e8e`.
+
+### Offentlige regnskapsdatoer — alltid aktuelt utgangspunkt (2026-08-27)
+
+- Den offentlige økonomi- og likviditetsdemoen setter bilagsdato, rapportperiode og likviditetsbildedato til dagens dato ved lasting. Små virksomheter møter dermed ikke foreldede eksempelverdier fra 2026 når de utforsker regnskapskjernen.
+- Dette er kun en trygg forhåndsutfylling i demo/UI. API-et validerer fortsatt datoer og perioder, og bokførings-, avstemmings- og likviditetsreglene er uendret.
+- Verifisert med kildeintegritet, inline JavaScript-syntax, API-integritet, TypeScript, Astro build, live smoke (128 kontroller) og HTTP/content-kontroll mot produksjon. Preview: `https://6e60cd1f.styr-ing.pages.dev`; produksjonsdomene: `https://styr.ing/`; release commit: `c7631fc`.
