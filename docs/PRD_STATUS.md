@@ -49,6 +49,8 @@ CRM/revenue, styre/govenance, HCM, IT, felt, HMS/ESG, treasury, kort, risiko, co
 
 ## Verifikasjon utført
 
+- Dedikert innkjøpsside synkronisert — `/procurement/` har nå samme SMB-flyt som regnskapsflaten: koble mottatt/avviksmekret leverandørfaktura uten ordre til en godkjent ordre, nullstill matching og kjør kontrollert treveis matching på nytt. Preview: `https://ab593fbb.styr-ing.pages.dev/procurement/`; produksjon: `https://styr.ing/procurement/`; kildecommit `98d5b15`. HTTP 200 og produksjonsinnhold kontrollert.
+
 - Leverandørordre-kobling — en mottatt eller avviksmerket leverandørfaktura uten ordre kan nå kobles til en godkjent ordre fra samme leverandør. Koblingen nullstiller matchstatus til `unmatched`, krever ny treveis matching og skriver tidligere status/ordre i audit-sporet. Preview: `https://1c490523.styr-ing.pages.dev`; produksjon: `https://styr.ing/`; kildecommit `0bc0a16`.
 
 - Leverandøridentitet — ordre-koblingen sammenligner nå normaliserte leverandørnavn også når én side bruker leverandørregister og den andre fritekst. Ulike leverandører avvises før kobling. Preview: `https://a91a90c9.styr-ing.pages.dev`; produksjon: `https://styr.ing/`; kildecommit `f4d412c`; smoke-testen dekker autorisasjonsvakten (`127/127`).
