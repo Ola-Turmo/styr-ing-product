@@ -146,6 +146,7 @@ import TransparencyQuick from '../components/TransparencyQuick.astro';
 
     .nav-secondary { color: var(--muted); font-weight: 600 !important; }
     .nav-group { position: relative; }
+    .nav-group details { position: relative; }
     .nav-group > summary { list-style: none; cursor: pointer; color: var(--muted); font: 500 .83rem/1 system-ui, sans-serif; white-space: nowrap; }
     .nav-group > summary::-webkit-details-marker { display: none; }
     .nav-group > summary::after { content: '⌄'; margin-left: 5px; font-size: .75em; }
@@ -175,6 +176,7 @@ import TransparencyQuick from '../components/TransparencyQuick.astro';
       .nav-links li { min-width: 0; white-space: normal; }
       .nav-cta { margin-left: 0 !important; }
       .nav-group { width: auto; }
+      .nav-group details { position: static; }
       .nav-menu { position: static; width: 100%; margin-top: 8px; box-shadow: none; }
     }
     @media (max-width: 760px) {
@@ -202,11 +204,25 @@ import TransparencyQuick from '../components/TransparencyQuick.astro';
     <button class="mobile-nav-toggle" type="button" aria-expanded="false" aria-controls="primary-nav">Meny</button>
     <ul id="primary-nav" class="nav-links" aria-label="Hovedmeny">
       <li><a href="/finance" class={activeNav === 'finance' ? 'active' : ''}>Regnskap</a></li>
-      <li><a href="/capabilities" class={activeNav === 'capabilities' ? 'active' : ''}>Produkt</a></li>
-      <li><a href="/abonnement" class={activeNav === 'abonnement' ? 'active' : ''}>Abonnement</a></li>
-      <li><a href="/trust" class={activeNav === 'trust' ? 'active' : ''}>Tillit og sikkerhet</a></li>
+      <li><a href="/capabilities" class={activeNav === 'capabilities' ? 'active' : ''}>Funksjoner</a></li>
+      <li><a href="/abonnement" class={activeNav === 'abonnement' ? 'active' : ''}>Priser</a></li>
+      <li><a href="/trust" class={activeNav === 'trust' ? 'active' : ''}>Sikkerhet</a></li>
+      <li class="nav-group">
+        <details>
+          <summary>Mer</summary>
+          <div class="nav-menu" aria-label="Flere sider">
+            <a href="/app/arbeidsflate?view=governance">Styrearbeid</a>
+            <a href="/risk">Risiko og kontroll</a>
+            <a href="/people">Mennesker og HCM</a>
+            <a href="/commercial">Kunder og kommersielt</a>
+            <a href="/it">IT og drift</a>
+            <a href="/governance">Avtaler og juss</a>
+            <a href="/audit">Kontrollspor</a>
+          </div>
+        </details>
+      </li>
       <li><a id="auth-link" href="/login" class={activeNav === 'login' ? 'active' : ''}>Logg inn</a></li>
-      <li><a href="/finance" class="nav-cta">Prøv regnskapsdemo <span aria-hidden="true">↗</span></a></li>
+      <li><a href="/finance" class="nav-cta">Se regnskapsdemo <span aria-hidden="true">↗</span></a></li>
     </ul>
   </nav>
 
