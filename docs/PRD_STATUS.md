@@ -563,3 +563,11 @@ Betalinger kan kobles til åpne kunde-/leverandørposter fra samme regnskapsflat
 - Dette er en UX-/sikkerhetsforbedring for småbedrifter: demoen inviterer ikke lenger til en handling som ender i uforståelig `401`.
 - Verifisert med `npm run verify:source`, `npm run verify:api`, `npm run build`, live smoke (129 kontroller), HTTP 200 og innholdskontroll på `https://styr.ing/finance/` og preview `https://3ce4fe7f.styr-ing.pages.dev/finance/`.
 - Release commit: `84d76a3`.
+
+### Regnskapsnære preview-flater — tenant og rolle (2026-08-27)
+
+- Lønn, innkjøp/EHF og anleggsmidler låser skriveformularer umiddelbart i offentlig preview og åpner dem først etter bekreftet innlogging med virksomhetstilknytning.
+- Innlogget bruker får valgt `boardId` fra URL når medlemskapet finnes, ellers første tilgjengelige virksomhet. Uinnlogget bruker får fiktiv `board-1`-preview og en tydelig innloggingslenke.
+- EHF-komponenten viser samme grense både på `/procurement/` og i `/app/finance/`; eksterne PEPPOL-sendinger og bokføring er fortsatt ikke fremstilt som aktive.
+- Verifisert med `npm run verify:source`, `npm run verify:api`, `npm run build`, `git diff --check`, live smoke (129 kontroller) og HTTP 200/content-kontroll på produksjon og preview `https://c99942d5.styr-ing.pages.dev`.
+- Release commit: `6f8b704`.
