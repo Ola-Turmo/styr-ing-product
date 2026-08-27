@@ -352,4 +352,4 @@ Betalinger kan kobles til åpne kunde-/leverandørposter fra samme regnskapsflat
 - Forsiden viser nå leverandører og innkjøp som del av regnskapskjernen, sammen med bilag, faktura, bank, MVA, lønn og rapporter.
 - Styringsmodulene ligger fortsatt samlet under tilleggene, slik at små AS og ENK møter det komplette regnskapet først.
 - Endringen er kun posisjonering og navigasjon; ingen backend- eller bokføringslogikk er endret.
-- Verifisert med kildeintegritet, inline JavaScript-syntax, API-integritet, TypeScript og Astro build.
+- Verifisert med kildeintegritet, inline JavaScript-syntax, API-integritet, TypeScript, Astro build og live smoke (125 kontroller). Preview: `https://3ecc3c67.styr-ing.pages.dev`; produksjonsdomene: `https://styr.ing/`; release commit: `48c03e3`.
