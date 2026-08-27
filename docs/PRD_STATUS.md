@@ -226,3 +226,10 @@ Betalinger kan kobles til åpne kunde-/leverandørposter fra samme regnskapsflat
 - Ugyldige linjer og filer over 10 MB varsles i forhåndsvisningen. Ingen banklinjer skrives før brukeren uttrykkelig trykker «Importer kontoutdrag».
 - Forbedringen er prioritert som en vanlig regnskapsoppgave for små virksomheter; den endrer ikke kontrollsporet eller kravet om manuell godkjenning før bokføring.
 - Produksjon verifisert med `npm run verify`, `git diff --check`, HTTP 200/content-kontroll på `/app/finance/` og `npm run verify:live` (123 kontroller). Preview: `https://509e1a82.styr-ing.pages.dev`; release commit: `ce4133c`.
+
+### MVA — vis kildelinjer før godkjenning (2026-08-27)
+
+- MVA-perioder har nå en «Se grunnlag»-visning med bokførte bilag, dato, konto, tekst, retning, sats, beregningsgrunnlag og MVA-beløp.
+- Kontrollsummens begynnelse vises sammen med kildene, slik at en liten virksomhet eller regnskapsfører kan forklare totalsummen før godkjenning.
+- Detaljvisningen bruker eksisterende `GET /api/mva?view=detail` og endrer ikke godkjennings- eller innsendingstrinnet.
+- Produksjon verifisert med `npm run verify`, `git diff --check`, HTTP 200/content-kontroll på `/app/finance/` og `npm run verify:live` (123 kontroller). Preview: `https://bc565e5f.styr-ing.pages.dev`; release commit: `81b3117`.
