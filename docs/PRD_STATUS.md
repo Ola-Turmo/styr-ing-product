@@ -526,3 +526,9 @@ Betalinger kan kobles til åpne kunde-/leverandørposter fra samme regnskapsflat
 - Reskontrospørringen viser nå separat `pending_manual_payment_minor` for manuelt registrerte innbetalinger som ennå ikke er koblet til en banklinje og bokført. Brukeren ser derfor både restsaldo og hva som venter på avstemming.
 - Manuell betalingsreferanse er påkrevd i UI, mens en valgt banktransaksjon bruker bankens referanse automatisk. Dette hindrer gjenbruk av «MANUELL» ved delbetalinger og bevarer idempotens per referanse.
 - Verifisert med kildeintegritet, inline JavaScript-syntax, API-integritet, TypeScript, Astro build, `git diff --check`, live smoke (129 kontroller), HTTP 200 og innholdskontroll på preview `https://6e1eaf08.styr-ing.pages.dev/app/finance/` og produksjon `https://styr.ing/app/finance/`; release commit `a0e0c03`.
+
+### Reskontro — delbetaling og referansefelt gjort eksplisitt (2026-08-27)
+
+- Betalingsskjemaet forklarer nå at tomt beløp betyr hele restsaldoen, mens delbetaling må være mindre enn restsaldo. Dette reduserer feilregistreringer i små virksomheter.
+- Manuell betalingsreferanse er obligatorisk og valideres av API-et; valgt banktransaksjon gjør feltet valgfritt fordi bankens referanse brukes automatisk. «MANUELL» brukes ikke lenger som skjult standard.
+- Verifisert med kildeintegritet, inline JavaScript-syntax, API-integritet, TypeScript, Astro build, `git diff --check`, live smoke (129 kontroller), HTTP 200 og innholdskontroll på preview `https://8abd0c3e.styr-ing.pages.dev/app/finance/` og produksjon `https://styr.ing/app/finance/`; release commit `d2304d3`.
