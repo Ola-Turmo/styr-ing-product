@@ -7,8 +7,8 @@ const modules = [
   ['⌁', 'Bank og avstemming', 'Importer grunnlag, få match-forslag og godkjenn hva som skal bokføres.', '/finance'],
   ['▥', 'MVA og frister', 'Se MVA-grunnlag, periodestatus og hva som må kontrolleres før fristen.', '/finance'],
   ['◫', 'Lønn og ansatte', 'Hold lønnsgrunnlag, arbeidsgiveravgift og kontrollpunkter samlet før godkjenning.', '/finance'],
-  ['▤', 'Rapporter og årsoppgjør', 'Resultat, balanse, hovedbok, SAF-T og kontrollert klargjøring av årsregnskap.', '/finance'],
   ['▣', 'Leverandører og innkjøp', 'Følg leverandørfaktura, betaling, bestilling, mottak og avvik.', '/procurement'],
+  ['▤', 'Rapporter og årsoppgjør', 'Resultat, balanse, hovedbok, SAF-T og kontrollert klargjøring av årsregnskap.', '/finance'],
   ['⌂', 'Prosjekt og timer', 'Før timer og få et ryddig grunnlag for lønn og faktura.', '/field'],
   ['⌁', 'Styrearbeid', 'Møter, sakspapirer, vedtak og protokoller samlet.', '/app/arbeidsflate?view=governance'],
   ['◈', 'Risiko og kontroll', 'Knytt risiko, kontroll, bevis og tiltak til ansvar.', '/risk'],
@@ -18,6 +18,9 @@ const modules = [
   ['§', 'Avtaler og juss', 'Kontraktsgjennomgang, redlines, mandater og styregodkjenning.', '/governance'],
   ['◌', 'Kontrollspor', 'Se hvem som endret hva, når og hvorfor — med kilde og ansvar.', '/audit'],
 ];
+
+const accountingModules = modules.slice(0, 7);
+const extendedModules = modules.slice(7);
 
 const audiences = [
   ['Daglig leder', 'Se hva som er bokført, hva som mangler og hva som haster.'],
@@ -70,11 +73,11 @@ const audiences = [
     <section class="modules" id="produkt">
       <div class="section-intro"><p class="kicker">Komplett regnskap · laget for små virksomheter</p><h2>Alt det vanlige regnskapet.<br /><em>Samlet og forståelig.</em></h2><p>Bilag, faktura, bank, MVA, lønn, rapporter og årsoppgjør er kjernen i Styr.ing. Når regnskapet er på plass, kan dere koble på kunder, prosjekter, styre og kontroll uten å bytte system.</p></div>
       <p class="module-group-label">Regnskapskjernen</p>
-      <div class="module-grid">{modules.slice(0, 6).map(([icon, title, text, href], index) => <a class="module" href={href}><span class="number">{String(index + 1).padStart(2, '0')}</span><span class="icon">{icon}</span><h3>{title}</h3><p>{text}</p><b>Åpne arbeidsflate ↗</b></a>)}</div>
+      <div class="module-grid">{accountingModules.map(([icon, title, text, href], index) => <a class="module" href={href}><span class="number">{String(index + 1).padStart(2, '0')}</span><span class="icon">{icon}</span><h3>{title}</h3><p>{text}</p><b>Åpne arbeidsflate ↗</b></a>)}</div>
       <details class="secondary-capabilities">
-        <summary><span><b>07–15</b> Mer styring når grunnregnskapet er på plass</span><i>Vis tilleggene +</i></summary>
+        <summary><span><b>08–15</b> Mer styring når grunnregnskapet er på plass</span><i>Vis tilleggene +</i></summary>
         <p class="secondary-intro">Regnskapet er kjernen. Når dere trenger mer, kan dere samle timer, kunder, styrearbeid, risiko og drift i samme virksomhetsbilde.</p>
-        <div class="secondary-grid">{modules.slice(6).map(([icon, title, text, href], index) => <a class="module" href={href}><span class="number">{String(index + 7).padStart(2, '0')}</span><span class="icon">{icon}</span><h3>{title}</h3><p>{text}</p><b>Åpne arbeidsflate ↗</b></a>)}</div>
+        <div class="secondary-grid">{extendedModules.map(([icon, title, text, href], index) => <a class="module" href={href}><span class="number">{String(index + 8).padStart(2, '0')}</span><span class="icon">{icon}</span><h3>{title}</h3><p>{text}</p><b>Åpne arbeidsflate ↗</b></a>)}</div>
       </details>
     </section>
 

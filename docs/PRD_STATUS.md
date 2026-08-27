@@ -347,3 +347,9 @@ Betalinger kan kobles til åpne kunde-/leverandørposter fra samme regnskapsflat
 - Endringen er bygget og publisert til Cloudflare Pages etter full lokal verifikasjon.
 - Preview og kundeområdet svarer HTTP 200, og produksjonens API-smoke passerer 125/125 kontroller.
 - Preview: `https://3ca3337d.styr-ing.pages.dev`; produksjonsdomene: `https://styr.ing/`.
+
+### Forside — regnskapskjernen prioriterer leverandørfaktura (2026-08-27)
+- Forsiden viser nå leverandører og innkjøp som del av regnskapskjernen, sammen med bilag, faktura, bank, MVA, lønn og rapporter.
+- Styringsmodulene ligger fortsatt samlet under tilleggene, slik at små AS og ENK møter det komplette regnskapet først.
+- Endringen er kun posisjonering og navigasjon; ingen backend- eller bokføringslogikk er endret.
+- Verifisert med kildeintegritet, inline JavaScript-syntax, API-integritet, TypeScript og Astro build.
