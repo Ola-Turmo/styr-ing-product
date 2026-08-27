@@ -20,6 +20,7 @@ Dette er en implementasjonsstatus, ikke en påstand om regulatorisk godkjenning.
 - Verifisert med `npm run verify:source`, `npm run verify:api`, `npm run build`, `git diff --check` og live smoke (129 kontroller).
 - Produksjon: [styr.ing](https://styr.ing/) · deploy-preview: `https://61319fc1.styr-ing.pages.dev` · commit `1f39e28`.
 - Intercompany-komponenten følger nå `boardId` i URL-en (valgt virksomhet i `/app/finance`) før den faller tilbake til første tilgjengelige virksomhet. Dette hindrer at flerbedriftsbrukere oppretter kontrollspor i feil tenant. Produksjonsdeploy etter endringen: `https://1eb3fc4c.styr-ing.pages.dev` · commit `15cc29e`.
+- Samme intercompany-referanse avvises nå med `intercompany_reference_conflict` hvis beløp, valuta eller periode er endret. Identisk retry er fortsatt idempotent. Produksjon: `https://c2574794.styr-ing.pages.dev` → [styr.ing](https://styr.ing/) · commit `b2a7d56`.
 
 ## Regnskapskjerne — prioritert for norske småbedrifter
 
