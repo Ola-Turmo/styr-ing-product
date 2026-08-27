@@ -451,3 +451,4 @@ Betalinger kan kobles til åpne kunde-/leverandørposter fra samme regnskapsflat
 - Den offentlige økonomi- og likviditetsdemoen setter bilagsdato, rapportperiode og likviditetsbildedato til dagens dato ved lasting. Små virksomheter møter dermed ikke foreldede eksempelverdier fra 2026 når de utforsker regnskapskjernen.
 - Dette er kun en trygg forhåndsutfylling i demo/UI. API-et validerer fortsatt datoer og perioder, og bokførings-, avstemmings- og likviditetsreglene er uendret.
 - Verifisert med kildeintegritet, inline JavaScript-syntax, API-integritet, TypeScript, Astro build, live smoke (128 kontroller) og HTTP/content-kontroll mot produksjon. Preview: `https://6e60cd1f.styr-ing.pages.dev`; produksjonsdomene: `https://styr.ing/`; release commit: `c7631fc`.
+- Etterfølgende konsistensfix i `8d62320` fjernet også den statiske eksempelverdien fra HTML-fallbacken i den offentlige bilagsformen; runtime-defaulten og produksjonsflyten er uendret.
