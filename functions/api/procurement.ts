@@ -11,6 +11,7 @@ const isoDate = (v: unknown) => {
   return !Number.isNaN(parsed.valueOf()) && parsed.toISOString().slice(0, 10) === value ? value : null;
 };
 const newId = (p: string) => `${p}-${crypto.randomUUID()}`;
+const normalizeSupplierName = (value: unknown) => txt(value, 200).toLocaleLowerCase('nb-NO').replace(/[.,]/g, '').replace(/\s+/g, ' ').trim();
 const validOrgNumber = (value: unknown) => {
   const digits = String(value ?? '').replace(/\s/g, '');
   if (!/^\d{9}$/.test(digits)) return false;
@@ -114,12 +115,12 @@ export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
     if (action === 'link_invoice_order') {
       const invoiceId = txt(v?.invoiceId, 100), purchaseOrderId = txt(v?.purchaseOrderId, 100);
       if (!invoiceId || !purchaseOrderId) return json({ error: 'invoice_and_order_required' }, { status: 400 });
-      const invoice = await db.prepare("SELECT id,supplier_party_id,supplier_name,status,match_status,purchase_order_id FROM supplier_invoices WHERE id=? AND board_id=? AND status IN ('received','exception')").bind(invoiceId, boardId).first<Record<string, unknown>>();
+      const invoice = await db.prepare("SELECT i.id,i.supplier_party_id,COALESCE(sp.name,i.supplier_name) supplier_name,i.status,i.match_status,i.purchase_order_id FROM supplier_invoices i LEFT JOIN supplier_parties sp ON sp.id=i.supplier_party_id AND sp.board_id=i.board_id WHERE i.id=? AND i.board_id=? AND i.status IN ('received','exception')").bind(invoiceId, boardId).first<Record<string, unknown>>();
       if (!invoice) return json({ error: 'invoice_not_linkable_or_found' }, { status: 409 });
-      const order = await db.prepare("SELECT id,supplier_party_id,supplier_name,status FROM purchase_orders WHERE id=? AND board_id=? AND status IN ('approved','partially_received')").bind(purchaseOrderId, boardId).first<Record<string, unknown>>();
+      const order = await db.prepare("SELECT o.id,o.supplier_party_id,COALESCE(sp.name,o.supplier_name) supplier_name,o.status FROM purchase_orders o LEFT JOIN supplier_parties sp ON sp.id=o.supplier_party_id AND sp.board_id=o.board_id WHERE o.id=? AND o.board_id=? AND o.status IN ('approved','partially_received')").bind(purchaseOrderId, boardId).first<Record<string, unknown>>();
       if (!order) return json({ error: 'purchase_order_not_approved_or_found' }, { status: 409 });
       if (invoice.supplier_party_id && order.supplier_party_id && String(invoice.supplier_party_id) !== String(order.supplier_party_id)) return json({ error: 'supplier_mismatch', detail: 'Faktura og ordre tilhører ulike leverandører.' }, { status: 409 });
-      if (!invoice.supplier_party_id && !order.supplier_party_id && txt(invoice.supplier_name).toLocaleLowerCase() !== txt(order.supplier_name).toLocaleLowerCase()) return json({ error: 'supplier_mismatch', detail: 'Leverandørnavnet på faktura og ordre må være likt når leverandørregister ikke er brukt.' }, { status: 409 });
+      if (normalizeSupplierName(invoice.supplier_name) !== normalizeSupplierName(order.supplier_name)) return json({ error: 'supplier_mismatch', detail: 'Leverandørnavnet på faktura og ordre må stemme før de kobles.' }, { status: 409 });
       await db.prepare("UPDATE supplier_invoices SET purchase_order_id=?,match_status='unmatched',status='received',updated_at=datetime('now') WHERE id=? AND board_id=? AND status IN ('received','exception')").bind(purchaseOrderId, invoiceId, boardId).run();
       await recordAudit(db, { boardId, action: 'supplier_invoice_order_linked', entityType: 'supplier_invoice', entityId: invoiceId, userId: auth.userId || undefined, details: { purchaseOrderId, previousPurchaseOrderId: invoice.purchase_order_id || null, previousStatus: invoice.status, previousMatchStatus: invoice.match_status, requiresThreeWayMatch: true } });
       return json({ ok: true, action, invoiceId, purchaseOrderId, status: 'received', matchStatus: 'unmatched', requiresThreeWayMatch: true });
