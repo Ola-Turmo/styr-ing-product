@@ -1,5 +1,13 @@
 # Styr.ing — PRD-status
 
+### SMB-regnskapsflate og verifikasjon — 2026-08-28
+
+- Regnskap er fortsatt hovedproduktet for små AS og ENK: førstesiden, kundeområdet og `/app/finance/` leder med bilag, faktura, bank, MVA, lønn, bilagsarkiv, rapporter og periodeavslutning. Styre-, HCM-, CRM-, IT- og kontrollmoduler ligger sekundært.
+- Bankavstemmingen er verifisert som en komplett intern arbeidsflyt med opprettelse av manuell bankkonto, norsk CSV-import/forhåndsvisning, forklarbare matchforslag, eksplisitt godkjenning/avvisning og kontrollert bokføring. Direkte bankkobling og betaling er fortsatt ikke konfigurert.
+- Kildeverifikasjonen krever nå alle seks banksteg, balanserte Astro-taggar og gyldige inline-script. Live-smoken dekker også landing, kundeområde, regnskapsflate og abonnements-/aktiveringssiden.
+- Preview: `https://19c7b6fc.styr-ing.pages.dev`; produksjon: `https://styr.ing/`; kildecommit `d823e6b` (tester) og `cb9ebcc` (SaaS-aktiveringsside).
+- Verifisert: `npm run verify:source`, `npm run verify:api`, `npm run build`, `git diff --check`, direkte offentlig innholdscheck og `LIVE API SMOKE: PASS (131 checks against https://styr.ing)`.
+
 Sist kontrollert: 2026-08-27  
 Kilde: `norwegian_styrearbeid_saas_prd.html` (versjon 8.0.0)
 
