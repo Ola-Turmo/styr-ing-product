@@ -288,3 +288,8 @@ Betalinger kan kobles til åpne kunde-/leverandørposter fra samme regnskapsflat
 - Kontrollpanelet viser debet/kredit, antall bilag/noter og tydelig «Balansert» eller «Avvik» før brukeren godkjenner grunnlaget.
 - Oppslaget er read-only og bygger på samme periodiseringsregler som klargjøringen; det aktiverer ikke Regnskapsregisteret eller annen ekstern innsending.
 - Verifisert med `npm run verify`, `git diff --check`, HTTP 200/content-kontroll og `npm run verify:live` (125 kontroller). Preview: `https://522eac07.styr-ing.pages.dev`; produksjonsdomene: `https://styr.ing/`; release commit: `289d301`.
+
+### Årsoppgjør — felles fortegnslogikk for klargjøring og visning (2026-08-27)
+
+- Resultat-/balanseberegningen er flyttet til én server-side hjelpefunksjon som brukes av både `prepare_submission` og `view=annual-summary`.
+- Dette hindrer at en egenkapitalpost vises med annet fortegn enn det som faktisk ble kontrollert før godkjenning.
