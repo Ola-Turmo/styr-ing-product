@@ -38,7 +38,7 @@ const audiences = [
         <h1>Hele regnskapet.<br /><em>Ett rolig sted.</em></h1>
         <p class="lede">Fra første bilag til faktura, bankavstemming, MVA, lønn, rapporter og årsoppgjør. Styr.ing er et komplett regnskapssystem for små norske virksomheter — samlet på ett sted, slik at dere ser hva som er gjort, hva som mangler og hva som må godkjennes.</p>
         <div class="actions"><a class="button primary" href="/finance">Se regnskapsflaten med eksempeldata ↗</a><a class="button secondary" href="mailto:ola@styr.ing?subject=Demo%20av%20Styr.ing">Bestill en rolig gjennomgang</a></div>
-        <div class="proof"><span><b>01</b>Bilag og faktura</span><span><b>02</b>Bank og MVA</span><span><b>03</b>Lønn og rapporter</span></div>
+        <div class="proof"><span><b>01</b>Bilag</span><span><b>02</b>Faktura</span><span><b>03</b>Bank</span><span><b>04</b>MVA</span><span><b>05</b>Lønn</span><span><b>06</b>Rapporter</span></div>
         <p class="hero-note"><span>✓</span> Ingen økonomiavdeling nødvendig — laget for få personer, mange hatter og en regnskapshverdag som må fungere.</p>
       </div>
 
@@ -68,7 +68,7 @@ const audiences = [
     </section>
 
     <section class="modules" id="produkt">
-      <div class="section-intro"><p class="kicker">Regnskapet først · styring når dere trenger det</p><h2>Alt det vanlige regnskapet.<br /><em>Samlet og forståelig.</em></h2><p>Bilag, faktura, bank, MVA, lønn, rapporter og årsoppgjør er kjernen i Styr.ing. Når grunnregnskapet er på plass, kan dere koble på kunder, prosjekter, styre og kontroll uten å bytte system.</p></div>
+      <div class="section-intro"><p class="kicker">Komplett regnskap · laget for små virksomheter</p><h2>Alt det vanlige regnskapet.<br /><em>Samlet og forståelig.</em></h2><p>Bilag, faktura, bank, MVA, lønn, rapporter og årsoppgjør er kjernen i Styr.ing. Når regnskapet er på plass, kan dere koble på kunder, prosjekter, styre og kontroll uten å bytte system.</p></div>
       <p class="module-group-label">Regnskapskjernen</p>
       <div class="module-grid">{modules.slice(0, 6).map(([icon, title, text, href], index) => <a class="module" href={href}><span class="number">{String(index + 1).padStart(2, '0')}</span><span class="icon">{icon}</span><h3>{title}</h3><p>{text}</p><b>Åpne arbeidsflate ↗</b></a>)}</div>
       <details class="secondary-capabilities">
