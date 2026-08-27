@@ -193,4 +193,5 @@ Betalinger kan kobles til åpne kunde-/leverandørposter fra samme regnskapsflat
 - Verifisert med `npm run verify`, `npm run verify:live` (122 kontroller), HTTP 200 på landing og `/api/finance?boardId=board-1&view=customer-register`.
 - Produksjonsdeploy: Cloudflare Pages `https://d8cfed5f.styr-ing.pages.dev` på branch `main`, koblet til `https://styr.ing/`.
 - Kundekortet lagrer også betalingsfrist (0–365 dager, standard 14), og feltet er tilgjengelig i `customer-register`/`invoice-setup` for å gi riktig forfallsdato i videre fakturaflyt.
+- Når en kunde velges i nytt fakturautkast, beregnes forfallsdatoen fra kundens lagrede betalingsfrist hvis feltet er tomt. Brukeren kan fortsatt overstyre datoen før utkastet lagres.
 - Additiv D1-migrasjon `20260916_customer_payment_terms.sql` er kjørt og bekreftet i produksjon med `PRAGMA table_info(customer_invoice_profiles)`.
