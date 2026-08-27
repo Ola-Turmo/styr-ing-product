@@ -317,3 +317,10 @@ Betalinger kan kobles til åpne kunde-/leverandørposter fra samme regnskapsflat
 - Serveren avviser samtidig kobling mot en annen dokumentreferanse og logger bare én faktisk statusendring til `ready_for_review`. Dette beskytter små virksomheter mot doble dokumentkoblinger ved tregt nett eller gjentatt opplasting.
 - Flyten er fortsatt intern SaaS-funksjonalitet: ingen kortleverandør, OCR eller ekstern betaling aktiveres av dette steget.
 - Verifisert med kildeintegritet, API-integritet, TypeScript, build og live smoke. Preview: `https://bb39e4ae.styr-ing.pages.dev`; produksjonsdomene: `https://styr.ing/`; release commit: `44d0788`.
+
+### Leverandørfaktura — dokumentvalg uten intern ID (2026-08-27)
+
+- Bilagsarkivet viser nå åpne leverandørfakturaer når brukeren velger «Leverandørfaktura» som kildetype. Valget viser fakturanummer, leverandør og beløp og setter riktig faktura-ID ved opplasting.
+- Små virksomheter trenger dermed ikke kopiere tekniske database-ID-er for å knytte PDF eller skannet faktura til riktig kjøp. Dokumentet lagres fortsatt tenant-avgrenset i R2 med SHA-256-kontrollsum og audit-spor.
+- Flyten endrer ikke fakturastatus, godkjenning, betaling eller bokføring automatisk. EHF/PEPPOL-transport og OCR er fortsatt ikke konfigurert.
+- Verifisert med kildeintegritet, inline JavaScript-syntax, API-integritet, TypeScript og build. Preview: `https://d07373e2.styr-ing.pages.dev`; produksjonsdomene: `https://styr.ing/`; release commit: `33a561a`.
