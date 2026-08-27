@@ -332,6 +332,15 @@ async function boardData(
         .bind(boardId)
         .all()
     ).results;
+  if (view === "products")
+    return (
+      await db
+        .prepare(
+          "SELECT p.*,a.code revenue_account_code,a.name revenue_account_name FROM product_services p LEFT JOIN ledger_accounts a ON a.id=p.revenue_account_id AND a.board_id=p.board_id WHERE p.board_id=? ORDER BY p.active DESC,p.name",
+        )
+        .bind(boardId)
+        .all()
+    ).results;
   if (view === "invoice-setup") {
     const [seller, customers] = await Promise.all([
       db
@@ -1063,6 +1072,42 @@ export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
         },
         { status: missing.length ? 201 : 200 },
       );
+    }
+    if (action === "create_product") {
+      const sku = String(value?.sku || "").trim() || null;
+      const name = String(value?.name || "").trim();
+      const description = String(value?.description || "").trim() || null;
+      const unitPriceMinor = asMinor(value?.unitPriceMinor);
+      const vatRate = Number(value?.vatRate ?? 25);
+      const revenueAccountId = String(value?.revenueAccountId || "").trim() || null;
+      if (!name || name.length > 160 || (sku && sku.length > 80) || (description && description.length > 500) || unitPriceMinor === null || ![0, 12, 15, 25].includes(vatRate))
+        return json({ error: "product_fields_invalid", required: ["name", "unitPriceMinor", "vatRate"] }, { status: 400 });
+      if (sku && await db.prepare("SELECT id FROM product_services WHERE board_id=? AND sku=?").bind(boardId, sku).first())
+        return json({ error: "product_sku_exists", detail: "Varenummeret er allerede i bruk." }, { status: 409 });
+      if (revenueAccountId && !(await db.prepare("SELECT id FROM ledger_accounts WHERE id=? AND board_id=? AND active=1 AND account_type='revenue'").bind(revenueAccountId, boardId).first()))
+        return json({ error: "revenue_account_invalid" }, { status: 400 });
+      const productId = id("prod");
+      await db.prepare("INSERT INTO product_services (id,board_id,sku,name,description,unit_price_minor,vat_rate,revenue_account_id) VALUES (?,?,?,?,?,?,?,?)").bind(productId, boardId, sku, name, description, unitPriceMinor, vatRate, revenueAccountId).run();
+      await recordAudit(db, { boardId, action, entityType: "product_service", entityId: productId, userId: authorization.userId || undefined, details: { sku, name, unitPriceMinor, vatRate, revenueAccountId } });
+      return json({ ok: true, action, status: "created", productId, id: productId }, { status: 201 });
+    }
+    if (action === "update_product") {
+      const productId = String(value?.productId || "").trim();
+      const sku = String(value?.sku || "").trim() || null;
+      const name = String(value?.name || "").trim();
+      const description = String(value?.description || "").trim() || null;
+      const unitPriceMinor = asMinor(value?.unitPriceMinor);
+      const vatRate = Number(value?.vatRate ?? 25);
+      const revenueAccountId = String(value?.revenueAccountId || "").trim() || null;
+      const active = value?.active === false || value?.active === "false" || value?.active === 0 ? 0 : 1;
+      if (!productId || !name || name.length > 160 || (sku && sku.length > 80) || (description && description.length > 500) || unitPriceMinor === null || ![0, 12, 15, 25].includes(vatRate))
+        return json({ error: "product_fields_invalid" }, { status: 400 });
+      if (!(await db.prepare("SELECT id FROM product_services WHERE id=? AND board_id=?").bind(productId, boardId).first())) return json({ error: "product_not_found" }, { status: 404 });
+      if (sku && await db.prepare("SELECT id FROM product_services WHERE board_id=? AND sku=? AND id<>?").bind(boardId, sku, productId).first()) return json({ error: "product_sku_exists" }, { status: 409 });
+      if (revenueAccountId && !(await db.prepare("SELECT id FROM ledger_accounts WHERE id=? AND board_id=? AND active=1 AND account_type='revenue'").bind(revenueAccountId, boardId).first())) return json({ error: "revenue_account_invalid" }, { status: 400 });
+      await db.prepare("UPDATE product_services SET sku=?,name=?,description=?,unit_price_minor=?,vat_rate=?,revenue_account_id=?,active=?,updated_at=datetime('now') WHERE id=? AND board_id=?").bind(sku, name, description, unitPriceMinor, vatRate, revenueAccountId, active, productId, boardId).run();
+      await recordAudit(db, { boardId, action, entityType: "product_service", entityId: productId, userId: authorization.userId || undefined, details: { sku, name, unitPriceMinor, vatRate, active } });
+      return json({ ok: true, action, status: "updated", productId, active: Boolean(active) });
     }
     if (action === "create_customer") {
       const companyName = String(value?.companyName || "").trim();
