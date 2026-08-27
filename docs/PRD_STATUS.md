@@ -368,3 +368,9 @@ Betalinger kan kobles til åpne kunde-/leverandørposter fra samme regnskapsflat
 - Gjentatt registrering av samme SAF-T Financial 1.3-eksport (virksomhet, periode og innholdskontrollsum) returnerer nå eksisterende historikkrad i stedet for å opprette duplikater.
 - D1 har en unik indeks på eksportinnholdet, og samtidige faner håndteres som trygg retry. Tre identiske, eldre preview-rader ble ryddet etter kontroll; den eldste raden ble beholdt. Ingen bokførings- eller XML-data ble endret.
 - Migrasjon: `d1/migrations/20260918_saf_t_export_idempotency.sql`, kjørt og verifisert i `styr-ing-db`. Verifisert med full lokal verifikasjon, live smoke (125 kontroller) og HTTP/content-kontroll. Preview: `https://5a1d8853.styr-ing.pages.dev`; produksjonsdomene: `https://styr.ing/`; release commit: `5e00838`.
+
+### Økonomioversikt — utestående kundefordringer (2026-08-27)
+- Statusoversikten viser nå samlet utestående salgsfakturabeløp i kroner, antall åpne fakturaer og forfalt beløp.
+- Beløpene kommer fra det eksisterende tenant-avgrensede fakturasammendraget, med innbetalinger og bokførte kreditnotaer trukket fra. Kortet er informativt og åpner den vanlige fakturaflyten; det endrer ikke bokføring eller betalingsstatus.
+- Utformingen er prioritert for små norske virksomheter: brukeren ser hva som faktisk mangler å bli betalt uten å gå gjennom en egen rapport først.
+- Verifisert med full lokal verifikasjon, `git diff --check`, live smoke (125 kontroller) og HTTP/content-kontroll. Preview: `https://3d2fc147.styr-ing.pages.dev`; produksjonsdomene: `https://styr.ing/`; release commit: `d00fe69`.
