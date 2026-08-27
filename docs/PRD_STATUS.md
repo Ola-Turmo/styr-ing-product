@@ -363,3 +363,8 @@ Betalinger kan kobles til åpne kunde-/leverandørposter fra samme regnskapsflat
 - Kundeområdets statusoversikt teller nå MVA-perioder med status beregnet, godkjent eller klargjort, og åpner MVA-arbeidsflyten direkte fra kortet.
 - Tallet kommer fra den valgte virksomhetens tenant-avgrensede MVA-API og inngår i samlet antall kontrollpunkter. Ingen ekstern innsending er aktivert.
 - Verifisert med full lokal verifikasjon, live smoke (125 kontroller) og HTTP/content-kontroll på preview og produksjon. Preview: `https://6c45a124.styr-ing.pages.dev`; produksjonsdomene: `https://styr.ing/`; release commit: `abad532`.
+
+### SAF-T-eksport — idempotent kontrollspor (2026-08-27)
+- Gjentatt registrering av samme SAF-T Financial 1.3-eksport (virksomhet, periode og innholdskontrollsum) returnerer nå eksisterende historikkrad i stedet for å opprette duplikater.
+- D1 har en unik indeks på eksportinnholdet, og samtidige faner håndteres som trygg retry. Tre identiske, eldre preview-rader ble ryddet etter kontroll; den eldste raden ble beholdt. Ingen bokførings- eller XML-data ble endret.
+- Migrasjon: `d1/migrations/20260918_saf_t_export_idempotency.sql`, kjørt og verifisert i `styr-ing-db`. Verifisert med full lokal verifikasjon, live smoke (125 kontroller) og HTTP/content-kontroll. Preview: `https://5a1d8853.styr-ing.pages.dev`; produksjonsdomene: `https://styr.ing/`; release commit: `5e00838`.
