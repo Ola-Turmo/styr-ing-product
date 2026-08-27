@@ -482,3 +482,10 @@ Betalinger kan kobles til åpne kunde-/leverandørposter fra samme regnskapsflat
 - Gjentakende fakturamal og månedsavslutning starter nå med dagens dato automatisk. Etter nullstilling eller manglende dato fylles samme dagsaktuelle dato inn igjen, slik at små virksomheter ikke oppretter nye utkast eller kontroller med foreldede eksempelperioder.
 - Dette påvirker bare forhåndsutfyllingen i brukerflaten. Gjentakende fakturaer er fortsatt utkast, og månedsavslutning krever kontroll, menneskelig godkjenning og eksplisitt låsing før bokføring eller ekstern sending.
 - Verifisert med `npm run verify:source`, `npm run verify:api`, `npm run build`, `git diff --check`, live smoke (129 kontroller) og HTTP/content-kontroll på preview `https://039c1d4d.styr-ing.pages.dev` og produksjon `https://styr.ing/`; release commit `64fe6fd`.
+
+### Regnskapsspråk — tydelig skille mellom klargjøring og ekstern sending (2026-08-27)
+
+- Oppgavevelgeren bruker nå «Lag en faktura» og «Klargjør lønn», mens faktura- og lønnsflatene sier eksplisitt at grunnlaget lagres internt før eventuell senere innsending.
+- Dette gjør kjerneflyten mer forståelig for små norske virksomheter: Styr.ing lover ikke at en faktura, lønnskjøring eller rapport allerede er sendt til en ekstern mottaker når adapteren ikke er konfigurert.
+- Ekstern sending er fortsatt ikke aktivert for Stripe, bank, Altinn/Skatteetaten, EHF/PEPPOL, NAV eller andre adaptere; brukeren får i stedet et tydelig klargjort grunnlag og kontrollspor.
+- Verifisert med `npm run verify:source`, `npm run verify:api`, `npm run build`, `git diff --check`, live smoke (129 kontroller) og HTTP/content-kontroll på preview `https://49890c5e.styr-ing.pages.dev` og produksjon `https://styr.ing/`; release commit `0f76365`.
