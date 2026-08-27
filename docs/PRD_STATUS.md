@@ -508,3 +508,9 @@ Betalinger kan kobles til åpne kunde-/leverandørposter fra samme regnskapsflat
 - Den offentlige økonomiflaten bruker nå generiske `ÅÅÅÅ-MM`/`ÅÅÅÅ`-hjelpetekster i låsing, intercompany, årsoppgjørsnote og valuta. Runtime fyller fortsatt inneværende dato/periode når det er trygt.
 - Små virksomheter møter ikke en misvisende hardkodet 2026-periode i skjemaene; serveren validerer fortsatt alle perioder, datoer, roller og kontrollspor.
 - Verifisert med kildeintegritet, inline JavaScript-syntax, API-integritet, TypeScript, Astro build, `git diff --check`, live smoke (129 kontroller) og HTTP/content-kontroll på preview `https://3501fbcd.styr-ing.pages.dev` og produksjon `https://styr.ing/`; release commit `c698b7e`.
+
+### Kontoaktivering — trygg retry ved nettverksfeil (2026-08-27)
+
+- Aktiveringsskjemaet låser knappen mens forespørselen pågår, viser en forståelig nettverksfeil og åpner for ny innsending når forbindelsen feiler. Dette reduserer risikoen for at små virksomheter tror invitasjonen er brukt når problemet bare var midlertidig nettverk.
+- Engangstoken, 24-timers utløp, server-side claim og årsakene `invalid`/`used`/`expired` er uendret; en ny innsending kan ikke omgå single-use-vakten.
+- Verifisert med kildeintegritet, inline JavaScript-syntax, API-integritet, TypeScript, Astro build, `git diff --check`, live smoke (129 kontroller) og produksjonskontroll på `https://styr.ing/`; preview `https://db5f3166.styr-ing.pages.dev`; release commit `668a001`.
