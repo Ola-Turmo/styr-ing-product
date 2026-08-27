@@ -252,3 +252,9 @@ Betalinger kan kobles til åpne kunde-/leverandørposter fra samme regnskapsflat
 - Fakturautkastet viser netto, MVA og «Å betale» i NOK mens linjene fylles ut.
 - Summeringen oppdateres ved endring av antall, pris, MVA-sats, produktvalg og når nye linjer legges til. Dette gir små virksomheter en enkel kontroll før utkastet lagres.
 - Produksjon verifisert med `npm run verify:live` (124 kontroller) og HTTP 200/content-kontroll på `/app/finance/`. Preview: `https://c296f207.styr-ing.pages.dev`; release commit: `f573bf5`.
+
+### Salgsfaktura — rediger utkast før kontroll (2026-08-27)
+
+- Utkast kan åpnes fra fakturalisten, endres og lagres på nytt med samme kunde-, dato-, linje-, MVA- og kontovalidering som ved opprettelse.
+- API-handlingen `update_invoice_draft` er eksplisitt begrenset til `status='draft'`; fakturaer i kontroll, godkjent eller senere status kan ikke overskrives.
+- Linjene erstattes atomisk i samme batch som fakturahodet, og endringen logges i audit-kjeden. Produksjon verifisert med `npm run verify:live` (124 kontroller) og HTTP 200/content-kontroll på `/app/finance/`. Preview: `https://356f9499.styr-ing.pages.dev`; release commit: `24d6e16`.
