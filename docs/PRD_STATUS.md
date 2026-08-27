@@ -538,3 +538,10 @@ Betalinger kan kobles til åpne kunde-/leverandørposter fra samme regnskapsflat
 - Leverandørgjeld har nå samme `pending_manual_payment_minor`-status som kundefordringer. En liten virksomhet kan se at en utført betaling er registrert, men ikke bankavstemt eller bokført ennå.
 - API-spørringen summerer bare aktive (`status <> 'reversed'`) betalingsposter og holder tenant-filteret på plass; den faktiske restsaldoen endres fortsatt kun av kontrollert betaling/bankbokføring.
 - Verifisert med kildeintegritet, inline JavaScript-syntax, API-integritet, TypeScript, Astro build, `git diff --check`, live smoke (129 kontroller), HTTP 200 og innholdskontroll på preview `https://cfddc68b.styr-ing.pages.dev/app/finance/` og produksjon `https://styr.ing/app/finance/`; release commit `5c06cf6`.
+## Landing page — småbedrift og regnskap først (2026-08-27)
+
+- Førstesiden er vinklet mot norske små AS og ENK med komplett regnskap som hovedbehov: bilag, faktura, bank, MVA, lønn, rapporter og årsoppgjør.
+- Primær CTA er nå «Åpne regnskapsdemoen», mens pris/aktivering er sekundær CTA. Dette er mer presist for SaaS-only-produktet enn å antyde selvbetjent kjøp.
+- En egen regnskapsgrunnlagsstripe forklarer at styre, prosjekt og øvrig virksomhetsstyring kommer etter at grunnregnskapet er på plass.
+- Offentlige sider med `board-1` er beholdt som illustrasjonsdata/preview. Innloggede `/app/*`-flater velger tenant fra `/api/auth` og sender valgt `boardId` videre til API-ene.
+- Publisert til Cloudflare Pages-prosjektet `styr-ing`; produksjonssjekk `https://styr.ing/` returnerte HTTP 200 og inneholder både ny CTA og regnskapsgrunnlagsstripe.
