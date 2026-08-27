@@ -59,6 +59,8 @@ CRM/revenue, styre/govenance, HCM, IT, felt, HMS/ESG, treasury, kort, risiko, co
 
 - Bankgrense tydeliggjort for små virksomheter — bankimporten viser eksplisitt at tilkobling, automatisk betaling og automatisk bokføring ikke er aktivert; hver linje må fortsatt kontrolleres og bokføres manuelt. Preview: `https://62b260d5.styr-ing.pages.dev/`; produksjon: `https://styr.ing/`; kildecommit `e8fd7bd`. Produksjonssider returnerer HTTP 200.
 
+- Delbetalinger i bankmatch — forslag finner nå åpne kunde- og leverandørposter der bankbeløpet er mindre enn eller lik restsaldo, og sorterer forfall først. UI-et merker mindre beløp som «delbetaling». Den eksisterende serverkontrollen av retning, restsaldo, betalingkobling og kontrollert bokføring gjelder fortsatt. Preview: `https://dc423e08.styr-ing.pages.dev/`; produksjon: `https://styr.ing/`; kildecommit `1766b92`. Kilde/API/build passerer, og preview viser bankgrense-teksten.
+
 - Leverandørordre-kobling — en mottatt eller avviksmerket leverandørfaktura uten ordre kan nå kobles til en godkjent ordre fra samme leverandør. Koblingen nullstiller matchstatus til `unmatched`, krever ny treveis matching og skriver tidligere status/ordre i audit-sporet. Preview: `https://1c490523.styr-ing.pages.dev`; produksjon: `https://styr.ing/`; kildecommit `0bc0a16`.
 
 - Leverandøridentitet — ordre-koblingen sammenligner nå normaliserte leverandørnavn også når én side bruker leverandørregister og den andre fritekst. Ulike leverandører avvises før kobling. Preview: `https://a91a90c9.styr-ing.pages.dev`; produksjon: `https://styr.ing/`; kildecommit `f4d412c`; smoke-testen dekker autorisasjonsvakten (`127/127`).
