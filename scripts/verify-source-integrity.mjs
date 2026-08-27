@@ -8,7 +8,7 @@ let pageCount = 0;
 let scriptCount = 0;
 const componentContracts = {
   'src/components/EHFInboxQuick.astro': ['name="currency"', 'value="NOK"', 'name="documentRef"', 'name="supplierName"'],
-  'src/components/ReceivablesPayablesQuick.astro': ['<section class="cash-control"', 'id="cash-payment-form"', 'id="collection-case-form"', '<script is:inline>', '</script>', '<style>', '</style>'],
+  'src/components/ReceivablesPayablesQuick.astro': ['<section class="cash-control"', 'id="cash-payment-form"', 'id="collection-case-form"', 'cash-aging', 'aging-current', 'aging-30', 'aging-60', 'aging-old', 'renderAging', '<script is:inline>', '</script>', '<style>', '</style>'],
 'src/components/ProductCatalogQuick.astro': ['id="product-catalog-form"', 'id="product-catalog-list"', 'id="product-edit-form"', 'product-edit-trigger', 'revenueAccountId', 'update_product', 'create_product', 'view=products', '<script is:inline>', '</script>', '<style>', '</style>'],
   'src/components/SalesInvoiceQuick.astro': ['data-invoice-action="create_invoice"', 'id="invoice-lines"', 'invoice-product-picker', 'revenueAccountId', 'view=products', 'id="invoice-draft-total"', 'updateInvoiceDraftTotal', 'update_invoice_draft', 'invoice-edit-draft', 'cancel_invoice_draft', 'invoice-cancel-draft', '<script is:inline>', '</script>'],
 'src/components/BankReconciliationQuick.astro': ['data-bank-action="import_transactions"', 'id="bank-statement-file"', 'id="bank-import-preview"', 'parseBankCsv', 'renderBankImportPreview', '<script is:inline>', '</script>', '<style>', '</style>'],
