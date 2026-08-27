@@ -280,4 +280,4 @@ Betalinger kan kobles til åpne kunde-/leverandørposter fra samme regnskapsflat
 - API-et avviser varemottak på ordre som fortsatt er `pending_approval`; dette håndheves server-side og kan ikke omgås ved å kalle grensesnittet direkte.
 - Leverandørfakturaen viser netto, MVA og «Å betale» løpende per linje, med samme avrundingsregel som serveren bruker ved registrering. Bare godkjente ordre kan kobles som grunnlag.
 - Flyten er fortsatt SaaS-intern og manuell: ingen ekstern bestilling, bankbetaling eller EHF-transport aktiveres av denne endringen.
-- Verifisert lokalt med `npm run verify`, `git diff --check` og rendret regnskapsside. Produksjonspublisering skjer etter full live smoke-test.
+- Verifisert med `npm run verify`, `git diff --check`, rendret regnskapsside og `npm run verify:live` (124 kontroller). Preview: `https://cd2db669.styr-ing.pages.dev`; produksjonsdomene: `https://styr.ing/`; release commit: `60e7ff8`.
