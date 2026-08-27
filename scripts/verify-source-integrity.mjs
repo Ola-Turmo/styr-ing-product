@@ -13,7 +13,7 @@ const componentContracts = {
   'src/components/SalesInvoiceQuick.astro': ['data-invoice-action="create_invoice"', 'id="invoice-lines"', 'invoice-product-picker', 'revenueAccountId', 'view=products', 'id="invoice-draft-total"', 'updateInvoiceDraftTotal', 'update_invoice_draft', 'invoice-edit-draft', 'cancel_invoice_draft', 'invoice-cancel-draft', '<script is:inline>', '</script>'],
 'src/components/BankReconciliationQuick.astro': ['data-bank-action="import_transactions"', 'id="bank-statement-file"', 'id="bank-import-preview"', 'parseBankCsv', 'renderBankImportPreview', '<script is:inline>', '</script>', '<style>', '</style>'],
   'src/components/VatPeriodQuick.astro': ['id="vat-periods"', 'id="vat-detail"', 'data-vat-detail', 'vatLoadDetail', 'view=detail', '<script is:inline>', '</script>', '<style>', '</style>'],
-  'src/components/SupplierInvoiceQuick.astro': ['data-supplier-action="create_invoice"', 'lineAccountId', 'data-supplier-line-account', 'default_expense_account_id', 'supplierRefreshLineAccounts', '<script is:inline>', '</script>', '<style>', '</style>'],
+  'src/components/SupplierInvoiceQuick.astro': ['data-supplier-action="create_invoice"', 'data-supplier-action="approve_order"', 'supplier-approve-order', 'lineAccountId', 'data-supplier-line-account', 'default_expense_account_id', 'supplierRefreshLineAccounts', 'supplier-invoice-total', 'updateSupplierInvoiceTotal', '<script is:inline>', '</script>', '<style>', '</style>'],
   'src/components/PostingQueueQuick.astro': ['id="posting-proposal-list"', 'lines_json', 'postingAccountLabel', 'Kontroller ${lines.length} bilagslinjer', 'Godkjenn kontrollerte linjer', 'debit===creditTotal', '<script is:inline>', '</script>', '<style>', '</style>'],
 };
 
