@@ -199,6 +199,5 @@ Betalinger kan kobles til åpne kunde-/leverandørposter fra samme regnskapsflat
 
 - Tenant-scoped D1-tabell `product_services` med varenummer, navn, beskrivelse, pris i øre, MVA-sats, inntektskonto og aktiv/inaktiv-status.
 - `GET /api/finance?boardId=...&view=products` og skrivehandlingene `create_product` / `update_product` er tilgjengelige med validering, duplikatkontroll og audit-logg.
-- Den innloggede regnskapsflaten har et eget, lite SMB-skjema (`ProductCatalogQuick`) for å lagre og liste vanlige varer og tjenester i NOK. En kontrollert snarvei (`ProductInvoiceBridge`) kan fylle første fakturalinje med navn, pris og MVA; brukeren kan fortsatt endre og kontrollere før lagring. Det sender ikke fakturaer eller betalinger eksternt.
-- Produktregisteret kan nå fylle første linje i et nytt fakturautkast via `ProductInvoiceBridge`; brukeren kontrollerer og kan endre linjen før lagring.
-- Produksjon verifisert etter deploy med live smoke (123 kontroller) og HTTP-kontroll av `/app/finance/`, produktregister-endepunktet og bridge-markup. Preview: `https://8f17fd96.styr-ing.pages.dev`; produksjonsdomene: `https://styr.ing/`. Release commit: `0d8a918`.
+- Den innloggede regnskapsflaten har et eget, lite SMB-skjema (`ProductCatalogQuick`) for å lagre og liste vanlige varer og tjenester i NOK. Registeret er foreløpig separat fra fakturautkastet; brukeren kan fortsatt skrive og kontrollere fakturalinjer manuelt. Det sender ikke fakturaer eller betalinger eksternt.
+- Produksjon verifisert etter deploy med live smoke (123 kontroller) og HTTP-kontroll av `/app/finance/` og produktregister-endepunktet. Preview: `https://8f17fd96.styr-ing.pages.dev`; produksjonsdomene: `https://styr.ing/`. Release commit: `2ca95d1`.
