@@ -23,7 +23,23 @@ export const onRequestGet: PagesFunction<Env> = async ({ env, request }) => {
 };
 export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
   try { const v = await body(request); const boardId = String(v?.boardId || '').trim(); const action = String(v?.action || '').trim(); const db = requireDb(env); if (!boardId || !action) return json({ error: 'boardId_and_action_required' }, { status: 400 }); const authorization = await authorizeBoardWrite(request, env, boardId); if (!authorization.allowed) return json({ error: 'write_not_authorized' }, { status: 401 });
-    if (action === 'attach_receipt') { const transactionId = String(v?.transactionId || ''); const ref = String(v?.receiptRef || '').trim(); if (!ref) return json({ error: 'receipt_ref_required' }, { status: 400 }); const result = await db.prepare("UPDATE card_transactions SET receipt_ref=?,status='ready_for_review' WHERE id=? AND board_id=? AND status='needs_receipt'").bind(ref, transactionId, boardId).run(); if (!result.meta?.changes) return json({ error: 'transaction_not_missing_receipt_or_found' }, { status: 409 }); await recordAudit(db, { boardId, action: 'card_receipt_attached', entityType: 'card_transaction', entityId: transactionId, userId: authorization.userId || undefined, details: { status: 'ready_for_review' } }); return json({ ok: true, action, transactionId, status: 'ready_for_review' }); }
+    if (action === 'attach_receipt') {
+      const transactionId = String(v?.transactionId || '').trim(); const ref = String(v?.receiptRef || '').trim();
+      if (!transactionId) return json({ error: 'transaction_id_required' }, { status: 400 });
+      if (!ref) return json({ error: 'receipt_ref_required' }, { status: 400 });
+      const current = await db.prepare('SELECT status,receipt_ref FROM card_transactions WHERE id=? AND board_id=?').bind(transactionId, boardId).first<{ status: string; receipt_ref?: string | null }>();
+      if (!current) return json({ error: 'transaction_not_found' }, { status: 404 });
+      if (current.status === 'ready_for_review' && String(current.receipt_ref || '') === ref) return json({ ok: true, action, transactionId, status: 'ready_for_review', idempotent: true });
+      if (current.status !== 'needs_receipt') return json({ error: 'receipt_already_attached' }, { status: 409 });
+      const result = await db.prepare("UPDATE card_transactions SET receipt_ref=?,status='ready_for_review' WHERE id=? AND board_id=? AND status='needs_receipt' AND (receipt_ref IS NULL OR trim(receipt_ref)='')").bind(ref, transactionId, boardId).run();
+      if (result.meta?.changes) {
+        await recordAudit(db, { boardId, action: 'card_receipt_attached', entityType: 'card_transaction', entityId: transactionId, userId: authorization.userId || undefined, details: { status: 'ready_for_review' } });
+        return json({ ok: true, action, transactionId, status: 'ready_for_review' }, { status: 201 });
+      }
+      const after = await db.prepare('SELECT status,receipt_ref FROM card_transactions WHERE id=? AND board_id=?').bind(transactionId, boardId).first<{ status: string; receipt_ref?: string | null }>();
+      if (after?.status === 'ready_for_review' && String(after.receipt_ref || '') === ref) return json({ ok: true, action, transactionId, status: 'ready_for_review', idempotent: true });
+      return json({ error: 'receipt_reference_conflict' }, { status: 409 });
+    }
     if (action === 'approve_transaction') { const transactionId = String(v?.transactionId || ''); const result = await db.prepare("UPDATE card_transactions SET status='approved',reviewed_by=?,reviewed_at=datetime('now') WHERE id=? AND board_id=? AND status='ready_for_review'").bind(v?.reviewedBy || authorization.userId || 'api', transactionId, boardId).run(); if (!result.meta?.changes) return json({ error: 'transaction_not_ready_or_found' }, { status: 409 }); await recordAudit(db, { boardId, action: 'card_transaction_approved', entityType: 'card_transaction', entityId: transactionId, userId: authorization.userId || undefined, details: { ledgerPosting: 'controlled_human_posting' } }); return json({ ok: true, action, transactionId, status: 'approved', ledgerPosting: 'controlled_human_posting' }); }
     if (action === 'post_transaction') {
       const transactionId = String(v?.transactionId || '').trim(); const transaction = await db.prepare("SELECT t.*,c.card_name FROM card_transactions t LEFT JOIN corporate_cards c ON c.id=t.card_id WHERE t.id=? AND t.board_id=? AND t.status='approved' AND t.posted_voucher_id IS NULL").bind(transactionId, boardId).first<Record<string, unknown>>(); if (!transaction) return json({ error: 'transaction_not_approved_or_found' }, { status: 409 });
