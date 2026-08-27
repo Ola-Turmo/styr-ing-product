@@ -388,6 +388,13 @@ Betalinger kan kobles til åpne kunde-/leverandørposter fra samme regnskapsflat
 - Verifisert med kildeintegritet, inline JavaScript-syntax, API-integritet, TypeScript, Astro build, live smoke (125 kontroller) og HTTP/content-kontroll på produksjon og preview. Preview: `https://4d2d4ed4.styr-ing.pages.dev`; produksjonsdomene: `https://styr.ing/`; release commit: `760b315`.
 - Etterfølgende retry-/refresh-fix oppdaterer sammendraget automatisk etter nye lønnshandlinger (`4ed5bd5`); produksjon verifisert med `https://e512fcad.styr-ing.pages.dev` og samme live-smoke.
 
+### Lønn — synlig kontoplanstatus før bokføringsforslag (2026-08-27)
+
+- Lønnsbokføringen viser nå om nødvendige aktive kontoer finnes før brukeren lager et bilagsforslag: lønnskostnad (5000), forskuddstrekk (2600/260x), skyldig lønn (2930) og, når arbeidsgiveravgift inngår, kostnad (5400) og gjeld (2770).
+- Manglende eller feil konto blokkerer knappen med en konkret forklaring. Når alt er klart vises kontoene samlet, og teksten minner om at serveren kontrollerer kontoene på nytt ved lagring.
+- Dette gjør den vanlige SMB-lønnsflyten tryggere uten å endre bokføringsreglene eller late som NAV/A-melding er koblet til.
+- Verifisert med full lokal verifikasjon, live smoke (125 kontroller) og HTTP/content-kontroll. Preview og produksjonsdomene publiseres etter deploy.
+
 ### Leverandørgjeld — aldersfordeling i betalingsbildet (2026-08-27)
 - Godkjente åpne leverandørposter vises nå i ikke forfalt, 1–30, 31–60 og 61+ dager, med restbeløp og antall fakturaer.
 - Beregningen bruker faktisk rest etter delbetaling og avgrenser aldersbildet til matchede, godkjente eller bokførte poster. Mottatte fakturaer som fortsatt krever kontroll telles ikke som klare betalingsforpliktelser i dette bildet.
