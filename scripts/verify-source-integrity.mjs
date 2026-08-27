@@ -10,6 +10,7 @@ const componentContracts = {
   'src/components/EHFInboxQuick.astro': ['name="currency"', 'value="NOK"', 'name="documentRef"', 'name="supplierName"'],
   'src/components/ReceivablesPayablesQuick.astro': ['<section class="cash-control"', 'id="cash-payment-form"', 'id="collection-case-form"', '<script is:inline>', '</script>', '<style>', '</style>'],
   'src/components/ProductCatalogQuick.astro': ['id="product-catalog-form"', 'id="product-catalog-list"', 'action = \'create_product\'', 'view=products', '<script is:inline>', '</script>', '<style>', '</style>'],
+  'src/components/ProductInvoiceBridge.astro': ['id="product-invoice-bridge-select"', 'id="product-invoice-bridge-use"', 'lineDescription', 'lineUnitPrice', 'lineVatRate', 'view=products', '<script is:inline>', '</script>', '<style>', '</style>'],
 };
 
 async function walk(directory) {
