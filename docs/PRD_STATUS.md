@@ -23,6 +23,13 @@ Dette er en implementasjonsstatus, ikke en påstand om regulatorisk godkjenning.
 - Samme intercompany-referanse avvises nå med `intercompany_reference_conflict` hvis beløp, valuta eller periode er endret. Identisk retry er fortsatt idempotent. Produksjon: `https://c2574794.styr-ing.pages.dev` → [styr.ing](https://styr.ing/) · commit `b2a7d56`.
 - Den offentlige `/finance/`-siden markerer nå alle skriveformularer som lesedemo og viser direkte innloggingslenke til `/app/finance`. Dette gjør forskjellen mellom fiktiv preview og innlogget regnskapsføring tydelig før brukeren forsøker en handling. Verifisert på produksjon med HTTP 200 og innholdskontroll; preview `https://3b96925d.styr-ing.pages.dev` · commit `2bff406`.
 
+### Treasury/likviditet — tenant og rolle (2026-08-27)
+
+- `/treasury/` bruker ikke lenger fast `board-1` for innlastede data eller skrivehandlinger. Siden kaller `/api/auth`, velger valgt virksomhet fra URL-en når brukeren har medlemskap, og faller ellers tilbake til første autoriserte virksomhet.
+- Offentlig besøk møter en tydelig lesedemo med fiktive data og innloggingslenke. Alle lønns-, innsending-, innkrevings- og likviditetsformularer er deaktivert før tilgang er kontrollert; API-et beholder server-side rolle- og tenantkontroll.
+- Innloggede brukere ser virksomhetsnavn i en synlig arbeidsflategrense, og handlinger sender `boardId` for den kontrollerte virksomheten. Ekstern Altinn-, bank-, NAV- og inkassosending er fortsatt ikke konfigurert.
+- Verifisert med `npm run verify:source`, `npm run verify:api`, `npm run build`, `git diff --check`, HTTP 200/content-kontroll og live smoke (129 kontroller). Produksjon: [styr.ing/treasury](https://styr.ing/treasury/) · preview `https://099f8393.styr-ing.pages.dev/treasury/` · commit `c4115ac`.
+
 ## Regnskapskjerne — prioritert for norske småbedrifter
 
 | Krav | Status | Bevis i løsningen |
