@@ -293,3 +293,4 @@ Betalinger kan kobles til åpne kunde-/leverandørposter fra samme regnskapsflat
 
 - Resultat-/balanseberegningen er flyttet til én server-side hjelpefunksjon som brukes av både `prepare_submission` og `view=annual-summary`.
 - Dette hindrer at en egenkapitalpost vises med annet fortegn enn det som faktisk ble kontrollert før godkjenning.
+- Produksjon verifisert med `npm run verify:live` (125 kontroller), direkte årsoppgjørs-API (HTTP 200, `balanced=true`, `balanceDifferenceMinor=0`) og HTTP 200/content-kontroll på regnskapsflaten. Preview: `https://fa3dafdc.styr-ing.pages.dev`; produksjonsdomene: `https://styr.ing/`; release commit: `3e79e0e`.
