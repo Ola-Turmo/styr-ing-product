@@ -87,7 +87,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
       const receiptId = newId('gr'); await db.prepare("INSERT INTO goods_receipts (id,board_id,purchase_order_id,received_date,received_by,status,notes,created_at) VALUES (?,?,?,?,?,?,?,datetime('now'))").bind(receiptId, boardId, purchaseOrderId, receivedDate, actor, receiptStatus, txt(v?.notes, 500)).run(); await recordAudit(db, { boardId, action: 'goods_receipt_created', entityType: 'goods_receipt', entityId: receiptId, userId: auth.userId || undefined, details: { status: receiptStatus } }); return json({ ok: true, action, receiptId, status: receiptStatus }, { status: 201 });
     }
     if (action === 'create_invoice') {
-      const invoiceNumber = txt(v?.invoiceNumber, 80), supplierPartyId = txt(v?.supplierPartyId, 120) || null, linkedSupplier = supplierPartyId ? await db.prepare('SELECT id,name FROM supplier_parties WHERE id=? AND board_id=? AND active=1').bind(supplierPartyId, boardId).first<{ id: string; name: string }>() : null, supplierName = txt(v?.supplierName) || String(linkedSupplier?.name || ''), currency = txt(v?.currency, 3).toUpperCase(), dueDate = isoDate(v?.dueDate), purchaseOrderId = txt(v?.purchaseOrderId, 100) || null;
+      const invoiceNumber = txt(v?.invoiceNumber, 80), supplierPartyId = txt(v?.supplierPartyId, 120) || null, linkedSupplier = supplierPartyId ? await db.prepare('SELECT id,name,default_expense_account_id FROM supplier_parties WHERE id=? AND board_id=? AND active=1').bind(supplierPartyId, boardId).first<{ id: string; name: string; default_expense_account_id: string | null }>() : null, supplierName = txt(v?.supplierName) || String(linkedSupplier?.name || ''), currency = txt(v?.currency, 3).toUpperCase(), dueDate = isoDate(v?.dueDate), purchaseOrderId = txt(v?.purchaseOrderId, 100) || null;
       const rawLines = Array.isArray(v?.lines) ? v.lines : [];
       const lines = rawLines.length ? rawLines : [{ description: txt(v?.description, 200) || 'Leverandørkjøp', quantity: 1, unitPriceMinor: num(v?.amountMinor), vatRate: 0, accountId: txt(v?.accountId, 120) || null }];
       if (!invoiceNumber || !supplierName || !dueDate || !/^[A-Z]{3}$/.test(currency) || lines.length > 100 || (supplierPartyId && !linkedSupplier)) return json({ error: 'invoice_fields_invalid' }, { status: 400 });
@@ -95,7 +95,15 @@ export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
       for (let index = 0; index < lines.length; index += 1) {
         const line = lines[index] || {}; const description = txt(line.description, 200); const quantity = Number(line.quantity); const unitPriceMinor = num(line.unitPriceMinor); const vatRate = Number(line.vatRate);
         if (!description || !Number.isFinite(quantity) || quantity <= 0 || quantity > 100000 || unitPriceMinor === null || unitPriceMinor < 0 || ![0,12,15,25].includes(vatRate)) return json({ error: 'invoice_line_invalid', line: index + 1 }, { status: 400 });
-        const netMinor = Math.round(quantity * unitPriceMinor); const vatMinor = Math.round(netMinor * vatRate / 100); normalized.push({ lineNumber: index + 1, description, quantity, unitPriceMinor, vatRate, vatCode: vatRate === 12 ? '1_12' : vatRate === 15 ? '1_15' : vatRate === 25 ? '1' : null, netMinor, vatMinor, totalMinor: netMinor + vatMinor, accountId: txt(line.accountId, 120) || null });
+        const netMinor = Math.round(quantity * unitPriceMinor); const vatMinor = Math.round(netMinor * vatRate / 100); normalized.push({ lineNumber: index + 1, description, quantity, unitPriceMinor, vatRate, vatCode: vatRate === 12 ? '1_12' : vatRate === 15 ? '1_15' : vatRate === 25 ? '1' : null, netMinor, vatMinor, totalMinor: netMinor + vatMinor, accountId: txt(line.accountId, 120) || txt(linkedSupplier?.default_expense_account_id, 120) || null });
+      }
+      const accountIds = [...new Set(normalized.map(line => txt(line.accountId, 120)).filter(Boolean))];
+      if (accountIds.length) {
+        const placeholders = accountIds.map(() => '?').join(',');
+        const validAccounts = (await db.prepare(`SELECT id FROM ledger_accounts WHERE board_id=? AND active=1 AND id IN (${placeholders})`).bind(boardId, ...accountIds).all()).results as Array<{ id: string }>;
+        const validIds = new Set(validAccounts.map(account => account.id));
+        const invalidLine = normalized.findIndex(line => line.accountId && !validIds.has(String(line.accountId)));
+        if (invalidLine >= 0) return json({ error: 'invoice_line_account_not_found', line: invalidLine + 1 }, { status: 400 });
       }
       const amountMinor = normalized.reduce((sum, line) => sum + Number(line.totalMinor), 0); const vatMinor = normalized.reduce((sum, line) => sum + Number(line.vatMinor), 0);
       if (amountMinor <= 0) return json({ error: 'invoice_amount_invalid' }, { status: 400 }); if (purchaseOrderId && !(await db.prepare('SELECT id FROM purchase_orders WHERE id=? AND board_id=?').bind(purchaseOrderId, boardId).first())) return json({ error: 'purchase_order_not_found' }, { status: 404 });

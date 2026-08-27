@@ -233,3 +233,9 @@ Betalinger kan kobles til åpne kunde-/leverandørposter fra samme regnskapsflat
 - Kontrollsummens begynnelse vises sammen med kildene, slik at en liten virksomhet eller regnskapsfører kan forklare totalsummen før godkjenning.
 - Detaljvisningen bruker eksisterende `GET /api/mva?view=detail` og endrer ikke godkjennings- eller innsendingstrinnet.
 - Produksjon verifisert med `npm run verify`, `git diff --check`, HTTP 200/content-kontroll på `/app/finance/` og `npm run verify:live` (124 kontroller, inkludert detalj-endepunktet). Preview: `https://bc565e5f.styr-ing.pages.dev`; release commit: `81b3117` (smoke-test commit `9896041`).
+### Leverandørfaktura — kostnadskonto per linje (2026-08-27)
+
+- `SupplierInvoiceQuick` viser kostnadskonto på hver fakturalinje fra virksomhetens aktive kontoplan.
+- Registrert leverandør foreslår sin standard kostnadskonto på nye linjer; brukeren kan overstyre per linje.
+- `POST /api/procurement` bruker leverandørens standardkonto som server-side fallback og avviser kontoer som ikke finnes aktivt på samme virksomhet.
+- Flyten er fortsatt manuell og etterprøvbar før attestasjon/anvisning; ingen betaling eller automatisk bokføring er aktivert.
