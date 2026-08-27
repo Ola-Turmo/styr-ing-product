@@ -13,6 +13,13 @@ Kilde: `norwegian_styrearbeid_saas_prd.html` (versjon 8.0.0)
 
 Dette er en implementasjonsstatus, ikke en påstand om regulatorisk godkjenning. «Intern» betyr at arbeidsflyten, datamodellen og autorisasjonskontrollen finnes i Styr.ing. «Adapter» betyr at leverandør, credentials, kontrakt, overvåking og juridisk godkjenning fortsatt må etableres.
 
+### Siste kontroll — intercompany (2026-08-27)
+
+- `prepare_intercompany` er idempotent på tenant, selskapspar, referanse, beløp, valuta og periode. Retry/dobbeltklikk returnerer eksisterende kontrollspor i stedet for å opprette en kopi.
+- `approve_intercompany` beholder tenant-sjekk, kontovalidering, periode-lås og unik `external_reference` på speilbilaget. Godkjenning er fortsatt eksplisitt menneskelig handling og oppretter kun internt balansert bilag.
+- Verifisert med `npm run verify:source`, `npm run verify:api`, `npm run build`, `git diff --check` og live smoke (129 kontroller).
+- Produksjon: [styr.ing](https://styr.ing/) · deploy-preview: `https://61319fc1.styr-ing.pages.dev` · commit `1f39e28`.
+
 ## Regnskapskjerne — prioritert for norske småbedrifter
 
 | Krav | Status | Bevis i løsningen |
