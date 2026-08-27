@@ -211,3 +211,5 @@ Betalinger kan kobles til åpne kunde-/leverandørposter fra samme regnskapsflat
 - Copy forklarer eksplisitt at utvidelsene er valgfrie og bygger på regnskapet, slik at små norske AS og ENK møter det de trenger i hverdagen før nye moduler.
 - Verifisert lokalt med `npm run verify` og HTTP 200/content-kontroll på `https://styr.ing/` og `https://styr.ing/capabilities/`.
 - Preview: `https://40f60a54.styr-ing.pages.dev`; produksjonsdomene: `https://styr.ing/`. Release commit: `742a341`.
+
+- Søk/filter i produktkartet er forenklet til én regnskapskjerne først; tilleggskortene åpnes automatisk når brukeren søker, slik at småbedrifter ikke mister treff på valgfrie arbeidsflater. Preview: `https://3f03f481.styr-ing.pages.dev`; release commit: `33f48f6`.
