@@ -496,3 +496,9 @@ Betalinger kan kobles til åpne kunde-/leverandørposter fra samme regnskapsflat
 - Bankkonto-feltet forklarer at koblingen er manuell, at siste fire siffer er valgfritt, og at 1920 normalt brukes som hovedbokskonto. Dette gjør første bankavstemming forståelig uten å love en aktiv bankintegrasjon.
 - Klarhetsstatus og lenker oppdateres fra tenant-avgrensede API-data; oppsettet er veiledende og erstatter ikke regnskapsfaglig kontroll.
 - Verifisert med kildeintegritet, inline JavaScript-syntax, API-integritet, TypeScript, Astro build, `git diff --check`, live smoke (129 kontroller) og HTTP/content-kontroll på preview `https://daedadd9.styr-ing.pages.dev` og produksjon `https://styr.ing/`; release commit `0d85ef6`.
+
+### Åpningsbalanse — mal følger inneværende periode (2026-08-27)
+
+- CSV-malen for åpningsbalanse/historikk bruker nå dagens dato og periode, og filnavnet inneholder perioden. Små virksomheter møter ikke lenger en foreldet eksempelperiode når de starter opp senere.
+- Konto-ID-er hentes fortsatt fra valgt virksomhet, og importen beholder balansekontroll, låst-periodekontroll, autorisasjon og idempotens.
+- Verifisert med kildeintegritet, inline JavaScript-syntax, API-integritet, TypeScript, Astro build, `git diff --check`, live smoke (129 kontroller) og HTTP/content-kontroll på preview `https://1845f023.styr-ing.pages.dev` og produksjon `https://styr.ing/`; release commit `629282c`.
