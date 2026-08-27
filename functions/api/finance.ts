@@ -2494,6 +2494,39 @@ export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
         { status: 201 },
       );
     }
+    if (action === "update_invoice_draft") {
+      const invoiceId = String(value?.invoiceId || "").trim();
+      const accountId = String(value?.accountId || "").trim();
+      const issueDate = String(value?.issueDate || "").trim();
+      const dueDate = String(value?.dueDate || "").trim() || null;
+      const description = String(value?.description || "").trim();
+      const invoice = await db.prepare("SELECT id,invoice_number FROM sales_invoices WHERE id=? AND board_id=? AND status='draft'").bind(invoiceId, boardId).first<{ id: string; invoice_number: string }>();
+      if (!invoice) return json({ error: "invoice_not_draft_or_found" }, { status: 409 });
+      if (!accountId || !validIsoDate(issueDate) || (dueDate && (!validIsoDate(dueDate) || dueDate < issueDate))) return json({ error: "invoice_fields_invalid" }, { status: 400 });
+      if (!(await db.prepare("SELECT id FROM crm_accounts WHERE id=? AND board_id=? AND stage NOT IN ('lost')").bind(accountId, boardId).first())) return json({ error: "customer_not_found" }, { status: 400 });
+      const rawLines = Array.isArray(value?.lines) ? (value.lines as Record<string, unknown>[]) : [];
+      if (!rawLines.length || rawLines.length > 100) return json({ error: "invoice_lines_invalid" }, { status: 400 });
+      const lines: Array<{ lineNumber: number; description: string; quantity: number; unitPriceMinor: number; vatRate: number; vatCode: string | null; netMinor: number; vatMinor: number; totalMinor: number; accountId: string | null }> = [];
+      for (let index = 0; index < rawLines.length; index += 1) {
+        const line = rawLines[index] || {};
+        const lineDescription = String(line.description || "").trim();
+        const quantity = Number(line.quantity ?? 1);
+        const unitPriceMinor = Number(line.unitPriceMinor ?? line.unit_price_minor ?? 0);
+        const vatRate = Number(line.vatRate ?? line.vat_rate ?? 0);
+        const lineAccountId = String(line.accountId ?? line.account_id ?? "").trim() || null;
+        if (!lineDescription || !Number.isFinite(quantity) || quantity <= 0 || quantity > 100000 || !Number.isSafeInteger(unitPriceMinor) || unitPriceMinor <= 0 || ![0, 12, 15, 25].includes(vatRate)) return json({ error: "invoice_line_invalid", lineNumber: index + 1 }, { status: 400 });
+        if (lineAccountId && !(await db.prepare("SELECT id FROM ledger_accounts WHERE id=? AND board_id=? AND active=1").bind(lineAccountId, boardId).first())) return json({ error: "invoice_line_account_not_found", lineNumber: index + 1 }, { status: 400 });
+        const netMinor = Math.round(quantity * unitPriceMinor); const vatMinor = Math.round(netMinor * vatRate / 100);
+        lines.push({ lineNumber: index + 1, description: lineDescription, quantity, unitPriceMinor, vatRate, vatCode: vatRate === 12 ? "3_12" : vatRate === 15 ? "3_15" : vatRate === 25 ? "3" : null, netMinor, vatMinor, totalMinor: netMinor + vatMinor, accountId: lineAccountId });
+      }
+      const invoiceAmountMinor = lines.reduce((sum, line) => sum + line.netMinor, 0); const invoiceVatMinor = lines.reduce((sum, line) => sum + line.vatMinor, 0); const totalMinor = invoiceAmountMinor + invoiceVatMinor;
+      const invoiceDescription = description || lines.map(line => line.description).join(", ").slice(0, 200);
+      const statements: D1PreparedStatement[] = [db.prepare("UPDATE sales_invoices SET account_id=?,issue_date=?,due_date=?,description=?,amount_minor=?,vat_minor=?,total_minor=?,updated_at=datetime('now') WHERE id=? AND board_id=? AND status='draft'").bind(accountId, issueDate, dueDate, invoiceDescription, invoiceAmountMinor, invoiceVatMinor, totalMinor, invoiceId, boardId), db.prepare("DELETE FROM sales_invoice_lines WHERE sales_invoice_id=? AND board_id=?").bind(invoiceId, boardId)];
+      lines.forEach(line => statements.push(db.prepare("INSERT INTO sales_invoice_lines (id,board_id,sales_invoice_id,line_number,description,quantity,unit_price_minor,vat_rate,vat_code,net_minor,vat_minor,total_minor,account_id) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)").bind(id("sinvline"), boardId, invoiceId, line.lineNumber, line.description, line.quantity, line.unitPriceMinor, line.vatRate, line.vatCode, line.netMinor, line.vatMinor, line.totalMinor, line.accountId)));
+      await db.batch(statements);
+      await recordAudit(db, { boardId, action: "sales_invoice_draft_updated", entityType: "sales_invoice", entityId: invoiceId, userId: authorization.userId || undefined, details: { status: "draft", lineCount: lines.length, amountMinor: invoiceAmountMinor, vatMinor: invoiceVatMinor, invoiceNumber: invoice.invoice_number } });
+      return json({ ok: true, action, invoiceId, invoiceNumber: invoice.invoice_number, status: "draft", amountMinor: invoiceAmountMinor, vatMinor: invoiceVatMinor, totalMinor, lineCount: lines.length });
+    }
     if (action === "create_invoice") {
       let invoiceNumber = String(value?.invoiceNumber || "").trim();
       const issueDate = String(value?.issueDate || "").trim(),
