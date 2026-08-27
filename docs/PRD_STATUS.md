@@ -240,3 +240,9 @@ Betalinger kan kobles til åpne kunde-/leverandørposter fra samme regnskapsflat
 - `POST /api/procurement` bruker leverandørens standardkonto som server-side fallback og avviser kontoer som ikke finnes aktivt på samme virksomhet.
 - Flyten er fortsatt manuell og etterprøvbar før attestasjon/anvisning; ingen betaling eller automatisk bokføring er aktivert.
 - Produksjon verifisert med `npm run verify:live` (124 kontroller) og HTTP 200/content-kontroll på `/app/finance/`. Preview: `https://05002bd4.styr-ing.pages.dev`; produksjonsdomene: `https://styr.ing/`; release commit: `788af19`.
+
+### Bokføringskø — synlige bilagslinjer før godkjenning (2026-08-27)
+
+- Åpne bokføringsforslag viser nå alle debet-/kreditlinjer, konto, tekst, summer og kildehash før godkjenning.
+- Godkjenningsknappen er deaktivert hvis forslaget mangler linjer eller ikke balanserer. Dette gjør kontrollsteget forståelig for små virksomheter og regnskapsfører.
+- Produksjon verifisert med `npm run verify`, `npm run verify:live` (124 kontroller) og HTTP 200/content-kontroll på `/app/finance/`. Preview: `https://05a22114.styr-ing.pages.dev`; release commit: `3a7caa9`.
