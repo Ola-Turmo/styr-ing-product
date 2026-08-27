@@ -342,3 +342,8 @@ Betalinger kan kobles til åpne kunde-/leverandørposter fra samme regnskapsflat
 - Salgsfakturaens produktvelger og kansellering av utkast bruker nå den validerte virksomhetskonteksten fra kundeområdet.
 - Purringsutkast krever eksplisitt valgt virksomhet og stopper uten fallback til offentlig demo-ID. Dette hindrer at en kunde uten ferdig kontekst leser eller skriver mot feil virksomhet.
 - Verifisert med kildeintegritet, inline JavaScript-syntax, API-integritet, TypeScript, build og live smoke (125 kontroller). Preview: `https://e3a4f2d3.styr-ing.pages.dev`; produksjonsdomene: `https://styr.ing/`; release commit: `8b24168`.
+
+### Fakturaflyt — publisert med full verifikasjon (2026-08-27)
+- Endringen er bygget og publisert til Cloudflare Pages etter full lokal verifikasjon.
+- Preview og kundeområdet svarer HTTP 200, og produksjonens API-smoke passerer 125/125 kontroller.
+- Preview: `https://3ca3337d.styr-ing.pages.dev`; produksjonsdomene: `https://styr.ing/`.
