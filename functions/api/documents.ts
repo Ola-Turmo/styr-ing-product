@@ -34,6 +34,19 @@ export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
     const db = requireDb(env); const bytes = new Uint8Array(await file.arrayBuffer()); const contentHash = await sha256Bytes(bytes);
     const documentId = id('doc'); const storageKey = `${boardId}/${documentId}/${file.name.replace(/[^a-zA-Z0-9._-]/g, '_').slice(-160)}`;
     const entityType = text(form.get('entityType'), 60) || null; const entityId = text(form.get('entityId'), 120) || null; const actor = auth.userId || 'api';
+    if (entityId && entityType) {
+      const entityTables: Record<string, string> = {
+        voucher: 'vouchers',
+        sales_invoice: 'sales_invoices',
+        supplier_invoice: 'supplier_invoices',
+        receipt: 'card_transactions',
+      };
+      const table = entityTables[entityType];
+      if (table) {
+        const entity = await db.prepare(`SELECT id FROM ${table} WHERE id=? AND board_id=?`).bind(entityId, boardId).first();
+        if (!entity) return json({ error: 'document_entity_not_found', entityType }, { status: 404 });
+      }
+    }
     await env.DOCS.put(storageKey, bytes, { httpMetadata: { contentType }, customMetadata: { boardId, documentId, contentHash } });
     try { await db.prepare('INSERT INTO accounting_documents (id,board_id,storage_key,file_name,content_type,size_bytes,content_hash,entity_type,entity_id,uploaded_by) VALUES (?,?,?,?,?,?,?,?,?,?)').bind(documentId, boardId, storageKey, file.name.slice(0, 240), contentType, file.size, contentHash, entityType, entityId, actor).run(); }
     catch (error) { await env.DOCS.delete(storageKey); throw error; }
