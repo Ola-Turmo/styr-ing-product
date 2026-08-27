@@ -46,6 +46,14 @@ import VatPeriodQuick from '../components/VatPeriodQuick.astro';
     const boundary = document.querySelector('#public-finance-write-boundary');
     const forms = [...document.querySelectorAll('.finance-shell form')];
     if (!boundary || !forms.length) return;
+    // Lock the public preview synchronously; do not leave a race window while
+    // the session check is loading.
+    forms.forEach((form) => {
+      form.setAttribute('aria-disabled', 'true');
+      form.querySelectorAll('input, select, textarea, button').forEach((control) => { control.disabled = true; });
+    });
+    boundary.hidden = false;
+    boundary.textContent = 'Dette er en lesedemo med fiktive data. Kontrollerer innlogging…';
     const lockPublicWrites = (authenticated) => {
       forms.forEach((form) => {
         form.setAttribute('aria-disabled', 'true');
