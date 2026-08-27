@@ -476,3 +476,9 @@ Betalinger kan kobles til åpne kunde-/leverandørposter fra samme regnskapsflat
 - Nedlasting og registrering av SAF-T i den offentlige regnskapsflaten bruker nå inneværende kalenderår automatisk, slik at små virksomheter ikke starter med et foreldet eksempelintervall.
 - Lenken er fortsatt lesende i demoen, mens registrering krever autorisasjon; API-et validerer fortsatt tenant, periode og kontrollspor.
 - Verifisert med kildeintegritet, inline JavaScript-syntax, API-integritet, TypeScript, Astro build (63 sider), live smoke (129 kontroller) og HTTP/content-kontroll på preview `https://5def36c7.styr-ing.pages.dev` og produksjon `https://styr.ing/`; release commit `b833ec4`.
+
+### Regnskapsrytme — gjentakende faktura og månedsavslutning (2026-08-27)
+
+- Gjentakende fakturamal og månedsavslutning starter nå med dagens dato automatisk. Etter nullstilling eller manglende dato fylles samme dagsaktuelle dato inn igjen, slik at små virksomheter ikke oppretter nye utkast eller kontroller med foreldede eksempelperioder.
+- Dette påvirker bare forhåndsutfyllingen i brukerflaten. Gjentakende fakturaer er fortsatt utkast, og månedsavslutning krever kontroll, menneskelig godkjenning og eksplisitt låsing før bokføring eller ekstern sending.
+- Verifisert med `npm run verify:source`, `npm run verify:api`, `npm run build`, `git diff --check`, live smoke (129 kontroller) og HTTP/content-kontroll på preview `https://039c1d4d.styr-ing.pages.dev` og produksjon `https://styr.ing/`; release commit `64fe6fd`.
