@@ -213,3 +213,9 @@ Betalinger kan kobles til åpne kunde-/leverandørposter fra samme regnskapsflat
 - Preview: `https://40f60a54.styr-ing.pages.dev`; produksjonsdomene: `https://styr.ing/`. Release commit: `742a341`.
 
 - Søk/filter i produktkartet er forenklet til én regnskapskjerne først; tilleggskortene åpnes automatisk når brukeren søker, slik at småbedrifter ikke mister treff på valgfrie arbeidsflater. Preview: `https://3f03f481.styr-ing.pages.dev`; release commit: `33f48f6`.
+
+### Bilagsarkiv — bedre opplastingsflyt (2026-08-27)
+
+- Bilagsarkivet viser nå filnavn og størrelse før opplasting, stopper filer over 10 MB i nettleseren og gir norsk tilbakemelding. Hintet nullstilles etter vellykket opplasting.
+- Dette forbedrer den vanlige «last opp kvittering → knytt til regnskap»-flyten uten å endre lagring, tenant-isolasjon eller R2-grensen i API-et.
+- Produksjon verifisert med `npm run verify` og `npm run verify:live` (123 kontroller). Preview: `https://277d82e4.styr-ing.pages.dev`; release commit: `f911fb9`.
