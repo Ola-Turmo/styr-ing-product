@@ -8,6 +8,13 @@
 - Preview: `https://19c7b6fc.styr-ing.pages.dev`; produksjon: `https://styr.ing/`; kildecommit `d823e6b` (tester) og `cb9ebcc` (SaaS-aktiveringsside).
 - Verifisert: `npm run verify:source`, `npm run verify:api`, `npm run build`, `git diff --check`, direkte offentlig innholdscheck og `LIVE API SMOKE: PASS (131 checks against https://styr.ing)`.
 
+### Invitasjon til flere virksomheter — 2026-08-28
+
+- En eksisterende Styr.ing-bruker kan nå godta en ny virksomhetsinvitasjon med sitt eksisterende passord. Medlemskapet opprettes idempotent med invitert rolle, engangstokenet brennes atomisk, og brukeren sendes til riktig virksomhet.
+- Førstegangsbrukere får fortsatt passordbasert kontoaktivering. Feil passord, utløpt token og gjenbruk gir tydelige norske feilmeldinger uten å lekke kontodata.
+- Preview: `https://cc18006a.styr-ing.pages.dev`; produksjon: `https://styr.ing/`; kildecommit `85414a4`.
+- Verifisert: `npm run verify:source`, `npm run verify:api`, `npm run build` og `LIVE API SMOKE: PASS (133 checks against https://styr.ing)`.
+
 Sist kontrollert: 2026-08-27  
 Kilde: `norwegian_styrearbeid_saas_prd.html` (versjon 8.0.0)
 
