@@ -52,6 +52,7 @@ const checks = [
   ['private board guard', '/api/events?boardId=board-2&view=summary', 403], ['private forecast guard', '/api/forecast?boardId=board-2', 403],
   ['private domain guard', '/api/domains/people?boardId=board-2', 403],
 ];
+checks.push(['MVA detail', '/api/mva?boardId=board-1&view=detail&period=2026-08', 200]);
 const failures = [];
 for (const [label, path, expected] of checks) {
   const response = await fetch(`${baseUrl}${path}`);
