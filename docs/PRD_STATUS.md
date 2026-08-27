@@ -374,3 +374,9 @@ Betalinger kan kobles til åpne kunde-/leverandørposter fra samme regnskapsflat
 - Beløpene kommer fra det eksisterende tenant-avgrensede fakturasammendraget, med innbetalinger og bokførte kreditnotaer trukket fra. Kortet er informativt og åpner den vanlige fakturaflyten; det endrer ikke bokføring eller betalingsstatus.
 - Utformingen er prioritert for små norske virksomheter: brukeren ser hva som faktisk mangler å bli betalt uten å gå gjennom en egen rapport først.
 - Verifisert med full lokal verifikasjon, `git diff --check`, live smoke (125 kontroller) og HTTP/content-kontroll. Preview: `https://3d2fc147.styr-ing.pages.dev`; produksjonsdomene: `https://styr.ing/`; release commit: `d00fe69`.
+
+### Kundefordringer — aldersfordeling og korrekt grunnlag (2026-08-27)
+- Betalingsbildet viser nå aldersfordeling for åpne kundefordringer: ikke forfalt, 1–30, 31–60 og 61+ dager, med kroner og antall fakturaer.
+- Fordringsgrunnlaget inkluderer bare godkjente/sendte/forfalte fakturaer med positiv restsaldo. Utkast og fakturaer til kontroll er fortsatt synlige i arbeidsflyten, men telles ikke som reelle krav mot kunden.
+- Restbeløpet beregnes etter registrerte betalinger og bokførte kreditnotaer, og vises kun for valgt virksomhet.
+- Verifisert med full lokal verifikasjon, live smoke (125 kontroller), HTTP/content-kontroll på produksjon og preview. Preview: `https://38732b84.styr-ing.pages.dev`; produksjonsdomene: `https://styr.ing/`; release commit: `a15975f`.
