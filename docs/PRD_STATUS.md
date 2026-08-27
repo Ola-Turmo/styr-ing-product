@@ -464,3 +464,9 @@ Betalinger kan kobles til åpne kunde-/leverandørposter fra samme regnskapsflat
 - Lønnsflaten viser nå før-kjøring status for grunnkontoene 5000, 2600/260x, 2930, 5400 og 2770 samt om virksomhetens bankopplysning er satt.
 - Sjekken er tenant-avgrenset og bruker kun interne konto- og profilregistre. Den fremstiller ikke skattetrekkskonto, banktilkobling, Altinn, NAV eller utbetaling som live; `bankAdapter` returnerer fortsatt `not_configured`.
 - Verifisert med kildeintegritet, inline JavaScript-syntax, API-integritet, TypeScript, Astro build, `git diff --check`, live smoke (129 kontroller) og HTTP/content-kontroll. Preview: `https://875e85b5.styr-ing.pages.dev`; produksjonsdomene: `https://styr.ing/`; release commit: `44e52c6`.
+
+### Regnskapskontroller — alltid inneværende periode (2026-08-27)
+
+- MVA, bokføringsforslag, årsoppgjørsnoter, åpenhetslov-grunnlag, likviditetsbilde og eierregister setter nå dato/år til inneværende kalenderperiode når flaten lastes. Dette fjerner foreldede 2026-eksempler for små virksomheter som åpner løsningen senere.
+- Runtime-defaultene er kun brukerhjelp; serverens validering av perioder, datoer, roller og kontrollspor er uendret. Åpningsbalanse i CSV-mal er fortsatt merket som eksempel og er ikke en produksjonsføring.
+- Verifisert med kildeintegritet, inline JavaScript-syntax (204 skript), API-integritet, TypeScript, Astro build (63 sider), `git diff --check`, live smoke (129 kontroller) og HTTP-kontroll på preview `https://2696f745.styr-ing.pages.dev` og produksjon `https://styr.ing/`; release commit `29eab8f`.

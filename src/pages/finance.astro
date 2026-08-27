@@ -21,7 +21,7 @@ import VatPeriodQuick from '../components/VatPeriodQuick.astro';
 <script is:inline>
   const esc = (v) => String(v ?? '').replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const money = (v) => `${(Number(v || 0) / 100).toLocaleString('nb-NO')} kr`;
-  const today = new Date().toISOString().slice(0, 10);
+  const today = new Date().toISOString().slice(0, 10); const currentYear = today.slice(0, 4); const noteYear = document.querySelector('[data-finance-action="prepare_note"] input[name="period"]'); if (noteYear) noteYear.value = currentYear;
   const voucherDate = document.querySelector('input[name="voucherDate"]'); if (voucherDate) voucherDate.value = today;
   const reportFrom = document.querySelector('#report-from'); const reportTo = document.querySelector('#report-to');
   if (reportFrom && !reportFrom.value) reportFrom.value = `${today.slice(0, 4)}-01`;
