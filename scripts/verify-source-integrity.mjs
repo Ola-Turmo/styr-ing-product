@@ -17,6 +17,7 @@ const componentContracts = {
   'src/components/AnnualAccountsQuick.astro': ['annual-approve-form', 'annual-summary', 'annualShowDetail', 'annual-detail', 'annualSummary', '<script is:inline>', '</script>', '<style>', '</style>'],
   'src/components/PayrollQuick.astro': ['payroll-draft-total', 'payroll-employer-hint', 'payrollDraftTotals', 'data-payroll-action="create_run"', '<script is:inline>', '</script>', '<style>', '</style>'],
   'src/components/PostingQueueQuick.astro': ['id="posting-proposal-list"', 'lines_json', 'postingAccountLabel', 'Kontroller ${lines.length} bilagslinjer', 'Godkjenn kontrollerte linjer', 'debit===creditTotal', '<script is:inline>', '</script>', '<style>', '</style>'],
+  'src/pages/app/finance.astro': ['finance-task-start', 'finance-task-grid', 'data-finance-task="invoice"', 'data-finance-task="bank"', 'data-finance-task="payroll"', 'data-finance-tasks="voucher"', 'finance-task-workflow', 'finance-task-clear', 'Start med oppgaven, ikke modulen.'],
 };
 
 async function walk(directory) {
