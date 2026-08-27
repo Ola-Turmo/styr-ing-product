@@ -589,3 +589,8 @@ Betalinger kan kobles til åpne kunde-/leverandørposter fra samme regnskapsflat
 - Offentlig side viser kun fiktiv status via GET-kall og har ingen skriveformularer. All endring skjer etter innlogging på `/app/finance/`, med tydelig grense og innloggings-CTA.
 - Norsk copy prioriterer små virksomheters hverdag og setter avanserte funksjoner i bakgrunnen. Produksjon `https://styr.ing/finance/`, preview `https://04f6d2fc.styr-ing.pages.dev/finance/`; release commit `0de5e56`.
 - Verifisert med `npm run verify:source`, `npm run verify:api`, `npm run build`, `git diff --check`, live smoke (129 kontroller), HTTP 200 og innholdskontroll.
+
+### Innlogging og invitasjonsflyt — stabilisert (2026-08-27)
+- `/login/` er restaurert til en eksplisitt, syntaktisk ren innloggingsflyt med sikker lokal `next`-redirect, tydelig norsk feilmelding og deaktivert knapp under forespørsel.
+- `/activate/` og `functions/api/auth.ts` beholder engangstoken, 24-timers utløp og atomisk claim ved samtidige aktiveringer. Ugyldig, brukt og utløpt token får separate statusårsaker.
+- Produksjonssjekk: `/login/`, `/activate/`, `/api/auth` og `/api/auth?action=invite_status&token=invalid-token` returnerer forventet respons; preview `https://69375348.styr-ing.pages.dev`; release commit `6604157`.
