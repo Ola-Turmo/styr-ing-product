@@ -2387,6 +2387,33 @@ export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
           .first())
       )
         return json({ error: "source_voucher_not_found" }, { status: 400 });
+      // A retry from a slow browser or webhook must not create a second
+      // control item.  The human-facing reference is the idempotency key for
+      // this internal workflow (within one tenant and period).
+      const existingPosting = await db
+        .prepare(
+          "SELECT id,status,target_voucher_id FROM intercompany_postings WHERE board_id=? AND source_entity=? AND target_entity=? AND reference=? AND amount_minor=? AND currency=? AND period=? AND status<>'rejected' ORDER BY created_at DESC LIMIT 1",
+        )
+        .bind(
+          boardId,
+          sourceEntity,
+          targetEntity,
+          reference,
+          amount,
+          String(value?.currency || "NOK").toUpperCase(),
+          period,
+        )
+        .first<Record<string, unknown>>();
+      if (existingPosting)
+        return json({
+          ok: true,
+          action,
+          postingId: String(existingPosting.id),
+          status: String(existingPosting.status),
+          targetVoucherId: existingPosting.target_voucher_id || undefined,
+          idempotent: true,
+          requiresHumanApproval: true,
+        });
       const postingId = id("ic");
       await db
         .prepare(
