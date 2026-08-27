@@ -201,12 +201,12 @@ import TransparencyQuick from '../components/TransparencyQuick.astro';
     <a href="/" class="logo" aria-label="Styr.ing forsiden"><span class="logo-mark">s</span><span>styr<span class="logo-dot">.</span>ing</span></a>
     <button class="mobile-nav-toggle" type="button" aria-expanded="false" aria-controls="primary-nav">Meny</button>
     <ul id="primary-nav" class="nav-links" aria-label="Hovedmeny">
-      <li><a href="/capabilities" class={activeNav === 'capabilities' ? 'active' : ''}>Produkt</a></li>
       <li><a href="/finance" class={activeNav === 'finance' ? 'active' : ''}>Regnskap</a></li>
-      <li><a href="/trust" class={activeNav === 'trust' ? 'active' : ''}>Tillit og sikkerhet</a></li>
+      <li><a href="/capabilities" class={activeNav === 'capabilities' ? 'active' : ''}>Produkt</a></li>
       <li><a href="/abonnement" class={activeNav === 'abonnement' ? 'active' : ''}>Abonnement</a></li>
+      <li><a href="/trust" class={activeNav === 'trust' ? 'active' : ''}>Tillit og sikkerhet</a></li>
       <li><a id="auth-link" href="/login" class={activeNav === 'login' ? 'active' : ''}>Logg inn</a></li>
-      <li><a href="/finance" class="nav-cta">Se regnskapsdemo <span aria-hidden="true">↗</span></a></li>
+      <li><a href="/finance" class="nav-cta">Prøv regnskapsdemo <span aria-hidden="true">↗</span></a></li>
     </ul>
   </nav>
 
