@@ -14,6 +14,13 @@
 - Serveren validerer fortsatt norsk organisasjonsnummer, e-post, postnummer og konto-eierskap, og endringen logges i audit-sporet.
 - Verifisert med kilde-, API-, TypeScript- og Astro-kontroller, `git diff --check` og `npm run verify:live` (135 kontroller mot `https://styr.ing`). Preview: `https://15cfa5be.styr-ing.pages.dev`; produksjon: `https://styr.ing/app/finance/`.
 
+### SMB-kunderegister kan vedlikeholdes direkte i fakturaflyten — 2026-08-28
+
+- `/app/finance/` viser nå et synlig kunderegister rett over fakturaflaten, med tomtilstand, kundetype, organisasjonsnummer, adresse, e-post og betalingsfrist.
+- En bruker med tilgang kan åpne én kunde, endre opplysningene og lagre via den eksisterende tenant-avgrensede `save_customer_invoice_profile`-handlingen. Servervalidering og audit-spor gjelder fortsatt; ingen ny skrivevei omgår kontrollene.
+- Dette gjør den daglige fakturaflyten egnet for små AS og ENK som vedlikeholder kunder selv, uten at de må finne en skjult oppsettsseksjon.
+- Verifisert med `npm run verify:source`, `npm run verify:api`, `npm run build`, `git diff --check` og `npm run verify:live` (135 kontroller mot `https://styr.ing`).
+
 ### SMB-regnskapsflate og verifikasjon — 2026-08-28
 
 - Regnskap er fortsatt hovedproduktet for små AS og ENK: førstesiden, kundeområdet og `/app/finance/` leder med bilag, faktura, bank, MVA, lønn, bilagsarkiv, rapporter og periodeavslutning. Styre-, HCM-, CRM-, IT- og kontrollmoduler ligger sekundært.
