@@ -655,3 +655,10 @@ Betalinger kan kobles til åpne kunde-/leverandørposter fra samme regnskapsflat
 - Feltene oppdaterer oppsummeringen underveis, steg kan navigeres med tastatur, skjulte paneler bruker `hidden`, og mobilvisning har én kolonne og fullbredde handlinger.
 - Siden er fortsatt eksplisitt en forhåndsvisning: den oppretter ikke konto, tenant eller integrasjon. Etter oppsummeringen går brukeren til den autentiserte regnskapsflaten.
 - Kildekontrakt og live smoke krever nå både interaktivt skjema, trygg arbeidsflyt-copy og `/app/finance`-lenke. Preview: `https://27cbefb8.styr-ing.pages.dev`; produksjon: `https://styr.ing/onboarding/`.
+
+### Prosjekt/timer koblet tydelig til regnskapskjernen (2026-08-28)
+
+- `/field/` har nå en egen sekundær bro til regnskapet: godkjente timer kan bli fakturagrunnlag og åpnes som fakturautkast i `/app/finance/`.
+- Broen forklarer rekkefølgen for små virksomheter: registrer arbeid, send til kontroll, godkjenn og fullfør fakturaen i regnskapsflaten. Den lover ikke automatisk EHF, betaling eller bokføring.
+- Felt-/prosjektmodulen er fortsatt underordnet regnskapskjernen i UI-et, mens den eksisterende `prepare_invoice` → `approve_invoice_draft` → `convert_invoice_draft`-flyten beholdes server-side.
+- Kildekontrakt og live smoke dekker broen og lenken til regnskapsflaten. Verifisert med `npm run verify:source`, `npm run verify:api`, `npm run build` og `npm run verify:live`.
