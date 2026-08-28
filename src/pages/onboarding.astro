@@ -1,158 +1,88 @@
 ---
-// Onboarding Wizard — Guided board setup per PRD
 import Layout from '../layouts/Layout.astro';
 ---
-<Layout title="Kom i gang — Styr.ing" activeNav="onboarding">
-<div class="onboarding-page">
-  <h1 class="page-title">Kom i gang med regnskapet</h1>
-  <div class="progress-bar" id="progress">
-    <div class="step active" data-step="1"><span>1</span>Regnskap</div>
-    <div class="step-connector"></div>
-    <div class="step" data-step="2"><span>2</span>Virksomhet</div>
-    <div class="step-connector"></div>
-    <div class="step" data-step="3"><span>3</span>Kontroller</div>
-    <div class="step-connector"></div>
-    <div class="step" data-step="4"><span>4</span>Klar</div>
-  </div>
 
-  <div id="step-company" class="onboarding-card">
-    <h2>Start med den vanlige regnskapshverdagen</h2>
-    <p class="card-desc">Dette er en trygg forhåndsvisning med fiktive data. Se hvordan bilag, faktura, bank og MVA samles før du kobler til en virksomhet.</p>
-    <form onsubmit="event.preventDefault();switchStep(2)">
-      <div class="form-group"><label for="demo-company">Bedriftens navn</label><input id="demo-company" type="text" value="Pilotselskap AS" autocomplete="off"/></div>
-      <div class="form-row"><div class="form-group"><label for="demo-org-number">Org.nummer</label><input id="demo-org-number" type="text" value="123456789" inputmode="numeric" autocomplete="off"/></div><div class="form-group"><label for="demo-employees">Ansatte</label><select id="demo-employees"><option>1-10</option><option selected>11-50</option><option>51-200</option></select></div></div>
-      <div class="form-group"><label for="demo-industry">Bransje</label><select id="demo-industry"><option>Teknologi/IT</option><option selected>Konsulent/rådgivning</option><option>Finans</option><option>Helse</option></select></div>
-      <div class="form-group"><label>Hva vil du få kontroll på først?</label>
-        <div class="check-group">
-          <label class="check-option"><input type="checkbox" checked/>Bilag og bokføring</label>
-          <label class="check-option"><input type="checkbox" checked/>Faktura og bank</label>
-          <label class="check-option"><input type="checkbox" checked/>MVA og lønn</label>
+<Layout title="Kom i gang med regnskapet — Styr.ing" activeNav="onboarding">
+  <main class="onboarding-page">
+    <header class="onboarding-header">
+      <a class="back-link" href="/">← Til forsiden</a>
+      <span class="section-kicker">Regnskap først · for små AS og ENK</span>
+      <h1>Kom i gang med regnskapet.</h1>
+      <p>En kort veiviser som viser hvordan Styr.ing starter med bilag, faktura, bank, MVA og lønn. Du kan legge til styre, prosjekt og andre arbeidsflater senere.</p>
+    </header>
+
+    <nav class="progress" aria-label="Steg i oppsettet"><ol>
+      <li class="active" data-progress-step="1"><span>1</span><strong>Regnskap</strong></li><li class="connector" aria-hidden="true"></li>
+      <li data-progress-step="2"><span>2</span><strong>Virksomhet</strong></li><li class="connector" aria-hidden="true"></li>
+      <li data-progress-step="3"><span>3</span><strong>Kontroller</strong></li><li class="connector" aria-hidden="true"></li>
+      <li data-progress-step="4"><span>4</span><strong>Klar</strong></li>
+    </ol></nav>
+
+    <section id="step-company" class="onboarding-card" data-step-panel="1" aria-labelledby="step-company-title">
+      <div class="card-eyebrow"><span>Steg 1 av 4</span><span class="demo-pill">Forhåndsvisning</span></div>
+      <h2 id="step-company-title">Start med den vanlige regnskapshverdagen.</h2>
+      <p class="card-desc">Se hvordan grunnlaget samles før du kobler til en virksomhet. Alle verdier under er fiktive og brukes bare i denne veiviseren.</p>
+      <form id="company-form">
+        <div class="field-grid">
+          <label>Bedriftens navn<input id="demo-company" name="company" type="text" value="Pilotselskap AS" autocomplete="organization" required /></label>
+          <label>Organisasjonsnummer<input id="demo-org-number" name="orgNumber" type="text" value="123 456 789" inputmode="numeric" autocomplete="off" /></label>
+          <label>Bransje<select id="demo-industry" name="industry"><option selected>Konsulent og rådgivning</option><option>Teknologi og IT</option><option>Helse og velvære</option><option>Bygg og håndverk</option><option>Annet</option></select></label>
+          <label>Antall ansatte<select id="demo-employees" name="employees"><option selected>0–4</option><option>5–9</option><option>10–24</option><option>25+</option></select></label>
         </div>
+        <fieldset><legend>Hva vil du få kontroll på først?</legend>
+          <label class="check-option"><input type="checkbox" checked /> <span><strong>Bilag og bokføring</strong><small>Dokumentasjon, konto og balanserte bilag</small></span></label>
+          <label class="check-option"><input type="checkbox" checked /> <span><strong>Faktura og bank</strong><small>Kundefordringer, betalinger og avstemming</small></span></label>
+          <label class="check-option"><input type="checkbox" checked /> <span><strong>MVA og lønn</strong><small>Kontrollert grunnlag før rapportering</small></span></label>
+        </fieldset>
+        <button type="submit" class="btn-primary">Neste: virksomhet <span aria-hidden="true">→</span></button>
+      </form>
+    </section>
+
+    <section id="step-board" class="onboarding-card" data-step-panel="2" aria-labelledby="step-board-title" hidden>
+      <div class="card-eyebrow"><span>Steg 2 av 4</span><span class="demo-pill">Regnskapsgrunnlag</span></div>
+      <h2 id="step-board-title">Virksomhet og regnskapsår.</h2>
+      <p class="card-desc">Velg en enkel start. Når avtalen er på plass, opprettes dette som en tenant med rolle- og tilgangskontroll.</p>
+      <div class="setup-preview">
+        <div class="setup-row"><span class="setup-icon" aria-hidden="true">▦</span><div><small>Virksomhet</small><strong id="summary-company">Pilotselskap AS</strong></div><span class="setup-value">AS</span></div>
+        <div class="setup-row"><span class="setup-icon" aria-hidden="true">◷</span><div><small>Regnskapsår</small><strong>2026</strong></div><span class="setup-value">12 åpne perioder</span></div>
+        <div class="setup-row"><span class="setup-icon" aria-hidden="true">kr</span><div><small>Hovedvaluta</small><strong>NOK</strong></div><span class="setup-value">MVA-registrert</span></div>
       </div>
-      <button type="submit" class="btn-primary">Neste →</button>
-    </form>
-  </div>
+      <p class="helper-note"><span aria-hidden="true">✓</span> Du kan importere åpningsbalanse og historikk som norsk CSV etter innlogging.</p>
+      <div class="step-actions"><button type="button" class="btn-outline" data-go-step="1">← Tilbake</button><button type="button" class="btn-primary" data-go-step="3">Neste: kontroller <span aria-hidden="true">→</span></button></div>
+    </section>
 
-  <div id="step-board" class="onboarding-card" style="display:none">
-    <h2>Virksomhet og regnskapsår</h2>
-    <p class="card-desc">Velg en enkel start. Du kan senere legge til styre, prosjekt og andre arbeidsflater.</p>
-    <div class="board-comp">
-      <div class="role-row"><span aria-hidden="true">▦</span><input type="text" value="Pilotselskap AS" aria-label="Demo virksomhetsnavn" autocomplete="off"/><select aria-label="Selskapsform"><option selected>AS</option><option>ENK</option></select><input type="text" value="2026" aria-label="Regnskapsår" inputmode="numeric" autocomplete="off"/></div>
-      <div class="role-row"><span aria-hidden="true">₿</span><input type="text" value="NOK" aria-label="Hovedvaluta" autocomplete="off"/><select aria-label="MVA-registrering"><option selected>MVA-registrert</option><option>Ikke MVA-registrert</option></select><input type="text" value="12 åpne perioder" aria-label="Åpne perioder" autocomplete="off"/></div>
-      <span class="add-btn demo-control" aria-label="Ikke-aktiv demokontroll">Styre og flere brukere · senere</span>
-    </div>
-    <div class="step-nav"><button class="btn-outline" onclick="switchStep(1)">← Tilbake</button><button class="btn-primary" onclick="switchStep(3)">Neste →</button></div>
-  </div>
+    <section id="step-cadence" class="onboarding-card" data-step-panel="3" aria-labelledby="step-cadence-title" hidden>
+      <div class="card-eyebrow"><span>Steg 3 av 4</span><span class="demo-pill">Trygg arbeidsflyt</span></div>
+      <h2 id="step-cadence-title">Kontroller før du begynner.</h2>
+      <p class="card-desc">Regnskapet blir mest nyttig når grunnlaget er riktig. Velg hvordan du vil starte; dette lagres ikke i forhåndsvisningen.</p>
+      <form id="control-form"><div class="field-grid single">
+        <label>Første arbeidsflyt<select id="demo-frequency"><option selected>Bilag og bokføring</option><option>Faktura og kunder</option><option>Bankavstemming</option></select></label>
+        <label>Kontrollnivå<select id="demo-control-level"><option selected>Kontroller før bokføring</option><option>To personer ved behov</option><option>Regnskapsfører kontrollerer</option></select></label>
+        <label>Eksterne innsendinger<select id="demo-external"><option selected>Ikke konfigurert ennå</option><option>Avklares med regnskapsfører</option></select></label>
+      </div><div class="step-actions"><button type="button" class="btn-outline" data-go-step="2">← Tilbake</button><button type="submit" class="btn-primary">Se oppsummering <span aria-hidden="true">→</span></button></div></form>
+    </section>
 
-  <div id="step-cadence" class="onboarding-card" style="display:none">
-    <h2>Kontroller før du begynner</h2>
-    <p class="card-desc">Regnskapet blir mest nyttig når grunnlaget er riktig. Velg hvordan du vil starte, og gå videre til arbeidsflaten.</p>
-    <form onsubmit="event.preventDefault();switchStep(4)">
-      <div class="form-group"><label for="demo-frequency">Første arbeidsflyt</label><select id="demo-frequency"><option selected>Bilag og bokføring</option><option>Faktura og kunder</option><option>Bankavstemming</option></select></div>
-      <div class="form-group"><label for="demo-meeting-day">Kontrollnivå</label><select id="demo-meeting-day"><option selected>Kontroller før bokføring</option><option>To personer ved behov</option></select></div>
-      <div class="form-group"><label for="demo-signature">Eksterne innsendinger</label><select id="demo-signature"><option selected>Ikke konfigurert ennå</option><option>Avklares med regnskapsfører</option></select></div>
-      <div class="form-group"><label for="demo-approval">Neste steg</label><select id="demo-approval"><option selected>Åpne regnskapsflaten</option><option>Se offentlig demo først</option></select></div>
-      <div class="step-nav"><button type="button" class="btn-outline" onclick="switchStep(2)">← Tilbake</button><button type="submit" class="btn-primary">Vis demooppsummering →</button></div>
-    </form>
-  </div>
+    <section id="step-confirm" class="onboarding-card confirmation" data-step-panel="4" aria-labelledby="step-confirm-title" hidden>
+      <div class="success-icon" aria-hidden="true">✓</div><div class="card-eyebrow centered"><span>Steg 4 av 4</span><span class="demo-pill">Klar for neste steg</span></div>
+      <h2 id="step-confirm-title">Regnskapsstarten er klar.</h2><p class="card-desc">Dette er fortsatt en lokal forhåndsvisning. Ingen konto, virksomhet eller integrasjon er opprettet.</p>
+      <div class="summary-card"><div><small>Virksomhet</small><strong id="confirm-company">Pilotselskap AS</strong></div><div><small>Regnskapskjerne</small><strong>Bilag · faktura · bank · MVA · lønn</strong></div><div><small>Kontroll</small><strong id="confirm-control">Balanserte bilag før bokføring</strong></div><div><small>Tillegg</small><strong>Styre, prosjekt og risiko kan aktiveres senere</strong></div></div>
+      <a href="/app/finance" class="btn-primary confirmation-link">Åpne regnskapsflaten <span aria-hidden="true">→</span></a><button type="button" class="text-button" data-go-step="1">Start veiviseren på nytt</button>
+    </section>
 
-  <div id="step-confirm" class="onboarding-card" style="display:none">
-    <div class="success-icon">✓</div>
-    <h2>Regnskapsstarten er klar</h2>
-    <p class="card-desc">Dette er fortsatt en lokal forhåndsvisning. Ingen konto, virksomhet eller integrasjon er opprettet.</p>
-    <div class="blueprint">
-      <h3>Driftsplan</h3>
-      <div class="bp-grid">
-        <div class="bp-item"><span class="bp-l">Bedrift</span><span>Pilotselskap AS</span></div>
-        <div class="bp-item"><span class="bp-l">Kjerne</span><span>Bilag, faktura, bank, MVA og lønn</span></div>
-        <div class="bp-item"><span class="bp-l">Kontroll</span><span>Balanserte bilag før bokføring</span></div>
-        <div class="bp-item"><span class="bp-l">Regnskapsår</span><span>12 åpne perioder · klar for oppstart</span></div>
-        <div class="bp-item"><span class="bp-l">Tillegg</span><span>Styre, prosjekt og risiko kan aktiveres senere</span></div>
-      </div>
-      <h3>Neste steg i Styr.ing</h3>
-      <div class="agent-list">
-        <div>▤ Regnskapsflaten — før bilag og følg åpne kontrollpunkter</div>
-        <div>↗ Faktura og bank — bygg grunnlaget før betaling eller innsending</div>
-        <div>＋ Utvidelser — styre og prosjekt når hverdagen krever det</div>
-      </div>
-    </div>
-    <div style="text-align:center;margin-top:2rem">
-      <a href="/app/finance" class="btn-primary" style="display:inline-block;text-decoration:none;padding:14px 40px;font-size:1.1rem">Åpne regnskapsflaten →</a>
-    </div>
-  </div>
-
-  <div class="demo-notice">Demo av onboarding-flyt. Innlogging, virksomhetstilgang, eksterne innsendinger og eventuell KI-assistanse må avtales og verifiseres separat.</div>
-</div>
-
-<script is:inline>
-function switchStep(n) {
-  ['step-company','step-board','step-cadence','step-confirm'].forEach((id,i) => {
-    document.getElementById(id).style.display = (i+1 === n) ? 'block' : 'none';
-  });
-  document.querySelectorAll('.step').forEach((el,i) => {
-    el.className = 'step' + (i+1 < n ? ' done' : i+1 === n ? ' active' : '');
-  });
-  document.querySelectorAll('.step-connector').forEach((el,i) => {
-    el.className = 'step-connector' + (i+1 < n ? ' done' : '');
-  });
-}
-</script>
+    <aside class="demo-notice"><strong>Viktig:</strong> Dette er en produktvisning. Innlogging, virksomhetstilgang og eventuelle eksterne innsendinger verifiseres separat før bruk.</aside>
+  </main>
 </Layout>
 
+<script is:inline>
+  (() => {
+    const panels = [...document.querySelectorAll('[data-step-panel]')], progress = [...document.querySelectorAll('[data-progress-step]')], connectors = [...document.querySelectorAll('.connector')];
+    const companyInput = document.querySelector('#demo-company'), summaryCompany = document.querySelector('#summary-company'), confirmCompany = document.querySelector('#confirm-company'), controlLevel = document.querySelector('#demo-control-level'), confirmControl = document.querySelector('#confirm-control');
+    const renderStep = (step) => { panels.forEach(panel => { panel.hidden = panel.dataset.stepPanel !== String(step); }); progress.forEach(item => { const current=Number(item.dataset.progressStep); item.classList.toggle('active',current===step); item.classList.toggle('done',current<step); }); connectors.forEach((item,index)=>item.classList.toggle('done',index+1<step)); document.querySelector(`[data-step-panel="${step}"]`)?.querySelector('input,select,button,a')?.focus({preventScroll:true}); window.scrollTo({top:0,behavior:'smooth'}); };
+    const updateSummary = () => { const company=String(companyInput?.value||'Pilotselskap AS').trim()||'Pilotselskap AS'; if(summaryCompany)summaryCompany.textContent=company; if(confirmCompany)confirmCompany.textContent=company; if(confirmControl)confirmControl.textContent=controlLevel?.value||'Balanserte bilag før bokføring'; };
+    document.querySelector('#company-form')?.addEventListener('submit',event=>{event.preventDefault();updateSummary();renderStep(2);}); document.querySelector('#control-form')?.addEventListener('submit',event=>{event.preventDefault();updateSummary();renderStep(4);}); document.querySelectorAll('[data-go-step]').forEach(button=>button.addEventListener('click',()=>{updateSummary();renderStep(Number(button.dataset.goStep));}));
+  })();
+</script>
+
 <style>
-.onboarding-page { max-width: 640px; margin: 2rem auto; padding: 0 20px; }
-.page-title { font-size: clamp(1.6rem, 4vw, 2.1rem); margin: 0 0 1.25rem; text-align: center; }
-.progress-bar { display: flex; align-items: center; justify-content: center; margin-bottom: 2rem; }
-.step { display: flex; flex-direction: column; align-items: center; gap: 6px; font-family: system-ui, sans-serif; font-size: 0.75rem; color: #ccc; }
-.step span { width: 30px; height: 30px; border-radius: 50%; background: #eee; color: #aaa; font-weight: 700; font-size: 0.78rem; display: flex; align-items: center; justify-content: center; }
-.step.done span { background: var(--accent); color: white; }
-.step.done { color: var(--accent); }
-.step.active span { background: var(--accent); color: white; box-shadow: 0 0 0 4px rgba(31,111,91,0.15); }
-.step.active { color: var(--accent); font-weight: 700; }
-.step-connector { width: 36px; height: 2px; background: #eee; margin: 0 6px 18px; }
-.step-connector.done { background: var(--accent); }
-
-.onboarding-card { background: white; border: 1px solid rgba(16,36,31,0.08); border-radius: 16px; padding: 32px; }
-.onboarding-card h2 { font-size: 1.3rem; margin: 0 0 4px; }
-.card-desc { font-family: system-ui, sans-serif; font-size: 0.85rem; color: var(--muted); margin: 0 0 20px; line-height: 1.4; }
-
-.form-group { margin-bottom: 14px; }
-.form-group label { display: block; font-family: system-ui, sans-serif; font-size: 0.78rem; font-weight: 600; color: var(--ink); margin-bottom: 4px; }
-.form-group input, .form-group select { width: 100%; padding: 10px 12px; border: 1.5px solid rgba(16,36,31,0.12); border-radius: 8px; font-family: system-ui, sans-serif; font-size: 0.88rem; box-sizing: border-box; }
-.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-
-.check-group { display: flex; flex-wrap: wrap; gap: 10px; }
-.check-option { font-family: system-ui, sans-serif; font-size: 0.82rem; display: flex; align-items: center; gap: 6px; cursor: pointer; }
-
-.btn-primary { background: var(--accent); color: white; border: none; padding: 10px 24px; border-radius: 8px; font-family: system-ui, sans-serif; font-size: 0.88rem; font-weight: 600; cursor: pointer; }
-.btn-outline { background: transparent; border: 1.5px solid rgba(16,36,31,0.2); color: var(--ink); padding: 10px 24px; border-radius: 8px; font-family: system-ui, sans-serif; font-size: 0.88rem; cursor: pointer; }
-.step-nav { display: flex; justify-content: space-between; margin-top: 20px; }
-
-.board-comp { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; }
-.role-row { display: flex; gap: 8px; align-items: center; padding: 8px; border: 1px solid rgba(0,0,0,0.06); border-radius: 8px; }
-.role-row span { font-size: 1.2rem; }
-.role-row input, .role-row select { padding: 6px 8px; border: 1px solid rgba(0,0,0,0.1); border-radius: 6px; font-family: system-ui, sans-serif; font-size: 0.82rem; flex: 1; min-width: 0; }
-.add-btn { background: transparent; border: 2px dashed rgba(16,36,31,0.12); border-radius: 8px; padding: 10px; width: 100%; font-family: system-ui, sans-serif; font-size: 0.82rem; color: var(--muted); cursor: pointer; }
-.demo-control { display: block; box-sizing: border-box; text-align: center; cursor: default; opacity: 0.72; }
-
-.success-icon { width: 52px; height: 52px; border-radius: 50%; background: #27ae60; color: white; font-size: 1.4rem; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px; }
-
-.blueprint h3 { font-size: 0.95rem; margin: 16px 0 10px; }
-.bp-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
-.bp-item { padding: 10px; background: rgba(31,111,91,0.03); border-radius: 6px; font-family: system-ui, sans-serif; font-size: 0.8rem; }
-.bp-l { display: block; font-size: 0.65rem; font-weight: 700; text-transform: uppercase; color: var(--muted); margin-bottom: 2px; }
-
-.agent-list { display: flex; flex-direction: column; gap: 6px; }
-.agent-list div { font-family: system-ui, sans-serif; font-size: 0.8rem; padding: 8px; background: rgba(31,111,91,0.04); border-radius: 6px; }
-
-.demo-notice { text-align: center; padding: 1.5rem; margin-top: 2rem; background: rgba(31,111,91,0.06); border-radius: 12px; font-family: system-ui, sans-serif; font-size: 0.85rem; color: var(--muted); }
-
-@media (max-width: 520px) {
-  .onboarding-card { padding: 22px 16px; }
-  .form-row, .bp-grid { grid-template-columns: 1fr; }
-  .role-row { flex-wrap: wrap; }
-  .role-row span { width: 100%; }
-  .role-row input, .role-row select { flex: 1 1 100%; width: 100%; }
-  .step-nav { gap: 8px; flex-wrap: wrap; }
-}
+  .onboarding-page{max-width:760px;margin:0 auto;padding:42px 24px 92px}.onboarding-header{max-width:650px;margin:0 auto 30px}.onboarding-header .back-link{display:inline-block;margin-bottom:30px;color:var(--muted);font:700 .68rem/1 system-ui,sans-serif;text-decoration:none}.onboarding-header h1{margin:12px 0;color:var(--ink);font:500 clamp(2.5rem,7vw,4.8rem)/.92 Georgia,serif;letter-spacing:-.065em}.onboarding-header p{max-width:600px;margin:0;color:var(--muted);font:.9rem/1.6 system-ui,sans-serif}.section-kicker{color:var(--accent);font:700 .66rem/1.2 system-ui,sans-serif;letter-spacing:.14em;text-transform:uppercase}.progress{margin:0 auto 22px;max-width:650px}.progress ol{display:flex;align-items:flex-start;margin:0;padding:0;list-style:none}.progress li:not(.connector){display:grid;justify-items:center;gap:7px;min-width:74px;color:#91a097;font:600 .64rem/1.2 system-ui,sans-serif}.progress li span{display:grid;place-items:center;width:30px;height:30px;border-radius:50%;background:#edf1eb;color:#718078;font-weight:800}.progress li.active,.progress li.done{color:var(--accent)}.progress li.active span,.progress li.done span{background:var(--accent);color:#fff}.progress li.active span{box-shadow:0 0 0 5px rgba(31,111,91,.13)}.progress .connector{height:2px;flex:1;margin:14px 8px 0;background:#e1e8df}.progress .connector.done{background:var(--accent)}.onboarding-card{border:1px solid rgba(16,36,31,.1);border-radius:18px;background:#fff;padding:28px;box-shadow:0 12px 34px rgba(16,36,31,.055)}.onboarding-card[hidden]{display:none}.card-eyebrow{display:flex;align-items:center;justify-content:space-between;gap:10px;color:var(--muted);font:700 .62rem/1.2 system-ui,sans-serif;letter-spacing:.08em;text-transform:uppercase}.card-eyebrow.centered{justify-content:center}.demo-pill{padding:6px 8px;border-radius:999px;background:#edf6e8;color:#2b6b4f;font-size:.58rem;letter-spacing:.02em;text-transform:none}.onboarding-card h2{margin:16px 0 8px;color:var(--ink);font:500 clamp(1.75rem,4vw,2.5rem)/1.04 Georgia,serif;letter-spacing:-.035em}.card-desc{max-width:620px;margin:0 0 22px;color:var(--muted);font:.78rem/1.55 system-ui,sans-serif}.field-grid{display:grid;grid-template-columns:1fr 1fr;gap:13px}.field-grid.single{grid-template-columns:1fr}.onboarding-card label{display:grid;gap:6px;color:var(--muted);font:700 .64rem/1.2 system-ui,sans-serif}.onboarding-card input,.onboarding-card select{width:100%;box-sizing:border-box;border:1px solid rgba(16,36,31,.16);border-radius:9px;padding:11px 12px;background:#fff;color:var(--ink);font:500 .78rem/1.2 system-ui,sans-serif}.onboarding-card input:focus,.onboarding-card select:focus,.onboarding-card button:focus,.onboarding-card a:focus{outline:3px solid rgba(31,111,91,.2);outline-offset:2px}.onboarding-card fieldset{display:grid;gap:9px;margin:22px 0 24px;padding:0;border:0}.onboarding-card legend{margin-bottom:3px;color:var(--ink);font:700 .72rem/1.2 system-ui,sans-serif}.check-option{display:flex!important;align-items:flex-start;gap:10px;padding:11px 12px;border:1px solid rgba(16,36,31,.1);border-radius:10px;background:#f8faf6;cursor:pointer}.check-option input{width:16px;height:16px;margin:2px 0 0;accent-color:var(--accent)}.check-option span{display:grid;gap:3px}.check-option strong{color:var(--ink);font:700 .72rem/1.2 system-ui,sans-serif}.check-option small{color:var(--muted);font:500 .65rem/1.35 system-ui,sans-serif}.btn-primary,.btn-outline,.text-button{display:inline-flex;align-items:center;justify-content:center;gap:9px;border-radius:9px;padding:12px 15px;font:700 .7rem/1 system-ui,sans-serif;cursor:pointer;text-decoration:none}.btn-primary{border:1px solid var(--accent);background:var(--accent);color:#fff}.btn-outline{border:1px solid rgba(16,36,31,.18);background:#fff;color:var(--ink)}.text-button{border:0;background:transparent;color:var(--accent);font-size:.66rem}.step-actions{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:24px}.setup-preview{display:grid;gap:9px;margin:23px 0 15px}.setup-row{display:flex;align-items:center;gap:12px;padding:13px;border:1px solid rgba(16,36,31,.1);border-radius:11px;background:#f8faf6}.setup-icon{display:grid;place-items:center;width:30px;height:30px;border-radius:8px;background:#dfeedd;color:var(--accent);font:800 .72rem/1 system-ui,sans-serif}.setup-row div{display:grid;gap:3px;flex:1}.setup-row small,.summary-card small{color:var(--muted);font:700 .58rem/1.2 system-ui,sans-serif;text-transform:uppercase;letter-spacing:.07em}.setup-row strong,.summary-card strong{color:var(--ink);font:700 .76rem/1.2 system-ui,sans-serif}.setup-value{color:var(--accent);font:700 .64rem/1.2 system-ui,sans-serif;text-align:right}.helper-note{display:flex;gap:8px;align-items:flex-start;margin:16px 0 0;padding:11px 12px;border-radius:9px;background:#fff9df;color:#5f5b32;font:.68rem/1.4 system-ui,sans-serif}.helper-note span{color:var(--accent);font-weight:800}.confirmation{text-align:center}.success-icon{display:grid;place-items:center;width:52px;height:52px;margin:0 auto 9px;border-radius:50%;background:#2d7756;color:#fff;font:800 1.35rem/1 system-ui,sans-serif}.confirmation .card-desc{margin-left:auto;margin-right:auto}.summary-card{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:22px 0;padding:14px;text-align:left;border:1px solid rgba(16,36,31,.1);border-radius:12px;background:#f8faf6}.summary-card div{display:grid;gap:5px;padding:10px;border-radius:8px;background:#fff}.confirmation-link{margin-top:3px}.demo-notice{margin:16px auto 0;padding:13px 15px;border:1px solid rgba(184,151,49,.25);border-radius:10px;background:#fff9df;color:#5f5b32;font:.67rem/1.45 system-ui,sans-serif}.demo-notice strong{color:#514a1b}@media(max-width:620px){.onboarding-page{padding:28px 16px 60px}.onboarding-header .back-link{margin-bottom:22px}.onboarding-card{padding:20px}.progress li:not(.connector){min-width:58px;font-size:.56rem}.progress .connector{margin-left:4px;margin-right:4px}.field-grid,.summary-card{grid-template-columns:1fr}.setup-value{max-width:120px}.step-actions{align-items:stretch;flex-direction:column-reverse}.step-actions .btn-primary,.step-actions .btn-outline{width:100%}}
 </style>

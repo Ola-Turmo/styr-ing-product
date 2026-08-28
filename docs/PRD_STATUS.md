@@ -648,3 +648,10 @@ Betalinger kan kobles til åpne kunde-/leverandørposter fra samme regnskapsflat
 - Klikk åpner automatisk «Flere regnskapskontroller» og hopper til årsoppgjørskomponenten. Årsoppgjør forblir en kontrollert årsprosess, adskilt fra den daglige bokføringen.
 - Kildeintegritet og live smoke krever både oppgaveteksten og at finance-siden fortsatt er oppgavebasert. Dette reduserer risikoen for at en viktig regnskapsprosess blir skjult bak modulnavn.
 - Verifisert med `npm run verify` og `npm run verify:live` (134 kontroller mot `https://styr.ing`). Preview: `https://b93abae5.styr-ing.pages.dev`; produksjon: `https://styr.ing/app/finance/`.
+
+### Onboarding-veiviser reparert og gjort interaktiv (2026-08-28)
+
+- `/onboarding/` er erstattet med ren, responsiv Astro-markup og en firestegs regnskap-først-veiviser: regnskap, virksomhet, kontroller og klar.
+- Feltene oppdaterer oppsummeringen underveis, steg kan navigeres med tastatur, skjulte paneler bruker `hidden`, og mobilvisning har én kolonne og fullbredde handlinger.
+- Siden er fortsatt eksplisitt en forhåndsvisning: den oppretter ikke konto, tenant eller integrasjon. Etter oppsummeringen går brukeren til den autentiserte regnskapsflaten.
+- Kildekontrakt og live smoke krever nå både interaktivt skjema, trygg arbeidsflyt-copy og `/app/finance`-lenke. Preview: `https://27cbefb8.styr-ing.pages.dev`; produksjon: `https://styr.ing/onboarding/`.

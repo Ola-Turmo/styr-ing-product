@@ -89,7 +89,7 @@ for (const [label, path, expected] of checks) {
   }
   if (label === 'onboarding page') {
     const html = await response.text();
-    if (!html.includes('Kom i gang med regnskapet') || !html.includes('Bilag og bokføring') || !html.includes('/app/finance')) failures.push(`${label}: expected accounting-first onboarding copy and finance entry point`);
+    if (!html.includes('Kom i gang med regnskapet') || !html.includes('Bilag og bokføring') || !html.includes('company-form') || !html.includes('Trygg arbeidsflyt') || !html.includes('/app/finance')) failures.push(`${label}: expected functional accounting-first onboarding flow and finance entry point`);
   }
   if (label === 'public landing page') {
     const html = await response.text();
