@@ -635,3 +635,9 @@ Betalinger kan kobles til åpne kunde-/leverandørposter fra samme regnskapsflat
 - Komponentens to skjemaer er nå med i kildekontrakten (`create_recurring_template`, `generate_recurring_invoice`, mal-/køvisning og `new FormData`). En egen regresjonssjekk avviser JavaScript der `FormData` ved et uhell skygges av `const FormData(...)`; dette beskytter småbedriftsflyten mot komprimerings-/redigeringsfeil.
 - Endringen er verifisert med `npm run verify:source`, `git diff --check` og eksisterende Astro-/API-kontrakter. Dette er test- og kvalitetssikring; ekstern fakturasending er fortsatt ikke aktivert uten leverandøravtale og credentials.
 - Release commit: `856c08a` (klar for neste Cloudflare Pages-deploy).
+
+### Onboarding — regnskap før tilleggsmoduler (2026-08-28)
+- `/onboarding/` starter nå med småbedriftens faktiske kjernebehov: bilag og bokføring, faktura og bank, MVA og lønn. Den tidligere styre-/møteorienterte demoen er flyttet ut av hovedreisen.
+- Veiviseren forklarer virksomhet, regnskapsår, kontrollnivå og grensen mot eksterne innsendinger, før brukeren ledes til `/app/finance`. Styre, prosjekt og risiko omtales som tillegg som kan aktiveres senere.
+- Onboarding-siden er lagt inn i kildekontrakten og live smoke slik at regnskap-først-innramming og lenken til kundeområdets regnskapsflate ikke kan forsvinne ubemerket.
+- Verifisert med full `npm run verify` (54 sider, 199 inline-skript, 43 API-moduler, seed og 63 Astro-sider), produksjonsdeploy og 134 live-kontroller. Preview: `https://a6afd973.styr-ing.pages.dev`; produksjon: `https://styr.ing/onboarding/`; release commit: `363df5b`.
