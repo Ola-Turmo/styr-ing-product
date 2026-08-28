@@ -101,7 +101,7 @@ for (const [label, path, expected] of checks) {
   }
   if (label === 'tenant finance workspace shell') {
     const html = await response.text();
-    if (!html.includes('Start med oppgaven, ikke modulen.') || !html.includes('Bilagsarkiv')) failures.push(`${label}: expected task-based accounting workspace shell`);
+    if (!html.includes('Start med oppgaven, ikke modulen.') || !html.includes('Bilagsarkiv') || !html.includes('Gjør årsoppgjøret klart')) failures.push(`${label}: expected task-based accounting workspace shell`);
   }
   if (label === 'pricing page') {
     const html = await response.text();
