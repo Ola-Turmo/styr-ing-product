@@ -16,6 +16,7 @@ const componentContracts = {
   'src/components/SupplierInvoiceQuick.astro': ['data-supplier-action="create_invoice"', 'data-supplier-action="approve_order"', 'supplier-approve-order', 'lineAccountId', 'data-supplier-line-account', 'default_expense_account_id', 'supplierRefreshLineAccounts', 'supplier-invoice-total', 'updateSupplierInvoiceTotal', '<script is:inline>', '</script>', '<style>', '</style>'],
   'src/components/AnnualAccountsQuick.astro': ['annual-approve-form', 'annual-summary', 'annualShowDetail', 'annual-detail', 'annualSummary', '<script is:inline>', '</script>', '<style>', '</style>'],
   'src/components/PayrollQuick.astro': ['payroll-draft-total', 'payroll-employer-hint', 'payroll-total-gross', 'payroll-total-net', 'payroll-total-employer', 'payroll-total-compliance', 'payrollTotalsMoney', 'loadPayrollTotals', 'payrollDraftTotals', 'data-payroll-action="create_run"', '<script is:inline>', '</script>', '<style>', '</style>'],
+  'src/components/RecurringInvoiceQuick.astro': ['recurring-create-form', 'recurring-generate-form', 'create_recurring_template', 'generate_recurring_invoice', 'recurring-template', 'recurring-list', 'new FormData', '<script is:inline>', '</script>', '<style>', '</style>'],
   'src/components/AccountingSetupQuick.astro': ['setup-readiness', 'setup-readiness-list', 'data-readiness="chart"', 'data-readiness="profile"', 'view=invoice-setup', 'view=accounts', 'view=periods', '<script is:inline>', '</script>', '<style>', '</style>'],
   'src/components/AccountingReportsQuick.astro': ['id="reports-filter"', 'id="reports-totals"', 'report-csv', 'saft-export-form', 'saft-record', 'view=saf-t', 'view=saf-t-exports', '<script is:inline>', '</script>', '<style>', '</style>'],
   'src/components/PostingQueueQuick.astro': ['id="posting-proposal-list"', 'lines_json', 'postingAccountLabel', 'Kontroller ${lines.length} bilagslinjer', 'Godkjenn kontrollerte linjer', 'debit===creditTotal', 'posting-payroll-readiness', 'renderPayrollReadiness', 'Serveren kontrollerer på nytt ved lagring', 'supplier_credit_note', 'prepare_supplier_credit_note', '<script is:inline>', '</script>', '<style>', '</style>'],
@@ -39,6 +40,7 @@ async function walk(directory) {
       scriptCount += 1;
       try { new vm.Script(match[1], { filename: label }); }
       catch (error) { failures.push(`${label}: ugyldig nettleser-JavaScript (${error.message})`); }
+      if (/\b(?:const|let|var)\s+FormData\s*\(/.test(match[1])) failures.push(`${label}: FormData-konstruktøren er skygget av en variabel (bruk new FormData(...))`);
     }
     const ids = [...source.matchAll(/\bid=["']([^"']+)["']/g)].map((match) => match[1]).filter((id) => !id.includes('{'));
     const duplicates = [...new Set(ids.filter((id, index) => ids.indexOf(id) !== index))];
