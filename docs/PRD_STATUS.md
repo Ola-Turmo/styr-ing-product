@@ -13,6 +13,11 @@
 - Nye timer velger siste sats som var gyldig på arbeidsdato (`valid_from <= work_date`); fremtidige satser brukes først fra sin gyldighetsdato.
 - Produksjonsdatabasen er oppdatert med `d1/migrations/20260922_time_entry_cost_snapshot.sql`, inkludert engangsutfylling av eksisterende timeføringer.
 
+### Sats-hierarki bruker ansattrolle — 2026-08-28
+
+- Når en time føres, velges først prosjektets sats som matcher den aktive ansattes rolle (case-insensitivt). Hvis ingen rolle matcher, brukes siste gyldige prosjektsats som fallback.
+- Valgt sats, kostbasis og rolle legges i audit-detaljene og fryses på timeføringen. Dette gjør rollebasert prosjektregnskap praktisk for små team uten å endre tidligere timer.
+
 ### SMB-kontoplan kan vedlikeholdes trygt — 2026-08-28
 
 - `/app/finance/` viser nå et tenant-avgrenset kontoplanregister med kontonummer, navn, kontotype, MVA-kode, aktiv status og antall bokførte linjer.
