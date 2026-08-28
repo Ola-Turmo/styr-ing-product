@@ -629,3 +629,9 @@ Betalinger kan kobles til åpne kunde-/leverandørposter fra samme regnskapsflat
 - Den månedlige regnskapsstripen viser bilag, faktura, bank, MVA, lønn og rapporter. Styre, prosjekt og øvrige styringsflater er fortsatt samlet under en sekundær «Vis tilleggene»-seksjon.
 - MVA-eksempelet på produktkortet bruker en generell periode i stedet for en foreldet august/september-frist. Dette gjør siden mer tidløs for små norske AS og ENK.
 - Kildeverifisering, Astro-build og live smoke (133 kontroller) passerer. Deploy-preview: `https://72b11a3b.styr-ing.pages.dev`; produksjon: `https://styr.ing/`; release commit: `767ad40`.
+
+### Gjentakende faktura — kildekontrakt og regresjonsvern (2026-08-28)
+- Gjentakende faktura er fortsatt en kontrollert regnskapsflyt: maler og fakturautkast opprettes i Styr.ing, mens bruker må kontrollere og godkjenne før sending eller bokføring.
+- Komponentens to skjemaer er nå med i kildekontrakten (`create_recurring_template`, `generate_recurring_invoice`, mal-/køvisning og `new FormData`). En egen regresjonssjekk avviser JavaScript der `FormData` ved et uhell skygges av `const FormData(...)`; dette beskytter småbedriftsflyten mot komprimerings-/redigeringsfeil.
+- Endringen er verifisert med `npm run verify:source`, `git diff --check` og eksisterende Astro-/API-kontrakter. Dette er test- og kvalitetssikring; ekstern fakturasending er fortsatt ikke aktivert uten leverandøravtale og credentials.
+- Release commit: `856c08a` (klar for neste Cloudflare Pages-deploy).
