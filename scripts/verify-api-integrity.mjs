@@ -18,7 +18,7 @@ const routeContracts = {
   'functions/api/domains.ts': ['crm_accounts', 'authorizeBoardWrite', 'recordAudit', 'org_number_invalid', 'validNorwegianOrgNumber'],
   'functions/api/payroll.ts': ['calculate_compliance', 'prepare_submission', 'annual-summary', 'payloadHash', 'externalSubmission', 'submission_snapshot_conflict', 'annualSummary', 'statutory_notes', 'idempotent'],
   'functions/api/mva.ts': ['calculate_period', 'vat_period_snapshot_stale', 'submission_snapshot_conflict', 'idempotent'],
-  'functions/api/field.ts': ['classify_trip', 'complete_maintenance', 'prepare_invoice', 'approve_time', 'save_rate', 'cost_rate_minor', 'valid_from<=?', 'lower(r.role)=lower(?)', 'requiresHumanApproval'],
+  'functions/api/field.ts': ['classify_trip', 'complete_maintenance', 'prepare_invoice', 'approve_time', 'save_rate', 'cost_rate_minor', 'person_id', 'r.person_id IS NULL OR r.person_id=?', 'requiresHumanApproval'],
   'functions/api/commercial.ts': ['approve_quote', 'send_quote', 'create_case', 'record_case_response', 'update_case_status'],
   'functions/api/governance.ts': ['review_contract', 'activate_mandate', 'create_contract_review', 'accept_redline', 'approve_grant'],
   'functions/api/forecast.ts': ['sales_credit_notes', 'substr(collection_cases.reference,15)', 'openCollectionsMinor'],

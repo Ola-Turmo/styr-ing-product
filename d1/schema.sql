@@ -805,7 +805,7 @@ CREATE TABLE IF NOT EXISTS projects (
   status TEXT NOT NULL DEFAULT 'active' CHECK(status IN ('draft','active','on_hold','complete','cancelled')), billing_model TEXT NOT NULL DEFAULT 'hourly' CHECK(billing_model IN ('hourly','fixed','subscription')), budget_minor INTEGER, currency TEXT NOT NULL DEFAULT 'NOK', created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 CREATE TABLE IF NOT EXISTS project_rates (
-  id TEXT PRIMARY KEY, board_id TEXT NOT NULL REFERENCES boards(id) ON DELETE CASCADE, project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE, role TEXT NOT NULL, hourly_minor INTEGER NOT NULL DEFAULT 0, currency TEXT NOT NULL DEFAULT 'NOK', valid_from TEXT, valid_until TEXT, created_at TEXT NOT NULL DEFAULT (datetime('now'))
+  id TEXT PRIMARY KEY, board_id TEXT NOT NULL REFERENCES boards(id) ON DELETE CASCADE, project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE, person_id TEXT REFERENCES people(id) ON DELETE SET NULL, role TEXT NOT NULL, hourly_minor INTEGER NOT NULL DEFAULT 0, currency TEXT NOT NULL DEFAULT 'NOK', valid_from TEXT, valid_until TEXT, created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 CREATE TABLE IF NOT EXISTS project_rate_costs (
   id TEXT PRIMARY KEY, board_id TEXT NOT NULL REFERENCES boards(id) ON DELETE CASCADE, rate_id TEXT NOT NULL REFERENCES project_rates(id) ON DELETE CASCADE,
