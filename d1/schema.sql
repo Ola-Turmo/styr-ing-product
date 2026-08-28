@@ -813,7 +813,7 @@ CREATE TABLE IF NOT EXISTS project_rate_costs (
 );
 CREATE TABLE IF NOT EXISTS time_entries (
   id TEXT PRIMARY KEY, board_id TEXT NOT NULL REFERENCES boards(id) ON DELETE CASCADE, project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE, person_id TEXT NOT NULL REFERENCES people(id) ON DELETE CASCADE,
-  work_date TEXT NOT NULL, minutes INTEGER NOT NULL DEFAULT 0, description TEXT, billable INTEGER NOT NULL DEFAULT 1, status TEXT NOT NULL DEFAULT 'draft' CHECK(status IN ('draft','submitted','approved','rejected','invoiced')), rate_minor INTEGER, approved_by TEXT, approved_at TEXT, invoice_draft_id TEXT, created_at TEXT NOT NULL DEFAULT (datetime('now'))
+  work_date TEXT NOT NULL, minutes INTEGER NOT NULL DEFAULT 0, description TEXT, billable INTEGER NOT NULL DEFAULT 1, status TEXT NOT NULL DEFAULT 'draft' CHECK(status IN ('draft','submitted','approved','rejected','invoiced')), rate_minor INTEGER, cost_rate_minor INTEGER, approved_by TEXT, approved_at TEXT, invoice_draft_id TEXT, created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 CREATE INDEX IF NOT EXISTS idx_fleet_vehicles_board ON fleet_vehicles(board_id,status);
 CREATE INDEX IF NOT EXISTS idx_trip_logs_board ON trip_logs(board_id,trip_date,status);

@@ -162,9 +162,9 @@ INSERT OR IGNORE INTO project_rates (id,board_id,project_id,role,hourly_minor,cu
 INSERT OR IGNORE INTO project_rate_costs (id,board_id,rate_id,cost_hourly_minor,currency,source) VALUES
 ('rate-cost-1','board-1','rate-1',82000,'NOK','illustration'),
 ('rate-cost-2','board-1','rate-2',70000,'NOK','illustration');
-INSERT OR IGNORE INTO time_entries (id,board_id,project_id,person_id,work_date,minutes,description,billable,status,rate_minor) VALUES
-('time-1','board-1','project-1','person-1','2026-08-22',150,'Workshop kontrollkart',1,'submitted',145000),
-('time-2','board-1','project-1','person-2','2026-08-23',90,'Økonomisk kontrollspor',1,'approved',145000);
+INSERT OR IGNORE INTO time_entries (id,board_id,project_id,person_id,work_date,minutes,description,billable,status,rate_minor,cost_rate_minor) VALUES
+('time-1','board-1','project-1','person-1','2026-08-22',150,'Workshop kontrollkart',1,'submitted',145000,82000),
+('time-2','board-1','project-1','person-2','2026-08-23',90,'Økonomisk kontrollspor',1,'approved',145000,82000);
 INSERT OR IGNORE INTO payroll_runs (id,board_id,period,status,gross_minor,tax_withheld_minor,employer_cost_minor,holiday_pay_minor,otp_minor,employee_count,calculated_at) VALUES
 ('payrun-1','board-1','2026-08','review',12500000,3100000,15000000,1275000,250000,3,'2026-08-24 08:00:00');
 INSERT OR IGNORE INTO payroll_items (id,board_id,payroll_run_id,person_id,gross_minor,tax_minor,holiday_pay_minor,otp_minor,status) VALUES

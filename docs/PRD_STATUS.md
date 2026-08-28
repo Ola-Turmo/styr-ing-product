@@ -1,5 +1,18 @@
 # Styr.ing — PRD-status
 
+### Prosjektpriser og kostbasis kan vedlikeholdes — 2026-08-28
+
+- `/field/` har nå en tenant-avgrenset «Sett prosjektpris»-flyt for salgspris, kostbasis, rolle/arbeidstype og gyldig-fra-dato.
+- Nye timeføringer bruker siste aktive prosjektpris; historiske timeføringer endres ikke når satsen oppdateres.
+- Serveren validerer prosjekt, dato og beløp, krever eier/redaktør-tilgang og skriver endringen til audit-sporet. WIP- og fakturautkastberegninger bruker fortsatt lagret sats.
+- Verifisert med `npm run verify:source`, `npm run verify:api`, `npm run build`, `git diff --check` og live innholdskontroll mot `https://styr.ing/field/`.
+
+### Historisk margin låses ved timeføring — 2026-08-28
+
+- Timeføringer tar nå et eget `cost_rate_minor`-øyeblikksbilde sammen med salgspris. Senere endringer i prosjektpris/kostbasis endrer derfor ikke historisk WIP eller margin.
+- Nye timer velger siste sats som var gyldig på arbeidsdato (`valid_from <= work_date`); fremtidige satser brukes først fra sin gyldighetsdato.
+- Produksjonsdatabasen er oppdatert med `d1/migrations/20260922_time_entry_cost_snapshot.sql`, inkludert engangsutfylling av eksisterende timeføringer.
+
 ### SMB-kontoplan kan vedlikeholdes trygt — 2026-08-28
 
 - `/app/finance/` viser nå et tenant-avgrenset kontoplanregister med kontonummer, navn, kontotype, MVA-kode, aktiv status og antall bokførte linjer.
