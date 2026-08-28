@@ -623,3 +623,9 @@ Betalinger kan kobles til åpne kunde-/leverandørposter fra samme regnskapsflat
 - Regnskapskjernen prioriterer fortsatt bokføring, bilag, faktura, bankavstemming/MVA, lønn og rapporter. Styre-, prosjekt-, risiko- og eksterne adapterflater er sekundære og merket som ikke konfigurert der leverandøravtale/credentials mangler.
 - Lokal seed-kvalitet er nå maskinelt verifisert: `npm run verify:seed` kontrollerer alle 77 INSERT-setninger mot de 128 tabellene i `d1/schema.sql` og avviser ugyldig INSERT-format.
 - En fersk lokal D1-instans er kjørt gjennom både `d1/schema.sql` (260 kommandoer) og `d1/seed.sql` (77 kommandoer) uten SQL-feil; kontrollspørringer bekreftet demo-board, bilag og lønnskjøring. Dette er en lokal/demo-sjekk og endrer ikke produksjonsdata.
+
+### Førsteside — komplett SMB-regnskap enda tydeligere (2026-08-28)
+- Landingssiden bruker nå «Komplett regnskap for hverdagen» som hovedramme og nevner bokføring, leverandørkjøp og bankavstemming direkte i første forklaring.
+- Den månedlige regnskapsstripen viser bilag, faktura, bank, MVA, lønn og rapporter. Styre, prosjekt og øvrige styringsflater er fortsatt samlet under en sekundær «Vis tilleggene»-seksjon.
+- MVA-eksempelet på produktkortet bruker en generell periode i stedet for en foreldet august/september-frist. Dette gjør siden mer tidløs for små norske AS og ENK.
+- Kildeverifisering, Astro-build og live smoke (133 kontroller) passerer. Deploy-preview: `https://72b11a3b.styr-ing.pages.dev`; produksjon: `https://styr.ing/`; release commit: `767ad40`.
