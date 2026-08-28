@@ -32,14 +32,14 @@ const audiences = [
 <Layout title="Komplett regnskap for små norske bedrifter" activeNav="home">
   <div class="home">
       <section class="positioning" aria-label="Styr.ing for norske virksomheter">
-      <span>NORSK REGNSKAP FOR SMÅ AS OG ENK</span><strong>Alt det vanlige regnskapet — samlet.</strong><a href="/trust">Se hvordan dataene håndteres ↗</a>
+      <span>NORSK REGNSKAP FOR SMÅ AS OG ENK</span><strong>Komplett regnskap for hverdagen — samlet.</strong><a href="/trust">Se hvordan dataene håndteres ↗</a>
     </section>
 
     <section class="hero">
       <div class="hero-copy">
         <p class="eyebrow"><i></i>Regnskap først · laget for norske småbedrifter</p>
         <h1>Regnskap som<br /><em>gir oversikt.</em></h1>
-        <p class="lede">Fra bilag og faktura til bank, MVA, lønn, rapporter og årsoppgjør. Styr.ing samler det daglige regnskapet i én rolig arbeidsflyt, slik at du ser hva som er gjort, hva som mangler og hva som må godkjennes — også når én person gjør litt av alt.</p>
+        <p class="lede">Fra bilag og bokføring til faktura, leverandørkjøp, bankavstemming, MVA, lønn, rapporter og årsoppgjør. Styr.ing samler hele regnskapshverdagen i én rolig arbeidsflyt, slik at du ser hva som er gjort, hva som mangler og hva som må godkjennes — også når én person gjør litt av alt.</p>
         <div class="actions"><a class="button primary" href="/finance">Åpne regnskapsdemoen ↗</a><a class="button secondary" href="/abonnement">Se priser og hva som følger med</a></div>
         <div class="proof"><span><b>01</b>Bilag</span><span><b>02</b>Faktura</span><span><b>03</b>Bank</span><span><b>04</b>MVA</span><span><b>05</b>Lønn</span><span><b>06</b>Rapporter</span></div>
         <p class="hero-note"><span>✓</span> For deg som driver selv, har et lite team eller samarbeider med regnskapsfører.</p>
@@ -55,7 +55,7 @@ const audiences = [
               <div class="dashboard-head"><div><small>Regnskapsoversikt · illustrasjonsdata</small><h2>Dette krever oppmerksomhet.</h2></div><b class="avatar">AS</b></div>
               <div class="stats"><div><small>Bilag til kontroll</small><strong>8</strong><em>2 med avvik</em></div><div><small>Ubetalte fakturaer</small><strong>6</strong><em class="warn">2 forfalte</em></div><div><small>Kontrollstatus</small><strong>94%</strong><em>Oppdatert i dag</em></div></div>
               <div class="chart"><div><b>Inntekter og kostnader</b><span>Siste 6 måneder ↗</span></div><section class="bars" aria-hidden="true"><i style="height:42%"></i><i style="height:55%"></i><i style="height:50%"></i><i style="height:70%"></i><i style="height:65%"></i><i style="height:84%"></i><i style="height:94%"></i></section><small>Jan　 Feb　 Mar　 Apr　 Mai　 Jun　 Nå</small></div>
-              <div class="task"><i></i><div><b>MVA-grunnlag for august er klart</b><small>Regnskapsansvarlig · Frist 10. september</small></div><span>Til kontroll</span></div>
+              <div class="task"><i></i><div><b>MVA-grunnlag for perioden er klart</b><small>Regnskapsansvarlig · klar for kontroll</small></div><span>Til kontroll</span></div>
             </div>
           </div>
         </div>
@@ -66,8 +66,8 @@ const audiences = [
     <section class="audience" aria-label="Hvem bruker Styr.ing"><span class="kicker">For små norske virksomheter</span>{audiences.map(([title, text]) => <div><strong>{title}</strong><span>{text}</span></div>)}<div><strong>Har ansatte</strong><span>Få kontroll på lønnsgrunnlaget før rapportering og utbetaling.</span></div></section>
 
     <section class="accounting-basics" aria-label="Regnskapsgrunnlaget i Styr.ing">
-      <div><span class="kicker">Det dere trenger hver måned</span><strong>Bilag · bank · MVA · lønn · rapporter</strong></div>
-      <p>Styr.ing er bygget som et regnskapssystem først. Tillegg for styre, prosjekt og virksomhetsstyring kommer etter at grunnregnskapet er på plass.</p>
+      <div><span class="kicker">Det dere trenger hver måned</span><strong>Bilag · faktura · bank · MVA · lønn · rapporter</strong></div>
+      <p>Styr.ing er bygget som et komplett regnskapssystem først. Tillegg for styre, prosjekt og virksomhetsstyring kommer etter at grunnregnskapet er på plass.</p>
     </section>
 
     <section class="outcomes" aria-labelledby="outcomes-title">
@@ -76,12 +76,12 @@ const audiences = [
     </section>
 
     <section class="modules" id="produkt">
-      <div class="section-intro"><p class="kicker">Komplett regnskap · laget for små virksomheter</p><h2>Alt det vanlige regnskapet.<br /><em>Samlet og forståelig.</em></h2><p>Bilag, faktura, bank, MVA, lønn, rapporter og årsoppgjør er kjernen i Styr.ing. Når regnskapet er på plass, kan dere koble på kunder, prosjekter, styre og kontroll uten å bytte system.</p></div>
+      <div class="section-intro"><p class="kicker">Komplett regnskap · laget for små virksomheter</p><h2>Alt det vanlige regnskapet.<br /><em>Samlet og forståelig.</em></h2><p>Bilag, bokføring, faktura, leverandører, bank, MVA, lønn, rapporter og årsoppgjør er kjernen i Styr.ing. Når regnskapet er på plass, kan dere koble på kunder, prosjekter, styre og kontroll uten å bytte system.</p></div>
       <p class="module-group-label">Regnskapskjernen</p>
       <div class="module-grid">{accountingModules.map(([icon, title, text, href], index) => <a class="module" href={href}><span class="number">{String(index + 1).padStart(2, '0')}</span><span class="icon">{icon}</span><h3>{title}</h3><p>{text}</p><b>Åpne arbeidsflate ↗</b></a>)}</div>
       <details class="secondary-capabilities">
         <summary><span><b>08–15</b> Mer styring når grunnregnskapet er på plass</span><i>Vis tilleggene +</i></summary>
-        <p class="secondary-intro">Regnskapet er kjernen. Når dere trenger mer, kan dere samle timer, kunder, styrearbeid, risiko og drift i samme virksomhetsbilde.</p>
+        <p class="secondary-intro">Regnskapet er kjernen. Når dere trenger mer, kan dere samle timer, kunder, styrearbeid, risiko og drift i samme virksomhetsbilde — uten at tilleggene tar over førstesiden.</p>
         <div class="secondary-grid">{extendedModules.map(([icon, title, text, href], index) => <a class="module" href={href}><span class="number">{String(index + 8).padStart(2, '0')}</span><span class="icon">{icon}</span><h3>{title}</h3><p>{text}</p><b>Åpne arbeidsflate ↗</b></a>)}</div>
       </details>
     </section>
