@@ -451,7 +451,7 @@ CREATE TABLE IF NOT EXISTS finance_records (
 );
 CREATE TABLE IF NOT EXISTS crm_accounts (
   id TEXT PRIMARY KEY, board_id TEXT NOT NULL REFERENCES boards(id) ON DELETE CASCADE,
-  company_name TEXT NOT NULL, org_number TEXT, stage TEXT NOT NULL DEFAULT 'prospect' CHECK(stage IN ('prospect','qualified','proposal','won','lost')), owner_id TEXT REFERENCES people(id) ON DELETE SET NULL, next_action TEXT, estimated_value_minor INTEGER, currency TEXT NOT NULL DEFAULT 'NOK', created_at TEXT NOT NULL DEFAULT (datetime('now')), updated_at TEXT
+  company_name TEXT NOT NULL, org_number TEXT, stage TEXT NOT NULL DEFAULT 'prospect' CHECK(stage IN ('prospect','qualified','proposal','won','lost')), customer_status TEXT NOT NULL DEFAULT 'active' CHECK(customer_status IN ('active','archived')), owner_id TEXT REFERENCES people(id) ON DELETE SET NULL, next_action TEXT, estimated_value_minor INTEGER, currency TEXT NOT NULL DEFAULT 'NOK', created_at TEXT NOT NULL DEFAULT (datetime('now')), updated_at TEXT
 );
 CREATE TABLE IF NOT EXISTS contracts (
   id TEXT PRIMARY KEY, board_id TEXT NOT NULL REFERENCES boards(id) ON DELETE CASCADE,

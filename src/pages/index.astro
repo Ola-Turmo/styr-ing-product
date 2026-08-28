@@ -35,12 +35,12 @@ const audiences = [
       <span>NORSK REGNSKAP FOR SMÅ AS OG ENK</span><strong>Komplett regnskap for hverdagen — samlet.</strong><a href="/trust">Se hvordan dataene håndteres ↗</a>
     </section>
 
-    <section class="hero">
+      <section class="hero">
       <div class="hero-copy">
         <p class="eyebrow"><i></i>Regnskap først · laget for norske småbedrifter</p>
         <h1>Regnskap som<br /><em>gir oversikt.</em></h1>
         <p class="lede">Fra bilag og bokføring til faktura, leverandørkjøp, bankavstemming, MVA, lønn, rapporter og årsoppgjør. Styr.ing samler hele regnskapshverdagen i én rolig arbeidsflyt, slik at du ser hva som er gjort, hva som mangler og hva som må godkjennes — også når én person gjør litt av alt.</p>
-        <div class="actions"><a class="button primary" href="/finance">Åpne regnskapsdemoen ↗</a><a class="button secondary" href="/abonnement">Se priser og hva som følger med</a></div>
+        <div class="actions"><a class="button primary" href="/finance">Prøv regnskapsflaten ↗</a><a class="button secondary" href="/abonnement">Se priser og hva som følger med</a></div>
         <div class="proof"><span><b>01</b>Bilag</span><span><b>02</b>Faktura</span><span><b>03</b>Bank</span><span><b>04</b>MVA</span><span><b>05</b>Lønn</span><span><b>06</b>Rapporter</span></div>
         <p class="hero-note"><span>✓</span> For deg som driver selv, har et lite team eller samarbeider med regnskapsfører.</p>
       </div>
@@ -68,6 +68,11 @@ const audiences = [
     <section class="accounting-basics" aria-label="Regnskapsgrunnlaget i Styr.ing">
       <div><span class="kicker">Det dere trenger hver måned</span><strong>Bilag · faktura · bank · MVA · lønn · rapporter</strong></div>
       <p>Styr.ing er bygget som et komplett regnskapssystem først. Tillegg for styre, prosjekt og virksomhetsstyring kommer etter at grunnregnskapet er på plass.</p>
+    </section>
+
+    <section class="small-business-proof" aria-label="Hvorfor små norske virksomheter velger regnskapssystem">
+      <div><p class="kicker">Bygget for norske krav</p><h2>Det viktigste i én <em>arbeidsflyt.</em></h2></div>
+      <div class="small-business-proof-grid"><article><strong>Før selv eller sammen med regnskapsfører</strong><p>Fordel oppgaver uten å miste kontrollsporet. Alle ser hva som mangler og hvem som skal godkjenne.</p></article><article><strong>Klart for rapportering</strong><p>Hold MVA, perioder, rapporter og SAF-T-grunnlag samlet før innsending.</p></article><article><strong>Ingen moduljungel</strong><p>Start med regnskapet dere trenger hver måned. Koble på ekstra styring når hverdagen krever det.</p></article></div>
     </section>
 
     <section class="outcomes" aria-labelledby="outcomes-title">
@@ -106,4 +111,5 @@ const audiences = [
   @media(max-width:850px){.hero{grid-template-columns:1fr;padding-top:52px}.product-stage{min-height:380px}.outcomes{grid-template-columns:1fr;gap:28px;padding-top:55px;padding-bottom:62px}.module-grid{grid-template-columns:repeat(2,1fr)}.trust-band,.steps,.faq,.fit{grid-template-columns:1fr;gap:25px;padding:48px 32px}.audience{grid-template-columns:1fr 1fr}.audience .kicker{grid-column:1/-1}}
   @media(max-width:560px){.positioning{display:grid;grid-template-columns:auto 1fr;gap:8px 12px}.positioning a{grid-column:2;margin:0}.hero{padding:42px 16px 35px}.hero h1{font-size:3.35rem}.product-stage{min-height:310px;margin-inline:-20px;transform:scale(.94)}.app-body{grid-template-columns:78px 1fr}.app-body aside{padding:13px 6px;font-size:.5rem}.dashboard{padding:14px 10px}.stats strong{font-size:.88rem}.stats em{font-size:.45rem}.notice{right:-8px;top:8px}.audience{grid-template-columns:1fr;padding-inline:16px}.audience>div{padding:10px 0;border-left:0;border-top:1px solid rgba(16,36,31,.12)}.accounting-basics{display:grid;padding:22px 16px;gap:12px}.outcomes{padding-inline:16px}.outcome-grid{grid-template-columns:1fr}.modules{padding:62px 16px}.module-grid{grid-template-columns:1fr}.module{min-height:190px}.trust-band,.steps,.faq,.fit{margin-inline:12px;padding:40px 22px}.fit-grid{grid-template-columns:1fr}.cta{padding-bottom:65px}}
   .hero-note{display:flex;align-items:flex-start;gap:7px;max-width:470px;margin-top:18px;color:#6f7e76;font:600 .68rem/1.45 system-ui,sans-serif}.hero-note span{color:var(--accent);font-size:.85rem}
+  .small-business-proof{max-width:1180px;margin:0 auto 78px;padding:38px 24px;display:grid;grid-template-columns:.75fr 1.25fr;gap:45px;border-block:1px solid rgba(16,36,31,.1)}.small-business-proof h2{margin:12px 0 0;font:500 clamp(2rem,3.6vw,3rem)/1 Georgia,serif;letter-spacing:-.055em}.small-business-proof h2 em{font-style:normal;color:var(--accent)}.small-business-proof-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.small-business-proof-grid article{padding:16px;border-radius:12px;background:#f2f6ef}.small-business-proof-grid strong{display:block;font:700 .76rem/1.25 system-ui,sans-serif}.small-business-proof-grid p{margin-top:8px;color:var(--muted);font:.72rem/1.5 system-ui,sans-serif}@media(max-width:850px){.small-business-proof{grid-template-columns:1fr;gap:22px}}@media(max-width:560px){.small-business-proof{margin-bottom:55px;padding:28px 16px}.small-business-proof-grid{grid-template-columns:1fr}}
 </style>

@@ -338,7 +338,7 @@ async function boardData(
     return (
       await db
         .prepare(
-          "SELECT a.id,a.company_name,COALESCE(p.org_number,a.org_number) org_number,a.stage,a.currency,COALESCE(p.payment_terms_days,14) payment_terms_days FROM crm_accounts a LEFT JOIN customer_invoice_profiles p ON p.board_id=a.board_id AND p.account_id=a.id WHERE a.board_id=? AND a.stage NOT IN ('lost') ORDER BY a.company_name",
+          "SELECT a.id,a.company_name,COALESCE(p.org_number,a.org_number) org_number,a.stage,COALESCE(a.customer_status,'active') customer_status,a.currency,COALESCE(p.payment_terms_days,14) payment_terms_days FROM crm_accounts a LEFT JOIN customer_invoice_profiles p ON p.board_id=a.board_id AND p.account_id=a.id WHERE a.board_id=? AND a.stage NOT IN ('lost') AND COALESCE(a.customer_status,'active')='active' ORDER BY a.company_name",
         )
         .bind(boardId)
         .all()
@@ -347,7 +347,7 @@ async function boardData(
     return (
       await db
         .prepare(
-          "SELECT a.id,a.company_name,a.org_number,a.stage,a.currency,COALESCE(p.org_number,a.org_number) customer_org_number,COALESCE(p.customer_type,'business') customer_type,p.address_line1,p.postal_code,p.city,p.country_code,p.email,COALESCE(p.payment_terms_days,14) payment_terms_days,CASE WHEN p.account_id IS NULL THEN 0 WHEN p.address_line1 IS NOT NULL AND p.postal_code IS NOT NULL AND p.city IS NOT NULL AND (COALESCE(p.customer_type,'business')='private' OR COALESCE(p.org_number,a.org_number) IS NOT NULL) THEN 1 ELSE 0 END profile_complete FROM crm_accounts a LEFT JOIN customer_invoice_profiles p ON p.board_id=a.board_id AND p.account_id=a.id WHERE a.board_id=? AND a.stage NOT IN ('lost') ORDER BY a.company_name",
+          "SELECT a.id,a.company_name,a.org_number,a.stage,COALESCE(a.customer_status,'active') customer_status,a.currency,COALESCE(p.org_number,a.org_number) customer_org_number,COALESCE(p.customer_type,'business') customer_type,p.address_line1,p.postal_code,p.city,p.country_code,p.email,COALESCE(p.payment_terms_days,14) payment_terms_days,CASE WHEN p.account_id IS NULL THEN 0 WHEN p.address_line1 IS NOT NULL AND p.postal_code IS NOT NULL AND p.city IS NOT NULL AND (COALESCE(p.customer_type,'business')='private' OR COALESCE(p.org_number,a.org_number) IS NOT NULL) THEN 1 ELSE 0 END profile_complete FROM crm_accounts a LEFT JOIN customer_invoice_profiles p ON p.board_id=a.board_id AND p.account_id=a.id WHERE a.board_id=? AND a.stage NOT IN ('lost') ORDER BY CASE WHEN COALESCE(a.customer_status,'active')='active' THEN 0 ELSE 1 END,a.company_name",
         )
         .bind(boardId)
         .all()
@@ -371,7 +371,7 @@ async function boardData(
         .first(),
       db
         .prepare(
-          "SELECT a.id,a.company_name,COALESCE(p.org_number,a.org_number) org_number,COALESCE(p.customer_type,'business') customer_type,p.address_line1,p.postal_code,p.city,p.country_code,p.email,COALESCE(p.payment_terms_days,14) payment_terms_days FROM crm_accounts a LEFT JOIN customer_invoice_profiles p ON p.board_id=a.board_id AND p.account_id=a.id WHERE a.board_id=? AND a.stage NOT IN ('lost') ORDER BY a.company_name",
+          "SELECT a.id,a.company_name,COALESCE(p.org_number,a.org_number) org_number,COALESCE(p.customer_type,'business') customer_type,COALESCE(a.customer_status,'active') customer_status,p.address_line1,p.postal_code,p.city,p.country_code,p.email,COALESCE(p.payment_terms_days,14) payment_terms_days FROM crm_accounts a LEFT JOIN customer_invoice_profiles p ON p.board_id=a.board_id AND p.account_id=a.id WHERE a.board_id=? AND a.stage NOT IN ('lost') ORDER BY CASE WHEN COALESCE(a.customer_status,'active')='active' THEN 0 ELSE 1 END,a.company_name",
         )
         .bind(boardId)
         .all(),
@@ -1241,7 +1241,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
       }
       const accountId = id("cust");
       await db.batch([
-        db.prepare("INSERT INTO crm_accounts (id,board_id,company_name,org_number,stage,currency) VALUES (?,?,?,?,'prospect','NOK')").bind(accountId, boardId, companyName, orgNumber || null),
+        db.prepare("INSERT INTO crm_accounts (id,board_id,company_name,org_number,stage,customer_status,currency) VALUES (?,?,?,?,'prospect','active','NOK')").bind(accountId, boardId, companyName, orgNumber || null),
         db.prepare("INSERT INTO customer_invoice_profiles (board_id,account_id,org_number,customer_type,address_line1,postal_code,city,country_code,email,payment_terms_days,updated_by,updated_at) VALUES (?,?,?, ?,?,?,?,'NO',?,?,?,datetime('now'))").bind(boardId, accountId, orgNumber || null, customerType, addressLine1, postalCode, city, email, paymentTermsDays, authorization.userId || "service"),
       ]);
       await recordAudit(db, { boardId, action, entityType: "crm_account", entityId: accountId, userId: authorization.userId || undefined, details: { companyName, customerType, hasOrgNumber: Boolean(orgNumber), profileComplete: true } });
@@ -1388,6 +1388,17 @@ export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
         accountId,
         customerType,
       });
+    }
+    if (action === "set_customer_status") {
+      const accountId = String(value?.accountId || "").trim();
+      const customerStatus = String(value?.customerStatus || "").trim();
+      if (!accountId || !["active", "archived"].includes(customerStatus)) return json({ error: "customer_status_invalid" }, { status: 400 });
+      const account = await db.prepare("SELECT id,company_name,COALESCE(customer_status,'active') customer_status FROM crm_accounts WHERE id=? AND board_id=? AND stage NOT IN ('lost')").bind(accountId, boardId).first<{ id: string; company_name: string; customer_status: string }>();
+      if (!account) return json({ error: "customer_not_found" }, { status: 404 });
+      if (account.customer_status === customerStatus) return json({ ok: true, action, accountId, customerStatus, changed: false });
+      await db.prepare("UPDATE crm_accounts SET customer_status=?,updated_at=datetime('now') WHERE id=? AND board_id=?").bind(customerStatus, accountId, boardId).run();
+      await recordAudit(db, { boardId, action, entityType: "crm_account", entityId: accountId, userId: authorization.userId || undefined, details: { companyName: account.company_name, from: account.customer_status, to: customerStatus, historicalInvoicesPreserved: true } });
+      return json({ ok: true, action, accountId, customerStatus, changed: true });
     }
     if (action === "import_vouchers") {
       const rows = Array.isArray(value?.vouchers)
