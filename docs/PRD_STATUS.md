@@ -7,6 +7,13 @@
 - Endringer lagres med før-/etterverdier i audit-kjeden. Dette gjør den daglige kontoplanen håndterbar for små AS og ENK uten å svekke sporbarheten i bokføringen.
 - Verifisert med `npm run verify:source`, `npm run verify:api`, `npm run build`, `git diff --check` og `npm run verify:live` (135 kontroller mot `https://styr.ing`). Preview: `https://401ea93a.styr-ing.pages.dev`; produksjon: `https://styr.ing/app/finance/`.
 
+### SMB-leverandørregister kan vedlikeholdes trygt — 2026-08-28
+
+- Innkjøpsflyten viser nå et tenant-avgrenset leverandørregister med status, organisasjonsnummer, kontakt, betalingsfrist og standard kostnadskonto.
+- Leverandører kan redigeres eller settes inaktive uten å opprette en ny part. Inaktive leverandører fjernes fra valg i nye ordre og fakturaer.
+- Serveren validerer fortsatt norsk organisasjonsnummer, e-post, postnummer og konto-eierskap, og endringen logges i audit-sporet.
+- Verifisert med kilde-, API-, TypeScript- og Astro-kontroller, `git diff --check` og `npm run verify:live` (135 kontroller mot `https://styr.ing`). Preview: `https://15cfa5be.styr-ing.pages.dev`; produksjon: `https://styr.ing/app/finance/`.
+
 ### SMB-regnskapsflate og verifikasjon — 2026-08-28
 
 - Regnskap er fortsatt hovedproduktet for små AS og ENK: førstesiden, kundeområdet og `/app/finance/` leder med bilag, faktura, bank, MVA, lønn, bilagsarkiv, rapporter og periodeavslutning. Styre-, HCM-, CRM-, IT- og kontrollmoduler ligger sekundært.
