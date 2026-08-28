@@ -6,6 +6,10 @@ const root = resolve('functions/api');
 const failures = [];
 let fileCount = 0;
 const malformedSql = [/\bSELECT\s+FROM\b/i, /\bFROM\s+(?:WHERE|LEFT\s+JOIN|RIGHT\s+JOIN|JOIN|ORDER|GROUP|LIMIT)\b/i, /\bAS\s+FROM\b/i, /\bUPDATE\s+SET\s+WHERE\b/i, /\bJOIN\s+ON\s*(?:WHERE|GROUP|ORDER|LIMIT)\b/i, /\bWHERE\s+AND\b/i, /\bCOUNT\(\s*\*\s*\)\s+AS\s+FROM\b/i];
+const malformedDeclarations = [
+  [/\bconst\s+(?:db|response|res|data|payload|result)\s*\./, 'mistaken const property declaration'],
+  [/\bconst\s+(?:body|authorizeBoardWrite|fetch|FormData|URLSearchParams)\s*\(/, 'mistaken const function declaration'],
+];
 const routeContracts = {
   'functions/api/bank.ts': ['import_transactions', 'external_reference_conflict', 'bank_import_duplicate_or_conflict', 'payment_link_conflict', 'classify_transaction', 'manual_counter_account_id', 'idempotent', 'insertedCount'],
   'functions/api/hcm.ts': ['create_offboarding', 'it_lifecycle_tasks', 'lifecycleTasksSynchronized', 'db.batch'],
@@ -33,6 +37,7 @@ async function walk(directory) {
     try { await transform(source, { loader: entry.name.endsWith('.ts') ? 'ts' : 'js', target: 'es2022' }); }
     catch (error) { failures.push(`${label}: kan ikke transpileres (${error.message.split('\n')[0]})`); }
     for (const pattern of malformedSql) if (pattern.test(source)) failures.push(`${label}: malformed SQL pattern ${pattern}`);
+    for (const [pattern, name] of malformedDeclarations) if (pattern.test(source)) failures.push(`${label}: ${name}`);
     if (/\.prepare\(\s*`[^`]*\b(?:SELECT|INSERT|UPDATE|DELETE)\b/i.test(source) && !source.includes('requireDb')) failures.push(`${label}: database route prepares SQL without requireDb guard`);
     const required = routeContracts[label];
     if (required) for (const token of required) if (!source.includes(token)) failures.push(`${label}: missing required workflow contract ${token}`);
