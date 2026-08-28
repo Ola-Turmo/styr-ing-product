@@ -11,8 +11,23 @@ function walk(directory) {
 
 let total = 0;
 let failures = 0;
-for (const file of walk('src/pages')) {
+const sourceInvariants = [
+  [/\bconst\s+(?:db|response|res|data|payload|result)\s*\./, 'mistaken const property declaration'],
+  [/\bconst\s+(?:body|authorizeBoardWrite|fetch|FormData|URLSearchParams)\s*\(/, 'mistaken const function declaration'],
+  [/\b(?:SELECT|UPDATE)\s+FROM\b/i, 'malformed SQL verb'],
+  [/\bUPDATE\s+SET\s+WHERE\b/i, 'malformed SQL update'],
+  [/\bWHERE\s+AND\b/i, 'malformed SQL predicate'],
+  [/<button\s+(?:[a-zA-Z-]+\s+){1,3}(?:[a-zA-Z][^=<>\s]*)\s*<\/button>/i, 'button missing an attribute value'],
+];
+for (const file of walk('src')) {
   const source = readFileSync(file, 'utf8');
+  for (const [pattern, label] of sourceInvariants) {
+    if (pattern.test(source)) {
+      failures += 1;
+      console.error(`Source invariant failed: ${file} (${label})`);
+    }
+  }
+  if (!file.startsWith(join('src', 'pages'))) continue;
   const scripts = /<script(?:[^>]*)>([\s\S]*?)<\/script>/g;
   let match;
   let index = 0;
