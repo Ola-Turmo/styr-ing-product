@@ -1,5 +1,12 @@
 # Styr.ing — PRD-status
 
+### SMB-kontoplan kan vedlikeholdes trygt — 2026-08-28
+
+- `/app/finance/` viser nå et tenant-avgrenset kontoplanregister med kontonummer, navn, kontotype, MVA-kode, aktiv status og antall bokførte linjer.
+- Kontoer kan redigeres eller deaktiveres fra oppsettet. Serveren avviser duplikate kontonumre, kontotypeendring etter bruk og deaktivering av kontoer som allerede er brukt i bilag.
+- Endringer lagres med før-/etterverdier i audit-kjeden. Dette gjør den daglige kontoplanen håndterbar for små AS og ENK uten å svekke sporbarheten i bokføringen.
+- Verifisert med `npm run verify:source`, `npm run verify:api`, `npm run build`, `git diff --check` og `npm run verify:live` (135 kontroller mot `https://styr.ing`). Preview: `https://401ea93a.styr-ing.pages.dev`; produksjon: `https://styr.ing/app/finance/`.
+
 ### SMB-regnskapsflate og verifikasjon — 2026-08-28
 
 - Regnskap er fortsatt hovedproduktet for små AS og ENK: førstesiden, kundeområdet og `/app/finance/` leder med bilag, faktura, bank, MVA, lønn, bilagsarkiv, rapporter og periodeavslutning. Styre-, HCM-, CRM-, IT- og kontrollmoduler ligger sekundært.

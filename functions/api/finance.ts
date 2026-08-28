@@ -329,7 +329,7 @@ async function boardData(
     return (
       await db
         .prepare(
-          "SELECT id,code,name,account_type,vat_code,active FROM ledger_accounts WHERE board_id = ? ORDER BY code",
+          "SELECT id,code,name,account_type,vat_code,active,(SELECT COUNT(*) FROM voucher_lines vl WHERE vl.account_id=ledger_accounts.id) AS voucher_line_count FROM ledger_accounts WHERE board_id = ? ORDER BY code",
         )
         .bind(boardId)
         .all()
@@ -979,6 +979,58 @@ export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
         { ok: true, action, code, name, accountType },
         { status: 201 },
       );
+    }
+    if (action === "update_account") {
+      const accountId = String(value?.accountId || "").trim();
+      const code = String(value?.code || "").trim();
+      const name = String(value?.name || "").trim();
+      const accountType = String(value?.accountType || "").trim();
+      const vatCode = String(value?.vatCode || "").trim() || null;
+      const active = value?.active === false || String(value?.active) === "0" ? 0 : 1;
+      if (
+        !accountId ||
+        !/^\d{4}$/.test(code) ||
+        !name ||
+        name.length > 160 ||
+        (vatCode && vatCode.length > 20) ||
+        !["asset", "liability", "equity", "revenue", "expense"].includes(accountType)
+      )
+        return json({ error: "account_fields_invalid" }, { status: 400 });
+      const existing = await db
+        .prepare("SELECT id,code,name,account_type,vat_code,active FROM ledger_accounts WHERE id=? AND board_id=?")
+        .bind(accountId, boardId)
+        .first<Record<string, unknown>>();
+      if (!existing) return json({ error: "account_not_found" }, { status: 404 });
+      const duplicate = await db
+        .prepare("SELECT id FROM ledger_accounts WHERE board_id=? AND code=? AND id<>? LIMIT 1")
+        .bind(boardId, code, accountId)
+        .first();
+      if (duplicate) return json({ error: "account_code_exists" }, { status: 409 });
+      const used = await db
+        .prepare("SELECT COUNT(*) AS count FROM voucher_lines WHERE account_id=?")
+        .bind(accountId)
+        .first<{ count: number }>();
+      if (Number(used?.count || 0) > 0 && String(existing.account_type) !== accountType)
+        return json({ error: "account_type_locked", detail: "Kontotypen kan ikke endres etter at kontoen er brukt i et bilag." }, { status: 409 });
+      if (!active && Number(used?.count || 0) > 0)
+        return json({ error: "account_in_use", detail: "Kontoen kan ikke deaktiveres fordi den er brukt i bokførte bilag." }, { status: 409 });
+      await db
+        .prepare("UPDATE ledger_accounts SET code=?,name=?,account_type=?,vat_code=?,active=? WHERE id=? AND board_id=?")
+        .bind(code, name, accountType, vatCode, active, accountId, boardId)
+        .run();
+      await recordAudit(db, {
+        boardId,
+        action,
+        entityType: "ledger_account",
+        entityId: accountId,
+        userId: authorization.userId || undefined,
+        details: {
+          before: { code: existing.code, name: existing.name, accountType: existing.account_type, vatCode: existing.vat_code, active: existing.active },
+          after: { code, name, accountType, vatCode, active },
+          voucherLineCount: Number(used?.count || 0),
+        },
+      });
+      return json({ ok: true, action, accountId, code, name, accountType, vatCode, active: Boolean(active) });
     }
     if (action === "seed_smb_chart") {
       // A deliberately small, Norwegian SMB-friendly starter chart. It is
