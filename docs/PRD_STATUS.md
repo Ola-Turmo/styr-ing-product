@@ -19,7 +19,8 @@
 - `/app/finance/` viser nå et synlig kunderegister rett over fakturaflaten, med tomtilstand, kundetype, organisasjonsnummer, adresse, e-post og betalingsfrist.
 - En bruker med tilgang kan åpne én kunde, endre opplysningene og lagre via den eksisterende tenant-avgrensede `save_customer_invoice_profile`-handlingen. Servervalidering og audit-spor gjelder fortsatt; ingen ny skrivevei omgår kontrollene.
 - Dette gjør den daglige fakturaflyten egnet for små AS og ENK som vedlikeholder kunder selv, uten at de må finne en skjult oppsettsseksjon.
-- Verifisert med `npm run verify:source`, `npm run verify:api`, `npm run build`, `git diff --check` og `npm run verify:live` (135 kontroller mot `https://styr.ing`).
+- Kunderegisteret løser nå virksomhet fra innlogget `/api/auth` når `boardId` ikke finnes i URL-en, og oppdaterer listen etter lagring uten å eksponere data på offentlig forhåndsvisning.
+- Verifisert med `npm run verify:source`, `npm run verify:api`, `npm run build`, `git diff --check`, direkte produksjonsinnholdskontroll og `npm run verify:live` (135 kontroller mot `https://styr.ing`). Preview: `https://27081718.styr-ing.pages.dev`; produksjon: `https://styr.ing/app/finance/`; commit `dbe6f19`.
 
 ### SMB-regnskapsflate og verifikasjon — 2026-08-28
 
