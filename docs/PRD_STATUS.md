@@ -1,5 +1,11 @@
 # Styr.ing — PRD-status
 
+### Ansattspesifikke prosjektpriser — 2026-08-28
+
+- `/field/` støtter nå valgfri ansattspesifikk sats i tillegg til rollebasert og generell prosjektsats. Ved timeføring velges individuell sats først, deretter rolle, deretter prosjektets generelle sats.
+- `project_rates.person_id` er tenant-avgrenset og migrert i produksjon med `d1/migrations/20260923_project_rate_person.sql`. Sats og kostbasis lagres fortsatt som øyeblikksbilde på nye timer, slik at historisk margin ikke endres.
+- Verifisert med `npm run verify`, lokal D1-migrasjon, deploy `https://ab146fc1.styr-ing.pages.dev` og `npm run verify:live` (135 kontroller mot `https://styr.ing`).
+
 ### Prosjektpriser og kostbasis kan vedlikeholdes — 2026-08-28
 
 - `/field/` har nå en tenant-avgrenset «Sett prosjektpris»-flyt for salgspris, kostbasis, rolle/arbeidstype og gyldig-fra-dato.
