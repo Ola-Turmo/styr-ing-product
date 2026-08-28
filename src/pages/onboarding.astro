@@ -4,29 +4,29 @@ import Layout from '../layouts/Layout.astro';
 ---
 <Layout title="Kom i gang — Styr.ing" activeNav="onboarding">
 <div class="onboarding-page">
-  <h1 class="page-title">Lokal onboarding-demo</h1>
+  <h1 class="page-title">Kom i gang med regnskapet</h1>
   <div class="progress-bar" id="progress">
-    <div class="step active" data-step="1"><span>1</span>Bedrift</div>
+    <div class="step active" data-step="1"><span>1</span>Regnskap</div>
     <div class="step-connector"></div>
-    <div class="step" data-step="2"><span>2</span>Styre</div>
+    <div class="step" data-step="2"><span>2</span>Virksomhet</div>
     <div class="step-connector"></div>
-    <div class="step" data-step="3"><span>3</span>Møter</div>
+    <div class="step" data-step="3"><span>3</span>Kontroller</div>
     <div class="step-connector"></div>
-    <div class="step" data-step="4"><span>4</span>Bekreft</div>
+    <div class="step" data-step="4"><span>4</span>Klar</div>
   </div>
 
   <div id="step-company" class="onboarding-card">
-    <h2>Utforsk en fiktiv bedrift</h2>
-    <p class="card-desc">Feltene inneholder illustrasjonsdata og behandles bare lokalt i nettleseren. Ikke legg inn virkelige virksomhets- eller personopplysninger.</p>
+    <h2>Start med den vanlige regnskapshverdagen</h2>
+    <p class="card-desc">Dette er en trygg forhåndsvisning med fiktive data. Se hvordan bilag, faktura, bank og MVA samles før du kobler til en virksomhet.</p>
     <form onsubmit="event.preventDefault();switchStep(2)">
       <div class="form-group"><label for="demo-company">Bedriftens navn</label><input id="demo-company" type="text" value="Pilotselskap AS" autocomplete="off"/></div>
       <div class="form-row"><div class="form-group"><label for="demo-org-number">Org.nummer</label><input id="demo-org-number" type="text" value="123456789" inputmode="numeric" autocomplete="off"/></div><div class="form-group"><label for="demo-employees">Ansatte</label><select id="demo-employees"><option>1-10</option><option selected>11-50</option><option>51-200</option></select></div></div>
       <div class="form-group"><label for="demo-industry">Bransje</label><select id="demo-industry"><option>Teknologi/IT</option><option selected>Konsulent/rådgivning</option><option>Finans</option><option>Helse</option></select></div>
-      <div class="form-group"><label>Relevante krav</label>
+      <div class="form-group"><label>Hva vil du få kontroll på først?</label>
         <div class="check-group">
-          <label class="check-option"><input type="checkbox" checked/>Aksjeloven</label>
-          <label class="check-option"><input type="checkbox" checked/>GDPR</label>
-          <label class="check-option"><input type="checkbox" checked/>Internkontroll</label>
+          <label class="check-option"><input type="checkbox" checked/>Bilag og bokføring</label>
+          <label class="check-option"><input type="checkbox" checked/>Faktura og bank</label>
+          <label class="check-option"><input type="checkbox" checked/>MVA og lønn</label>
         </div>
       </div>
       <button type="submit" class="btn-primary">Neste →</button>
@@ -34,55 +34,54 @@ import Layout from '../layouts/Layout.astro';
   </div>
 
   <div id="step-board" class="onboarding-card" style="display:none">
-    <h2>Styresammensetning</h2>
-    <p class="card-desc">Legg til styremedlemmer og roller.</p>
+    <h2>Virksomhet og regnskapsår</h2>
+    <p class="card-desc">Velg en enkel start. Du kan senere legge til styre, prosjekt og andre arbeidsflater.</p>
     <div class="board-comp">
-      <div class="role-row"><span aria-hidden="true">👑</span><input type="text" value="Demo Leder" aria-label="Demo styreleder navn" autocomplete="off"/><select aria-label="Demo styreleder rolle"><option selected>Styreleder</option></select><input type="email" value="leder@example.invalid" aria-label="Demo styreleder e-post" autocomplete="off"/></div>
-      <div class="role-row"><span aria-hidden="true">📋</span><input type="text" value="Demo Sekretær" aria-label="Demo styresekretær navn" autocomplete="off"/><select aria-label="Demo styresekretær rolle"><option selected>Styresekretær</option></select><input type="email" value="sekretar@example.invalid" aria-label="Demo styresekretær e-post" autocomplete="off"/></div>
-      <div class="role-row"><span aria-hidden="true">💼</span><input type="text" value="Demo Økonomi" aria-label="Demo styremedlem navn" autocomplete="off"/><select aria-label="Demo styremedlem rolle"><option selected>Styremedlem</option></select><input type="email" value="okonomi@example.invalid" aria-label="Demo styremedlem e-post" autocomplete="off"/></div>
-      <span class="add-btn demo-control" aria-label="Ikke-aktiv demokontroll">Legg til medlem · demo</span>
+      <div class="role-row"><span aria-hidden="true">▦</span><input type="text" value="Pilotselskap AS" aria-label="Demo virksomhetsnavn" autocomplete="off"/><select aria-label="Selskapsform"><option selected>AS</option><option>ENK</option></select><input type="text" value="2026" aria-label="Regnskapsår" inputmode="numeric" autocomplete="off"/></div>
+      <div class="role-row"><span aria-hidden="true">₿</span><input type="text" value="NOK" aria-label="Hovedvaluta" autocomplete="off"/><select aria-label="MVA-registrering"><option selected>MVA-registrert</option><option>Ikke MVA-registrert</option></select><input type="text" value="12 åpne perioder" aria-label="Åpne perioder" autocomplete="off"/></div>
+      <span class="add-btn demo-control" aria-label="Ikke-aktiv demokontroll">Styre og flere brukere · senere</span>
     </div>
     <div class="step-nav"><button class="btn-outline" onclick="switchStep(1)">← Tilbake</button><button class="btn-primary" onclick="switchStep(3)">Neste →</button></div>
   </div>
 
   <div id="step-cadence" class="onboarding-card" style="display:none">
-    <h2>Møtekadens og signaturpolicy</h2>
-    <p class="card-desc">Kalender og signaturflyt vises som demo og må konfigureres i et avtalt oppsett.</p>
+    <h2>Kontroller før du begynner</h2>
+    <p class="card-desc">Regnskapet blir mest nyttig når grunnlaget er riktig. Velg hvordan du vil starte, og gå videre til arbeidsflaten.</p>
     <form onsubmit="event.preventDefault();switchStep(4)">
-      <div class="form-group"><label for="demo-frequency">Møtefrekvens</label><select id="demo-frequency"><option selected>Kvartalsvis</option><option>Månedlig</option></select></div>
-      <div class="form-group"><label for="demo-meeting-day">Møtedag</label><select id="demo-meeting-day"><option selected>Onsdag</option><option>Tirsdag</option></select></div>
-      <div class="form-group"><label for="demo-signature">Signaturløsning (demo)</label><select id="demo-signature"><option selected>Avklares</option><option>Enkel e-signatur</option></select></div>
-      <div class="form-group"><label for="demo-approval">Godkjenning av protokoll</label><select id="demo-approval"><option selected>Styreleder + referent</option><option>Styreleder</option></select></div>
+      <div class="form-group"><label for="demo-frequency">Første arbeidsflyt</label><select id="demo-frequency"><option selected>Bilag og bokføring</option><option>Faktura og kunder</option><option>Bankavstemming</option></select></div>
+      <div class="form-group"><label for="demo-meeting-day">Kontrollnivå</label><select id="demo-meeting-day"><option selected>Kontroller før bokføring</option><option>To personer ved behov</option></select></div>
+      <div class="form-group"><label for="demo-signature">Eksterne innsendinger</label><select id="demo-signature"><option selected>Ikke konfigurert ennå</option><option>Avklares med regnskapsfører</option></select></div>
+      <div class="form-group"><label for="demo-approval">Neste steg</label><select id="demo-approval"><option selected>Åpne regnskapsflaten</option><option>Se offentlig demo først</option></select></div>
       <div class="step-nav"><button type="button" class="btn-outline" onclick="switchStep(2)">← Tilbake</button><button type="submit" class="btn-primary">Vis demooppsummering →</button></div>
     </form>
   </div>
 
   <div id="step-confirm" class="onboarding-card" style="display:none">
     <div class="success-icon">✓</div>
-    <h2>Demooppsummering</h2>
-    <p class="card-desc">Dette er en lokal forhåndsvisning. Ingen konto, portal eller integrasjon er opprettet.</p>
+    <h2>Regnskapsstarten er klar</h2>
+    <p class="card-desc">Dette er fortsatt en lokal forhåndsvisning. Ingen konto, virksomhet eller integrasjon er opprettet.</p>
     <div class="blueprint">
       <h3>Driftsplan</h3>
       <div class="bp-grid">
         <div class="bp-item"><span class="bp-l">Bedrift</span><span>Pilotselskap AS</span></div>
-        <div class="bp-item"><span class="bp-l">Rammeverk</span><span>Aksjeloven, GDPR, Internkontroll</span></div>
-        <div class="bp-item"><span class="bp-l">Styre</span><span>3 medlemmer + sekretær</span></div>
-        <div class="bp-item"><span class="bp-l">Møter</span><span>Kvartalsvis, onsdager</span></div>
-        <div class="bp-item"><span class="bp-l">Signatur</span><span>Avklares · Godkjent av leder+referent</span></div>
+        <div class="bp-item"><span class="bp-l">Kjerne</span><span>Bilag, faktura, bank, MVA og lønn</span></div>
+        <div class="bp-item"><span class="bp-l">Kontroll</span><span>Balanserte bilag før bokføring</span></div>
+        <div class="bp-item"><span class="bp-l">Regnskapsår</span><span>12 åpne perioder · klar for oppstart</span></div>
+        <div class="bp-item"><span class="bp-l">Tillegg</span><span>Styre, prosjekt og risiko kan aktiveres senere</span></div>
       </div>
-      <h3>Mulige, ikke-aktiverte arbeidsflyter</h3>
+      <h3>Neste steg i Styr.ing</h3>
       <div class="agent-list">
-        <div>📋 Møteutkast — kan vurderes i et avtalt oppsett</div>
-        <div>📅 Fristoppfølging — datakilder og varsling må avtales</div>
-        <div>📊 Rapporteringsutkast — krever menneskelig kontroll</div>
+        <div>▤ Regnskapsflaten — før bilag og følg åpne kontrollpunkter</div>
+        <div>↗ Faktura og bank — bygg grunnlaget før betaling eller innsending</div>
+        <div>＋ Utvidelser — styre og prosjekt når hverdagen krever det</div>
       </div>
     </div>
     <div style="text-align:center;margin-top:2rem">
-      <a href="/board/board-1" class="btn-primary" style="display:inline-block;text-decoration:none;padding:14px 40px;font-size:1.1rem">Se illustrert styrevisning →</a>
+      <a href="/app/finance" class="btn-primary" style="display:inline-block;text-decoration:none;padding:14px 40px;font-size:1.1rem">Åpne regnskapsflaten →</a>
     </div>
   </div>
 
-  <div class="demo-notice">Demo av onboarding-flyt. Identitetskontroll, e-post og eventuell KI-assistanse må avtales og verifiseres separat.</div>
+  <div class="demo-notice">Demo av onboarding-flyt. Innlogging, virksomhetstilgang, eksterne innsendinger og eventuell KI-assistanse må avtales og verifiseres separat.</div>
 </div>
 
 <script is:inline>
